@@ -69,3 +69,49 @@ A source is not considered integrated until credentials/configuration, terms, ra
 ## MVP definition of success
 
 A user can perform one search across at least one verified provider, see correctly attributed normalized results, save an opportunity, and track an application from first contact through final outcome. Additional providers can be added without changing the core search and tracking workflow.
+
+
+## Employment & NASpI scenario checker (planned)
+
+Purpose: help the user evaluate employment-offer and job-termination scenarios, including possible NASpI implications. This is an informational estimator, not a legal determination or guarantee of entitlement.
+
+Important product rule: NASpI is an INPS benefit, not a benefit granted or denied by the employer. Do not store a simplistic company-level flag such as "company pays NASpI". Eligibility depends on the worker's individual contribution history and the legal circumstances of termination.
+
+### Data to capture per employment opportunity
+
+- Employer/company and job offer reference.
+- Contract type (permanent, fixed-term, apprenticeship, etc.).
+- Expected start date and any probation duration.
+- Whether the user is currently employed or receiving NASpI.
+- How the previous employment ended (dismissal, fixed-term expiry, voluntary resignation, resignation for just cause, other legally relevant case).
+- Date of any voluntary resignation from a permanent employment relationship in the preceding 12 months.
+- Contribution weeks accumulated between that voluntary termination and a possible subsequent involuntary termination.
+- Potential end-of-contract scenario: employer termination during probation, employer dismissal after probation, fixed-term expiry, employee resignation, consensual termination or other event.
+- Supporting documents and notes, stored privately and never committed to source control.
+
+### Rule checks and output
+
+- Check the general involuntary-unemployment requirement and the ordinary contribution requirement (at least 13 weeks in the four years before the unemployment event), subject to applicable statutory rules and exceptions.
+- For unemployment events from 1 January 2025, check the additional 13-week contribution condition where the worker voluntarily terminated a permanent employment relationship in the preceding 12 months.
+- Distinguish employer-initiated termination during probation from employee resignation during probation; do not treat them as equivalent.
+- Explain that employer termination during probation can generally be an involuntary unemployment event, but the worker's full contribution and eligibility conditions still need verification.
+- Display the legal rule, source link, date checked, missing information and confidence/limitations.
+- Flag cases for review by INPS, a patronato or a qualified labour consultant.
+- Never promise entitlement, calculate a definitive legal outcome from incomplete data, or present a startup/company attribute as determining NASpI eligibility.
+
+### MVP interface
+
+Add a section to each job opportunity named "Contratto e tutela NASpI" with:
+- Contract and probation details.
+- "What if the employer ends the contract during probation?" scenario.
+- "What if the employer dismisses me after probation?" scenario.
+- "What if I resign?" scenario.
+- Personalized checklist of missing contribution/history information.
+- Indicative result: "potentially eligible", "potential risk / extra condition to verify", or "not enough information"; always accompanied by an explanation and official INPS references.
+
+### Official reference baseline
+
+- INPS NASpI FAQ and requirements pages.
+- INPS communication on the additional 13-week contribution requirement introduced from 1 January 2025 (Law 207/2024, Article 1, paragraph 171; INPS Circular 98/2025).
+
+The rule set must be reviewed and updated when INPS guidance or legislation changes.
