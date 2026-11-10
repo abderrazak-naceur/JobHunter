@@ -115,3 +115,70 @@ Add a section to each job opportunity named "Contratto e tutela NASpI" with:
 - INPS communication on the additional 13-week contribution requirement introduced from 1 January 2025 (Law 207/2024, Article 1, paragraph 171; INPS Circular 98/2025).
 
 The rule set must be reviewed and updated when INPS guidance or legislation changes.
+
+
+## Company Radar — official company career pages
+
+### Goal
+
+Discover opportunities published directly by employers, including vacancies that never appear on LinkedIn or general job boards. Company Careers pages are a first-class source in JobHunter, not merely links attached to aggregator results.
+
+### Company discovery
+
+- Maintain a directory of target employers with name, official domain, industry, location, size band (when known), careers URL and tracking status.
+- Allow manual addition of a company or careers URL.
+- Support curated company lists by sector, geography and technology stack.
+- Discover ATS platforms and public job-board endpoints when identifiable.
+- Do not assume every company uses an API or that every page can be indexed automatically.
+
+### Career page connectors
+
+Use this priority order:
+1. Official public job-board APIs exposed by ATS platforms, when available and permitted (for example Greenhouse Job Board API and Lever Postings API).
+2. Public structured job data embedded in career pages, including Schema.org JobPosting markup.
+3. Public RSS/Atom feeds or documented employer feeds.
+4. Limited page monitoring or parsing only where permitted by the website's terms and technical access rules; otherwise store the official Careers URL for manual review.
+
+Each connector must retain the employer's official job URL, source type, last checked timestamp, last successful check, and connector health. Do not bypass logins, CAPTCHAs, anti-bot controls or access restrictions.
+
+### Monitoring workflow
+
+- User selects companies to follow.
+- JobHunter checks supported career sources on a configurable schedule.
+- Detect newly published, changed, removed or closed postings.
+- Notify the user about new relevant jobs and material changes.
+- Keep a company-level history of vacancies and source checks.
+- Avoid duplicate jobs when the same vacancy appears on the employer site and external boards; preserve all source links and identify the employer's official posting as canonical where verified.
+
+### Company Radar screens
+
+- Company Directory: search, sector/location filters, target list and follow/unfollow.
+- Company Profile: official website, Careers URL, locations, technologies, ATS/source type and monitoring health.
+- Company Jobs: current vacancies published directly by that employer.
+- Monitoring History: new, updated, closed vacancies and last checked status.
+- Discovery Queue: suggested companies to review and add to the tracked list.
+
+### Data model additions
+
+- Company: employer identity and official domain.
+- CompanyCareerSource: careers URL, connector type, ATS metadata, monitoring configuration and health.
+- CompanyWatch: user/company tracking preferences.
+- CompanyScanRun: check time, result counts, errors and duration.
+- JobListingSource: associate each normalized job with its employer career page and any external reposts.
+
+### Data quality and safeguards
+
+- Distinguish verified facts from inferred company metadata.
+- Never invent a vacancy or claim a page was checked if the scan failed.
+- Record last checked and last successful scan separately.
+- Respect robots/access restrictions, site terms, rate limits and privacy rules.
+- Do not submit applications automatically; link to the employer's official application flow.
+- Structured JobPosting fields are optional; missing salary, contract type or location must remain unknown rather than guessed.
+
+### MVP acceptance criteria
+
+- A user can add and follow a company by its official Careers URL.
+- At least one supported ATS connector can import public vacancies from a verified company board.
+- Results are searchable alongside job-board aggregator results in the unified search.
+- A scheduled scan records new/changed/closed vacancies and reports connector failures.
+- Every company vacancy links to its original official posting and displays its source and last-checked time.
