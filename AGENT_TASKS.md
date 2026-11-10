@@ -15,6 +15,7 @@
 - [ ] TASK-011 — Scheduled searches, new-job notifications and configurable search profiles
 - [ ] TASK-012 — Additional job-source integrations through official APIs, feeds, ATS endpoints or other permitted methods
 - [ ] TASK-013 — Employment & NASpI scenario checker: contract, probation, termination scenarios, contribution history and regulatory rule explanations
+- [ ] TASK-014 — Company Radar: company directory, official Careers pages, ATS discovery, scheduled monitoring and company-level opportunity history
 
 ## Unified Job Search principles
 
