@@ -14,6 +14,7 @@
 - [ ] TASK-010 — Authentication, authorization, privacy and audit trail
 - [ ] TASK-011 — Scheduled searches, new-job notifications and configurable search profiles
 - [ ] TASK-012 — Additional job-source integrations through official APIs, feeds, ATS endpoints or other permitted methods
+- [ ] TASK-013 — Employment & NASpI scenario checker: contract, probation, termination scenarios, contribution history and regulatory rule explanations
 
 ## Unified Job Search principles
 
