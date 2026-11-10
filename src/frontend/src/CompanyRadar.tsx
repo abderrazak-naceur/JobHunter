@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Building2, ExternalLink, Plus, Search, Star, Trash2, X } from 'lucide-react';
 
 type Company = {
@@ -50,7 +50,7 @@ export default function CompanyRadar() {
 
   const followedCount = companies.filter(company => company.followed).length;
 
-  function addCompany(event: React.FormEvent<HTMLFormElement>) {
+  function addCompany(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
     if (!form.name.trim() || !form.careersUrl.trim() || !validUrl(form.careersUrl)) {
