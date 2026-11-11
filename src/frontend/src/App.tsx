@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CompanyRadar from './CompanyRadar';
 import { BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, CircleUserRound, FileText, GraduationCap, LayoutDashboard, Plus, Settings, Sparkles, Target, CalendarDays, ExternalLink } from 'lucide-react';
 type Tab = 'overview' | 'portfolio' | 'opportunities' | 'companies' | 'academy' | 'admin';
@@ -12,6 +12,7 @@ const nav = [
 ];
 export default function App(){
  const [tab,setTab]=useState<Tab>('portfolio');
+ useEffect(() => { let active = true; import('preline/non-auto').then(({ HSStaticMethods }) => { if (active) HSStaticMethods.autoInit(); }).catch(error => console.error('Preline initialization failed:', error)); return () => { active = false; }; }, [tab]);
  return <div className="app-shell"><aside className="sidebar">
   <div className="brand"><div className="brand-mark">J</div><div><strong>JobHunter</strong><small>CAREER WORKSPACE</small></div></div>
   <div className="workspace-label">WORKSPACE</div>
