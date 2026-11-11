@@ -41,13 +41,13 @@ public static class CompanyEndpoints
                 query = query.Where(x => x.Priority == priority);
 
             var total = await query.CountAsync(cancellationToken);
-            var items = await query
+            var entities = await query
                 .OrderBy(x => x.Priority == "Alta" ? 0 : x.Priority == "Media" ? 1 : 2)
                 .ThenBy(x => x.Name)
                 .Skip((currentPage - 1) * size)
                 .Take(size)
-                .Select(x => ToResponse(x))
                 .ToListAsync(cancellationToken);
+            var items = entities.Select(ToResponse).ToList();
 
             return Results.Ok(new PagedCompaniesResponse(items, currentPage, size, total));
         });
