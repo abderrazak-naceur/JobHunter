@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
-import PortfolioPage from './portfolio/PortfolioPage';
+import PortfolioRoute from './portfolio/PortfolioRoute';
 import { resolveView } from './routing';
 
 // The private area is a separate chunk: visitors of the public page never download it.
@@ -12,6 +12,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     {view === 'admin'
       ? <Suspense fallback={<p role="status" style={{ padding: '2rem' }}>Caricamento...</p>}><AdminRoot /></Suspense>
-      : <PortfolioPage />}
+      : <PortfolioRoute />}
   </React.StrictMode>
 );

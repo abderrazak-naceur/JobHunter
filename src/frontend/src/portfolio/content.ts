@@ -7,14 +7,14 @@ export type Experience = {
   role: string;
   period: string;
   description: string;
-  highlights?: string[];
+  highlights?: string[] | null;
 };
 
 export type Project = {
   name: string;
   description: string;
   technologies: string[];
-  url?: string;
+  url?: string | null;
 };
 
 export type PortfolioContent = {
@@ -24,8 +24,8 @@ export type PortfolioContent = {
   summary: string;
   location: string;
   workMode: string;
-  email?: string;
-  cvUrl?: string;
+  email?: string | null;
+  cvUrl?: string | null;
   links: PortfolioLink[];
   skillGroups: SkillGroup[];
   experiences: Experience[];
@@ -33,11 +33,10 @@ export type PortfolioContent = {
 };
 
 /**
- * Temporary static content for the public page. TASK-035 replaces this file with data
- * stored in PostgreSQL and editable from the admin area.
+ * Fallback shown only when the API cannot be reached. The real content lives in PostgreSQL and
+ * is edited from the admin area (/admin → "Modifica portfolio").
  *
- * Sections with no entries are hidden automatically, so only publish what is filled in.
- * TODO(owner): add `email`, your real experiences and review the name before going live.
+ * Sections with no entries are hidden automatically.
  */
 export const portfolio: PortfolioContent = {
   name: 'Zak Naceur',

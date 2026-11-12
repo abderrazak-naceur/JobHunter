@@ -86,6 +86,23 @@ namespace JobHunter.Api.Migrations
 
                     b.ToTable("Companies", (string)null);
                 });
+
+            modelBuilder.Entity("JobHunter.Api.Domain.PortfolioProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PortfolioProfiles", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }

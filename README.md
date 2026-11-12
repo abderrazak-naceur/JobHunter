@@ -2,7 +2,7 @@
 
 Personal site with two parts:
 
-- `/` — public one-page portfolio used to apply for jobs. Content lives in `src/frontend/src/portfolio/content.ts` for now; sections with no entries are hidden.
+- `/` — public one-page portfolio used to apply for jobs. Its content is stored in PostgreSQL and edited from `/admin` → "Modifica portfolio"; sections with no entries are hidden. `src/frontend/src/portfolio/content.ts` is only the fallback shown if the API is unreachable.
 - `/admin` — private area for job search, Company Radar and application tracking.
 
 > The admin area and API require a login (TASK-036). Before the first public deploy rotate the old local database password (it was committed in earlier history) and follow the deployment task (TASK-037).
@@ -80,10 +80,12 @@ Configuration keys (environment variables use `__` instead of `:`):
 Behind a reverse proxy such as Render set `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` so the login rate limit sees the real client IP.
 
 Public endpoints (no login):
-- `GET /`, `GET /health`, `GET /api/v1/portfolio`
+- `GET /`, `GET /health`
+- `GET /api/v1/portfolio` (published portfolio content, cacheable for 60 seconds)
 - `POST /api/v1/auth/login` (rate limited, returns a JWT)
 
 Protected endpoints (`Authorization: Bearer <token>`); every endpoint is protected unless it opts out:
+- `PUT /api/v1/portfolio` (replace the published content)
 - `GET /api/v1/auth/me`
 - `GET /api/v1/companies?search=dotnet&page=1&pageSize=20`
 - `GET /api/v1/companies/{id}`

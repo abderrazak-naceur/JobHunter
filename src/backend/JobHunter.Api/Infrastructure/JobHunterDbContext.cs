@@ -6,6 +6,7 @@ namespace JobHunter.Api.Infrastructure;
 public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> options) : DbContext(options)
 {
     public DbSet<Company> Companies => Set<Company>();
+    public DbSet<PortfolioProfile> PortfolioProfiles => Set<PortfolioProfile>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,5 +23,11 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
         company.Property(x => x.Notes).HasMaxLength(4000);
         company.HasIndex(x => x.CareersUrl).IsUnique();
         company.HasIndex(x => new { x.Followed, x.Priority });
+
+        var portfolio = modelBuilder.Entity<PortfolioProfile>();
+        portfolio.ToTable("PortfolioProfiles");
+        portfolio.HasKey(x => x.Id);
+        portfolio.Property(x => x.Id).ValueGeneratedNever();
+        portfolio.Property(x => x.ContentJson).IsRequired();
     }
 }

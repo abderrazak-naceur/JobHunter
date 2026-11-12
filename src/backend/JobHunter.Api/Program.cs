@@ -86,8 +86,8 @@ app.UseAuthorization();
 // Public endpoints
 app.MapGet("/", () => Results.Ok(new { name = "Portfolio API", version = "0.3.0", status = "running" })).AllowAnonymous();
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy", timestamp = DateTimeOffset.UtcNow })).AllowAnonymous();
-app.MapGet("/api/v1/portfolio", () => Results.Ok(new { headline = "Senior .NET Developer", skills = new[] { "C#", ".NET", "React", "TypeScript", "SQL Server", "Docker" } })).AllowAnonymous();
 app.MapAuthEndpoints();
+app.MapPortfolioEndpoints(); // GET is public, PUT requires the admin token
 
 // Everything below requires the admin token.
 app.MapCompanyEndpoints();
