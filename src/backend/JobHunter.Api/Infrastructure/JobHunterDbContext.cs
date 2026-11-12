@@ -8,6 +8,8 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<PortfolioProfile> PortfolioProfiles => Set<PortfolioProfile>();
     public DbSet<PortfolioAsset> PortfolioAssets => Set<PortfolioAsset>();
+    public DbSet<JobApplication> JobApplications => Set<JobApplication>();
+    public DbSet<ApplicationEvent> ApplicationEvents => Set<ApplicationEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,5 +39,30 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
         asset.Property(x => x.Kind).HasMaxLength(20);
         asset.Property(x => x.ContentType).HasMaxLength(100).IsRequired();
         asset.Property(x => x.Data).IsRequired();
+
+        var application = modelBuilder.Entity<JobApplication>();
+        application.ToTable("JobApplications");
+        application.HasKey(x => x.Id);
+        application.Property(x => x.Company).HasMaxLength(180).IsRequired();
+        application.Property(x => x.Role).HasMaxLength(180).IsRequired();
+        application.Property(x => x.Status).HasMaxLength(20).IsRequired();
+        application.Property(x => x.Source).HasMaxLength(120);
+        application.Property(x => x.Url).HasMaxLength(1000);
+        application.Property(x => x.Location).HasMaxLength(180);
+        application.Property(x => x.SalaryRange).HasMaxLength(120);
+        application.Property(x => x.ContactName).HasMaxLength(180);
+        application.Property(x => x.ContactEmail).HasMaxLength(254);
+        application.Property(x => x.NextStep).HasMaxLength(250);
+        application.Property(x => x.Notes).HasMaxLength(4000);
+        application.HasIndex(x => x.Status);
+        application.HasIndex(x => x.UpdatedAt);
+        application.HasMany(x => x.Events).WithOne().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.Cascade);
+
+        var applicationEvent = modelBuilder.Entity<ApplicationEvent>();
+        applicationEvent.ToTable("ApplicationEvents");
+        applicationEvent.HasKey(x => x.Id);
+        applicationEvent.Property(x => x.FromStatus).HasMaxLength(20);
+        applicationEvent.Property(x => x.ToStatus).HasMaxLength(20).IsRequired();
+        applicationEvent.HasIndex(x => x.ApplicationId);
     }
 }

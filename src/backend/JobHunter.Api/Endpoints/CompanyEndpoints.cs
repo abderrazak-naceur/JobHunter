@@ -136,10 +136,10 @@ public static class CompanyEndpoints
         var errors = new Dictionary<string, string[]>();
         if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Trim().Length > 180)
             errors[nameof(request.Name)] = ["Il nome è obbligatorio e deve contenere al massimo 180 caratteri."];
-        if (!IsHttpUrl(request.CareersUrl) || request.CareersUrl.Trim().Length > 1000)
+        if (!InputRules.IsHttpUrl(request.CareersUrl) || request.CareersUrl.Trim().Length > 1000)
             errors[nameof(request.CareersUrl)] = ["Inserisci un URL Careers http/https valido, massimo 1000 caratteri."];
         if (!string.IsNullOrWhiteSpace(request.Website) &&
-            (!IsHttpUrl(request.Website) || request.Website.Trim().Length > 500))
+            (!InputRules.IsHttpUrl(request.Website) || request.Website.Trim().Length > 500))
             errors[nameof(request.Website)] = ["Il sito ufficiale deve essere un URL http/https valido, massimo 500 caratteri."];
         if ((request.Location?.Length ?? 0) > 180)
             errors[nameof(request.Location)] = ["La località può contenere al massimo 180 caratteri."];
@@ -153,8 +153,4 @@ public static class CompanyEndpoints
             errors[nameof(request.Notes)] = ["Le note possono contenere al massimo 4000 caratteri."];
         return errors.Count == 0 ? null : errors;
     }
-
-    private static bool IsHttpUrl(string? value) =>
-        Uri.TryCreate(value, UriKind.Absolute, out var uri) &&
-        (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 }

@@ -209,7 +209,7 @@ public static class PortfolioEndpoints
         {
             var text = value?.Trim() ?? "";
             if (text.Length == 0) return null;
-            if (text.Length > 500 || !IsHttpUrl(text)) Fail(key, $"{label} deve essere un URL http/https valido (massimo 500 caratteri).");
+            if (text.Length > 500 || !InputRules.IsHttpUrl(text)) Fail(key, $"{label} deve essere un URL http/https valido (massimo 500 caratteri).");
             return text;
         }
 
@@ -222,7 +222,7 @@ public static class PortfolioEndpoints
 
         string? email = request.Email?.Trim();
         if (string.IsNullOrEmpty(email)) email = null;
-        else if (email.Length > 254 || !IsEmail(email)) Fail(nameof(request.Email), "Inserisci un indirizzo email valido.");
+        else if (email.Length > 254 || !InputRules.IsEmail(email)) Fail(nameof(request.Email), "Inserisci un indirizzo email valido.");
 
         var cvUrl = OptionalUrl(request.CvUrl, nameof(request.CvUrl), "Il link al CV");
         // The address of the uploaded photo is derived by the server; it is never stored in the content.
@@ -237,7 +237,7 @@ public static class PortfolioEndpoints
         {
             var label = Required(rawLinks[i]?.Label, $"Links[{i}].Label", "Il nome del link", 60);
             var url = rawLinks[i]?.Url?.Trim() ?? "";
-            if (url.Length == 0 || url.Length > 500 || !IsHttpUrl(url))
+            if (url.Length == 0 || url.Length > 500 || !InputRules.IsHttpUrl(url))
                 Fail($"Links[{i}].Url", "Il link deve essere un URL http/https valido (massimo 500 caratteri).");
             links.Add(new PortfolioLinkDto(label, url));
         }
@@ -302,17 +302,4 @@ public static class PortfolioEndpoints
 
     private static List<string> CleanList(IReadOnlyList<string>? values) =>
         (values ?? []).Select(v => v?.Trim() ?? "").Where(v => v.Length > 0).ToList();
-
-    private static bool IsHttpUrl(string value) =>
-        Uri.TryCreate(value, UriKind.Absolute, out var uri) &&
-        (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
-        !string.IsNullOrEmpty(uri.Host);
-
-    private static bool IsEmail(string value)
-    {
-        var at = value.IndexOf('@');
-        return at > 0 && at == value.LastIndexOf('@') && at < value.Length - 3 &&
-               value[(at + 1)..].Contains('.') && !value.Any(char.IsWhiteSpace) &&
-               !value.StartsWith('.') && !value.EndsWith('.');
-    }
 }
