@@ -7,7 +7,7 @@ import { APPLICATION_STATUSES, applicationApi, type ApplicationSummary } from '@
 import AnalyticsPanel from './AnalyticsPanel';
 import { formatDate, isOverdue, statusMeta } from './applications/statusMeta';
 
-export type AdminTab = 'overview' | 'applications' | 'portfolio' | 'companies' | 'account';
+export type AdminTab = 'overview' | 'applications' | 'portfolio' | 'contacts' | 'companies' | 'account';
 
 /** Where the job search stands, and what to do next. */
 export default function Dashboard({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {

@@ -57,6 +57,8 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-027 — Data export and backup: `GET /api/v1/export` (full JSON: portfolio, applications with history, companies) and `GET /api/v1/export/applications.csv` (UTF-8 with BOM; values that start with = + - @ are neutralised against spreadsheet formula injection). Both need the admin token and never include the admin account, hashes or keys. Buttons in Admin > Sicurezza > "Copia dei dati". `scripts/backup-db.ps1` takes a full `pg_dump` and keeps the newest 14 files; restore steps are in the README. Not verified: the script was only syntax-checked, `pg_dump` is not installed on this machine. Not done: import/restore from the JSON file.
 
+- [x] TASK-028 — Contacts tracker (Contatti): recruiters, referrals, colleagues and others with company, role, email, phone, profile link, notes, date of the last contact and date to get back to them. List with search, filter by type, paging, create/edit/delete, late follow-ups highlighted and a reminder banner with how many are due. API `/api/v1/contacts` (+ `/summary`), migration `AddContacts` (run `dotnet ef database update`). Contacts are part of the JSON backup. Not done: link a contact to an application, a log of each conversation.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.
@@ -73,7 +75,7 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 - [ ] TASK-025 — Browser extension or bookmarklet to save a job posting into the pipeline with source URL
 - [ ] TASK-026 — Salary and offer comparison: ranges, benefits, net estimate and side-by-side offer analysis
 - [x] TASK-027 — Data export and backup: done, see the entry in the Portfolio launch track.
-- [ ] TASK-028 — Networking tracker: contacts, referrals, outreach history and follow-up cadence
+- [x] TASK-028 — Networking tracker: done, see the entry in the Portfolio launch track.
 - [x] TASK-029 — Public portfolio page generated from the profile: done through TASK-034, TASK-035 and TASK-041. Only the public fields are published (no birth date, no phone).
 
 ### Platform (Q2 2027)

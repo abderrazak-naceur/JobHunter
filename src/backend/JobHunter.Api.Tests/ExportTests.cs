@@ -35,6 +35,7 @@ public sealed class ExportTests : IClassFixture<JobHunterApiFactory>
             new CompanyRequest("Export Spa", "https://example.com", "https://example.com/jobs", null, null, null, "Alta", null, true)))
             .EnsureSuccessStatusCode();
 
+        (await client.PostAsJsonAsync("/api/v1/contacts", new ContactRequest("Mario Recruiter", "Recruiter", "Acme", null, null, null, null, null, null, null))).EnsureSuccessStatusCode();
         var response = await client.GetAsync("/api/v1/export");
         var text = await response.Content.ReadAsStringAsync();
         var json = JsonDocument.Parse(text).RootElement;
@@ -45,6 +46,7 @@ public sealed class ExportTests : IClassFixture<JobHunterApiFactory>
         Assert.Equal(1, json.GetProperty("version").GetInt32());
         Assert.Contains(json.GetProperty("applications").EnumerateArray(), a => a.GetProperty("company").GetString() == "Backup Srl");
         Assert.Contains(json.GetProperty("companies").EnumerateArray(), c => c.GetProperty("name").GetString() == "Export Spa");
+        Assert.Contains(json.GetProperty("contacts").EnumerateArray(), c => c.GetProperty("name").GetString() == "Mario Recruiter");
         Assert.True(json.GetProperty("portfolio").TryGetProperty("name", out _));
 
         // The history of the application travels with it.

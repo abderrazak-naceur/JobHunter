@@ -11,6 +11,7 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
     public DbSet<AdminAccount> AdminAccounts => Set<AdminAccount>();
     public DbSet<ApplicationEvent> ApplicationEvents => Set<ApplicationEvent>();
+    public DbSet<Contact> Contacts => Set<Contact>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -72,5 +73,19 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
         applicationEvent.Property(x => x.FromStatus).HasMaxLength(20);
         applicationEvent.Property(x => x.ToStatus).HasMaxLength(20).IsRequired();
         applicationEvent.HasIndex(x => x.ApplicationId);
+
+        var contact = modelBuilder.Entity<Contact>();
+        contact.ToTable("Contacts");
+        contact.HasKey(x => x.Id);
+        contact.Property(x => x.Name).HasMaxLength(180).IsRequired();
+        contact.Property(x => x.Kind).HasMaxLength(20).IsRequired();
+        contact.Property(x => x.Company).HasMaxLength(180);
+        contact.Property(x => x.Role).HasMaxLength(180);
+        contact.Property(x => x.Email).HasMaxLength(254);
+        contact.Property(x => x.Phone).HasMaxLength(40);
+        contact.Property(x => x.ProfileUrl).HasMaxLength(500);
+        contact.Property(x => x.Notes).HasMaxLength(4000);
+        contact.HasIndex(x => x.NextFollowUpOn);
+        contact.HasIndex(x => x.UpdatedAt);
     }
 }

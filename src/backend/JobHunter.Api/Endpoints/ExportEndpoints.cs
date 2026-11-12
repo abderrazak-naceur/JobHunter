@@ -31,6 +31,7 @@ public static class ExportEndpoints
             var applications = await db.JobApplications.AsNoTracking().Include(x => x.Events)
                 .OrderBy(x => x.Company).ToListAsync(cancellationToken);
             var companies = await db.Companies.AsNoTracking().OrderBy(x => x.Name).ToListAsync(cancellationToken);
+            var contacts = await db.Contacts.AsNoTracking().OrderBy(x => x.Name).ToListAsync(cancellationToken);
             var portfolioJson = await db.PortfolioProfiles.AsNoTracking()
                 .Select(x => x.ContentJson).FirstOrDefaultAsync(cancellationToken);
 
@@ -47,6 +48,7 @@ public static class ExportEndpoints
                 version = 1,
                 portfolio,
                 applications = applications.Select(ToExport).ToList(),
+                contacts = contacts.Select(ContactEndpoints.ToResponse).ToList(),
                 companies = companies.Select(c => new CompanyResponse(
                     c.Id, c.Name, c.Website, c.CareersUrl, c.Location, c.Sector, c.Technologies, c.Priority, c.Notes,
                     c.Followed, c.CreatedAt, c.UpdatedAt)).ToList()

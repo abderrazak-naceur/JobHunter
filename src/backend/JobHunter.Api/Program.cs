@@ -107,6 +107,7 @@ app.MapPortfolioEndpoints(); // GET is public, PUT requires the admin token
 // Everything below requires the admin token.
 app.MapCompanyEndpoints();
 app.MapApplicationEndpoints();
+app.MapContactEndpoints();
 app.MapExportEndpoints();
 
 app.Run();
