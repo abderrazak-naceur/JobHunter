@@ -92,6 +92,7 @@ if (swaggerEnabled)
     });
 }
 
+app.UseCorrelationId();
 app.UseCors("Frontend");
 app.UseRateLimiter();
 app.UseAuthentication();
@@ -99,7 +100,7 @@ app.UseAuthorization();
 
 // Public endpoints
 app.MapGet("/", () => Results.Ok(new { name = "Portfolio API", version = "0.3.0", status = "running" })).AllowAnonymous();
-app.MapGet("/health", () => Results.Ok(new { status = "Healthy", timestamp = DateTimeOffset.UtcNow })).AllowAnonymous();
+app.MapHealthEndpoints(); // /health (process is up) and /health/ready (database reachable)
 app.MapAuthEndpoints();
 app.MapPortfolioEndpoints(); // GET is public, PUT requires the admin token
 

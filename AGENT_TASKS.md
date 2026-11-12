@@ -47,6 +47,8 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-047 — Education, certifications and languages: three new optional lists in the portfolio content (no migration, content is one JSON document; older saved content simply has them empty). Public site gets a "Formazione e lingue" section (also in the menu and footer), shown only when at least one list has entries; the admin gets the tabs Formazione, Certificazioni and Lingue with add/edit/delete/reorder. Server validation with limits (10 / 30 / 12 items). The bundled default content now lists the Master's degree in progress, AZ-900, AI-900 and four languages; the language levels there are a first guess to be corrected in the admin.
 
+- [x] TASK-020 (partly) — Observability basics: `GET /health/ready` checks the database (503 without details when unreachable, reason goes to the log), and every response carries an `X-Correlation-Id` that is also in the log scope (a safe id sent by the caller is kept, anything else is replaced). Not done: Serilog / structured JSON logs and metrics.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.

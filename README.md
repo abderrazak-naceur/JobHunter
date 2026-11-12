@@ -80,7 +80,7 @@ Configuration keys (environment variables use `__` instead of `:`):
 Behind a reverse proxy such as Render set `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` so the login rate limit sees the real client IP.
 
 Public endpoints (no login):
-- `GET /`, `GET /health`
+- `GET /`, `GET /health` (process is up), `GET /health/ready` (also checks the database, answers 503 if it is unreachable; use it as the Render health check)
 - `GET /api/v1/portfolio` (published portfolio content, cacheable for 60 seconds)
 - `GET /api/v1/portfolio/photo` (the uploaded profile photo, stored in PostgreSQL)
 - `POST /api/v1/auth/login` (rate limited, returns a JWT)
