@@ -4,7 +4,7 @@ Personal career management platform: portfolio, job pipeline, interview tracking
 
 ## Stack
 
-- Frontend: React + TypeScript + Vite
+- Frontend: React + TypeScript + Vite + Preline UI
 - Backend: ASP.NET Core 10 Minimal API
 - Database: PostgreSQL 18 (local installation; no Docker)
 - Persistence: EF Core 10 + Npgsql
@@ -44,14 +44,13 @@ $env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=j
 cd src/backend/JobHunter.Api
 dotnet restore
 dotnet tool install --global dotnet-ef --version 10.0.0
-dotnet ef migrations add InitialCompanyRadar
 dotnet ef database update
 dotnet run --no-launch-profile
 ```
 
 If the `dotnet-ef` tool is already installed, update it with `dotnet tool update --global dotnet-ef --version 10.0.0` instead of installing it.
 
-The first migration command creates the EF Core migration source files. Commit those migration files to Git so the database schema can be reproduced on other machines. Run `dotnet ef database update` whenever new migrations are added.
+The initial migration (`InitialCompanyRadar`) is already committed in `Migrations/`, so `dotnet ef database update` is enough to create the schema. When you change the model, create a new migration with `dotnet ef migrations add <MigrationName>`, commit the generated files, and run `dotnet ef database update` again.
 
 API endpoints:
 - `GET /health`
@@ -81,9 +80,37 @@ npm run dev
 
 Open the Vite URL shown in the terminal (normally `http://localhost:5173`).
 
+## Running tests
+
+Backend (xUnit, in-process API with in-memory SQLite, no PostgreSQL needed):
+
+```powershell
+dotnet test src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj
+```
+
+If the API is running and locks `JobHunter.Api.exe`, add `-p:UseAppHost=false` or stop the API first.
+
+Frontend (Vitest + Testing Library):
+
+```powershell
+cd src/frontend
+npm test
+```
+
+### npm or Git fail with a certificate error?
+
+Errors such as `UNABLE_TO_VERIFY_LEAF_SIGNATURE` or `unable to get local issuer certificate` usually mean a corporate proxy, VPN or antivirus inspects TLS traffic. Keep verification enabled and make the tools use the Windows certificate store instead:
+
+```powershell
+$env:NODE_OPTIONS = "--use-system-ca"   # Node.js 22.15+, current session only
+git config --global http.sslBackend schannel
+```
+
 ## Company Radar scope
 
 Company Radar now reads and writes company records through the .NET API and PostgreSQL. It supports create, list/search, edit, follow/unfollow and delete. Career-page crawling, ATS integrations, scheduled scans and notifications are not implemented yet.
+
+See `AGENT_TASKS.md` for the task list and current progress.
 
 ## Security
 

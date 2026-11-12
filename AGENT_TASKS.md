@@ -16,7 +16,41 @@
 - [ ] TASK-012 — Additional job-source integrations through official APIs, feeds, ATS endpoints or other permitted methods
 - [ ] TASK-013 — Employment & NASpI scenario checker: contract, probation, termination scenarios, contribution history and regulatory rule explanations
 - [ ] TASK-014 — Company Radar: company directory, official Careers pages, ATS discovery, scheduled monitoring and company-level opportunity history
-- [ ] TASK-016 — Company Radar PostgreSQL persistence and REST API (initial migration and tests pending)
+- [ ] TASK-016 — Company Radar PostgreSQL persistence and REST API (API, EF Core model and `InitialCompanyRadar` migration done; automated tests pending)
+
+## 2026 Roadmap — Quality, reliability and growth
+
+### Foundation and quality (Q4 2026)
+
+- [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.
+- [ ] TASK-018 — CI hardening: build, test, lint, format check and dependency vulnerability scan on every pull request; migration drift check
+- [ ] TASK-019 — API standardization: ProblemDetails errors, FluentValidation, consistent pagination/sorting, versioning and generated OpenAPI client for the frontend
+- [ ] TASK-020 — Observability: structured logging (Serilog), correlation IDs, health checks for PostgreSQL and basic metrics
+- [ ] TASK-021 — Secrets and configuration hygiene: user-secrets for local development, `.env.example` kept in sync, secret scanning in CI
+
+### Product features (Q1 2027)
+
+- [ ] TASK-022 — Dashboard analytics: applications per week, response rate, conversion by stage, time-in-stage and source effectiveness
+- [ ] TASK-023 — Kanban pipeline view with drag and drop for application statuses
+- [ ] TASK-024 — Email and calendar integration: import recruiter emails, interview events and ICS export (user-authorized, no credential storage in the repo)
+- [ ] TASK-025 — Browser extension or bookmarklet to save a job posting into the pipeline with source URL
+- [ ] TASK-026 — Salary and offer comparison: ranges, benefits, net estimate and side-by-side offer analysis
+- [ ] TASK-027 — Data export and backup: JSON/CSV export, PostgreSQL backup script and restore documentation
+- [ ] TASK-028 — Networking tracker: contacts, referrals, outreach history and follow-up cadence
+- [ ] TASK-029 — Public portfolio page generated from the profile (opt-in, no private data exposed)
+
+### Platform (Q2 2027)
+
+- [ ] TASK-030 — Background job runner for scheduled searches and Company Radar scans (Hosted Services or Hangfire) with retries and run history
+- [ ] TASK-031 — Accessibility and UX pass: keyboard navigation, contrast, responsive layouts, dark mode and empty/error/loading states
+- [ ] TASK-032 — Internationalization: Italian and English UI with locale-aware dates and currency
+- [ ] TASK-033 — Deployment guide: self-hosted setup on a single machine, environment configuration and upgrade/migration procedure
+
+## Progress notes
+
+- TASK-003: Preline dashboard foundation added to the frontend; navigation and shared layout still to be completed.
+- TASK-014 / TASK-016: Company CRUD works through the .NET API and PostgreSQL. Career-page crawling, ATS discovery, scheduled scans and notifications are not implemented.
+- TASK-017 added 26 backend and 21 frontend tests; TASK-016 can now be closed once the tests are merged.
 
 ## Unified Job Search principles
 

@@ -7,6 +7,7 @@ on:
     branches:
       - main
       - feature/task-016-company-radar-api
+      - feature/task-017-automated-tests
 
 permissions:
   contents: read
@@ -21,9 +22,11 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - name: Restore
-        run: dotnet restore src/backend/JobHunter.Api/JobHunter.Api.csproj
+        run: dotnet restore src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj
       - name: Build
-        run: dotnet build src/backend/JobHunter.Api/JobHunter.Api.csproj --configuration Release --no-restore
+        run: dotnet build src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj --configuration Release --no-restore
+      - name: Test
+        run: dotnet test src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj --configuration Release --no-build --verbosity normal
 
   frontend:
     name: Frontend (React + TypeScript)
@@ -33,9 +36,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
       - name: Install dependencies
         working-directory: src/frontend
-        run: npm install
+        run: npm ci
+      - name: Test
+        working-directory: src/frontend
+        run: npm test
       - name: Build
         working-directory: src/frontend
         run: npm run build

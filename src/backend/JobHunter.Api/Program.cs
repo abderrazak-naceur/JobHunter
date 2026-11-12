@@ -34,3 +34,6 @@ app.MapGet("/api/v1/portfolio", () => Results.Ok(new { headline = "Senior .NET D
 app.MapCompanyEndpoints();
 
 app.Run();
+
+// Exposes the entry point to WebApplicationFactory<Program> in the test project.
+public partial class Program;
