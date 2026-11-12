@@ -1,8 +1,10 @@
 import { useState, type ReactNode } from 'react';
 import { ArrowUpRight, Check, ChevronRight, FileDown, Laptop, Link2, Mail, MapPin, Menu, Sparkles, X } from 'lucide-react';
+import AnimatedNumber from './AnimatedNumber';
 import Avatar from './Avatar';
 import Carousel from './Carousel';
 import { portfolio as defaultContent, type PortfolioContent } from './content';
+import InteractiveCard from './InteractiveCard';
 import { cardGradients, iconForGroup, initialsOf, isExternal, pluralize, tagStyles } from './helpers';
 import { useScrollProgress } from './hooks';
 import Reveal from './Reveal';
@@ -42,16 +44,17 @@ function Teaser({ href, className, title, subtitle, children, light = false }: {
   href: string; className: string; title: string; subtitle: string; children?: ReactNode; light?: boolean;
 }) {
   return (
-    <a
-      href={href}
-      className={`group relative flex h-full min-h-[16rem] flex-col justify-between gap-6 overflow-hidden rounded-[2rem] p-8 hover:shadow-2xl ${lift} ${focusRing} ${className}`}
-    >
-      <span className="block">
-        <span className="block text-2xl font-extrabold sm:text-3xl">{title}</span>
-        <span className={`mt-2 block max-w-xs text-base ${light ? 'text-brand-100' : 'text-brand-900/80'}`}>{subtitle}</span>
-      </span>
-      {children}
-      <span className="flex justify-end"><ArrowCircle light={light} /></span>
+    <a href={href} className={`block h-full rounded-[2rem] ${focusRing}`}>
+      <InteractiveCard
+        className={`group relative flex h-full min-h-[16rem] flex-col justify-between gap-6 overflow-hidden rounded-[2rem] p-8 hover:shadow-2xl ${lift} ${className}`}
+      >
+        <span className="block">
+          <span className="block text-2xl font-extrabold sm:text-3xl">{title}</span>
+          <span className={`mt-2 block max-w-xs text-base ${light ? 'text-brand-100' : 'text-brand-900/80'}`}>{subtitle}</span>
+        </span>
+        {children}
+        <span className="flex justify-end"><ArrowCircle light={light} /></span>
+      </InteractiveCard>
     </a>
   );
 }
@@ -165,7 +168,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
           <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-brand-900">Il mio profilo</p>
           <div className="grid gap-6 lg:grid-cols-2 lg:grid-rows-2">
             <Reveal className={`h-full ${hasTeasers ? 'lg:row-span-2' : 'lg:col-span-2'}`}>
-              <div className="card-lavender relative flex h-full min-h-[34rem] flex-col overflow-hidden rounded-[2rem] border border-lav-300 p-8 sm:p-10">
+              <InteractiveCard tilt={2} className="card-lavender relative flex h-full min-h-[34rem] flex-col overflow-hidden rounded-[2rem] border border-lav-300 p-8 sm:p-10">
                 <p className={`${tag} w-fit bg-brand-900 text-white`}>{role}</p>
                 <h1 className="mt-5 text-4xl font-black leading-[1.05] tracking-tight text-brand-900 sm:text-5xl lg:text-6xl">{name}</h1>
                 <p className="mt-4 max-w-md text-lg text-slate-700">{tagline}</p>
@@ -205,7 +208,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
                     ))}
                   </div>
                 </div>
-              </div>
+              </InteractiveCard>
             </Reveal>
 
             {hasSkillsTeaser && (
@@ -247,10 +250,10 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
             {stats.map((stat, index) => (
               <li key={`${stat.label}-${index}`} className="w-full max-w-xs flex-1 sm:min-w-[14rem]">
                 <Reveal delay={index * 100} className="h-full">
-                  <div className={`h-full rounded-[2rem] border border-lav-300 bg-white p-7 text-center shadow-lg shadow-brand-900/5 hover:shadow-2xl ${lift}`}>
-                    <p className="bg-gradient-to-r from-brand-600 to-accent-400 bg-clip-text text-5xl font-black tracking-tight text-transparent">{stat.value}</p>
+                  <InteractiveCard spotlight="rgb(28 51 200 / 9%)" className={`h-full overflow-hidden rounded-[2rem] border border-lav-300 bg-white p-7 text-center shadow-lg shadow-brand-900/5 hover:shadow-2xl ${lift}`}>
+                    <p className="bg-gradient-to-r from-brand-600 to-accent-400 bg-clip-text text-5xl font-black tracking-tight text-transparent"><AnimatedNumber value={stat.value} /></p>
                     <p className="mt-2 text-sm font-bold uppercase tracking-wide text-slate-500">{stat.label}</p>
-                  </div>
+                  </InteractiveCard>
                 </Reveal>
               </li>
             ))}
@@ -292,7 +295,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
                 {skillGroups.map((group, index) => {
                   const Icon = iconForGroup(group.title);
                   return (
-                    <article key={group.title} className={`card-lavender group relative flex h-full min-h-[22rem] flex-col rounded-[2rem] border border-lav-300 p-8 hover:shadow-2xl hover:shadow-brand-600/15 ${lift}`}>
+                    <InteractiveCard as="article" key={group.title} className={`card-lavender group relative flex h-full min-h-[22rem] flex-col overflow-hidden rounded-[2rem] border border-lav-300 p-8 hover:shadow-2xl hover:shadow-brand-600/15 ${lift}`}>
                       <span className={`${tag} w-fit ${tagStyles[index % tagStyles.length]}`}>{pluralize(group.skills.length, 'competenza', 'competenze')}</span>
                       <h3 className="mt-5 text-2xl font-extrabold text-brand-900">{group.title}</h3>
                       <ul className="mt-5 flex flex-wrap gap-2">
@@ -306,7 +309,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
                           <Icon size={22} />
                         </span>
                       </div>
-                    </article>
+                    </InteractiveCard>
                   );
                 })}
               </Carousel>
@@ -354,7 +357,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
               <SectionHeading id="pf-projects" eyebrow="Cosa ho costruito" title="Progetti" dark />
 
               <Reveal>
-                <article className="card-blue group relative min-h-[22rem] overflow-hidden rounded-[2rem] p-8 ring-1 ring-white/10 sm:p-12">
+                <InteractiveCard as="article" tilt={2} className="card-blue group relative min-h-[22rem] overflow-hidden rounded-[2rem] p-8 ring-1 ring-white/10 sm:p-12">
                   <span aria-hidden="true" className="pointer-events-none absolute -bottom-10 right-4 select-none text-[11rem] font-black leading-none text-white/10 transition duration-700 group-hover:translate-x-3 sm:text-[17rem]">
                     {initialsOf(featured.name)}
                   </span>
@@ -371,14 +374,14 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
                       Vedi il progetto <ArrowUpRight size={16} aria-hidden="true" />
                     </a>
                   )}
-                </article>
+                </InteractiveCard>
               </Reveal>
 
               {otherProjects.length > 0 && (
                 <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {otherProjects.map((project, index) => (
                     <Reveal key={project.name} delay={index * 100} className="h-full">
-                      <article className={`group flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-white ring-1 ring-white/10 hover:shadow-2xl hover:shadow-black/40 ${lift}`}>
+                      <InteractiveCard as="article" spotlight="rgb(28 51 200 / 10%)" className={`group flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-white ring-1 ring-white/10 hover:shadow-2xl hover:shadow-black/40 ${lift}`}>
                         <div className={`relative grid h-32 place-items-center bg-gradient-to-br ${cardGradients[(index + 1) % cardGradients.length]}`}>
                           <div aria-hidden="true" className="bg-grid absolute inset-0 opacity-70" />
                           <span aria-hidden="true" className="relative text-5xl font-black text-white/95 transition duration-500 group-hover:scale-110">{initialsOf(project.name)}</span>
@@ -401,7 +404,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
                             </a>
                           )}
                         </div>
-                      </article>
+                      </InteractiveCard>
                     </Reveal>
                   ))}
                 </div>
@@ -418,10 +421,12 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
               {email && (
                 <li className={`w-full sm:w-[calc(50%-0.75rem)] ${contactCardWidth}`}>
                   <Reveal className="h-full">
-                    <a href={`mailto:${email}`} className={`card-blue group flex h-full min-h-[15rem] flex-col rounded-[2rem] p-7 text-white hover:shadow-2xl hover:shadow-brand-800/40 ${lift} ${focusRing}`}>
+                    <a href={`mailto:${email}`} className={`block h-full rounded-[2rem] ${focusRing}`}>
+                    <InteractiveCard className={`card-blue group flex h-full min-h-[15rem] flex-col overflow-hidden rounded-[2rem] p-7 text-white hover:shadow-2xl hover:shadow-brand-800/40 ${lift}`}>
                       <Mail size={28} aria-hidden="true" className="text-accent-300" />
                       <span className="mt-6 break-all text-xl font-extrabold">{email}</span>
                       <span className="mt-auto flex justify-end pt-6"><ArrowCircle light /></span>
+                    </InteractiveCard>
                     </a>
                   </Reveal>
                 </li>
@@ -432,11 +437,13 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
                     <a
                       href={link.url}
                       {...(isExternal(link.url) ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
-                      className={`card-blue group flex h-full min-h-[15rem] flex-col rounded-[2rem] p-7 text-white hover:shadow-2xl hover:shadow-brand-800/40 ${lift} ${focusRing}`}
+                      className={`block h-full rounded-[2rem] ${focusRing}`}
                     >
+                      <InteractiveCard className={`card-blue group flex h-full min-h-[15rem] flex-col overflow-hidden rounded-[2rem] p-7 text-white hover:shadow-2xl hover:shadow-brand-800/40 ${lift}`}>
                       <Link2 size={28} aria-hidden="true" className="text-accent-300" />
                       <span className="mt-6 break-all text-xl font-extrabold">{link.label}</span>
                       <span className="mt-auto flex justify-end pt-6"><ArrowCircle light /></span>
+                    </InteractiveCard>
                     </a>
                   </Reveal>
                 </li>

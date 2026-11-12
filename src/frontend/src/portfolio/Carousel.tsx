@@ -1,82 +1,115 @@
-import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Children, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import Autoplay from 'embla-carousel-autoplay';
+import type { EmblaCarouselType } from 'embla-carousel';
+import useEmblaCarousel from 'embla-carousel-react';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { usePrefersReducedMotion } from './hooks';
 
 type Props = { label: string; children: ReactNode };
 
-type Position = { pages: number; page: number; atStart: boolean; atEnd: boolean };
+type Position = { snaps: number; selected: number; canPrev: boolean; canNext: boolean };
 
-const initial: Position = { pages: 1, page: 0, atStart: true, atEnd: true };
+const initial: Position = { snaps: 0, selected: 0, canPrev: false, canNext: false };
+
+const roundButton =
+  'grid h-12 w-12 place-items-center rounded-full bg-brand-600 text-white shadow-lg transition ' +
+  'hover:scale-105 hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-lav-300 disabled:shadow-none ' +
+  'disabled:hover:scale-100 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-brand-600';
 
 /**
- * Horizontal scroll-snap carousel: swipe on touch devices, round arrow buttons and dots otherwise.
- * Controls only appear when the cards do not all fit on screen.
+ * Carousel built on Embla: drag with mouse or finger, round arrow buttons, clickable dots and a slow
+ * automatic scroll that stops on hover, focus or interaction. The automatic scroll can be paused with
+ * a button and is never started for visitors who prefer reduced motion.
  */
 export default function Carousel({ label, children }: Props) {
-  const trackRef = useRef<HTMLUListElement>(null);
-  const [position, setPosition] = useState<Position>(initial);
   const items = Children.toArray(children);
+  const reducedMotion = usePrefersReducedMotion();
+  const autoplay = useMemo(() => Autoplay({ delay: 5500, stopOnInteraction: true, stopOnMouseEnter: true }), []);
+  const [viewportRef, api] = useEmblaCarousel({ align: 'start', containScroll: 'trimSnaps' }, reducedMotion ? [] : [autoplay]);
+  const [position, setPosition] = useState<Position>(initial);
+  const [playing, setPlaying] = useState(false);
 
-  const measure = useCallback(() => {
-    const track = trackRef.current;
-    if (!track || track.clientWidth === 0) return;
-
-    const pages = Math.max(1, Math.ceil((track.scrollWidth - 2) / track.clientWidth));
-    const atStart = track.scrollLeft <= 2;
-    const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
-    const page = atEnd ? pages - 1 : Math.min(pages - 1, Math.round(track.scrollLeft / track.clientWidth));
-
-    setPosition(previous =>
-      previous.pages === pages && previous.page === page && previous.atStart === atStart && previous.atEnd === atEnd
-        ? previous
-        : { pages, page, atStart, atEnd });
+  const update = useCallback((embla: EmblaCarouselType) => {
+    setPosition({
+      snaps: embla.scrollSnapList().length,
+      selected: embla.selectedScrollSnap(),
+      canPrev: embla.canScrollPrev(),
+      canNext: embla.canScrollNext()
+    });
   }, []);
 
   useEffect(() => {
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [measure, items.length]);
+    if (!api) return;
+    update(api);
+    api.on('select', update).on('reInit', update);
 
-  function scrollByPage(direction: 1 | -1) {
-    const track = trackRef.current;
-    track?.scrollBy?.({ left: direction * track.clientWidth * 0.85, behavior: 'smooth' });
+    const sync = () => setPlaying(Boolean(api.plugins().autoplay?.isPlaying()));
+    sync();
+    api.on('autoplay:play', sync).on('autoplay:stop', sync);
+
+    return () => {
+      api.off('select', update).off('reInit', update);
+      api.off('autoplay:play', sync).off('autoplay:stop', sync);
+    };
+  }, [api, update]);
+
+  function toggleAutoplay() {
+    const plugin = api?.plugins().autoplay;
+    if (!plugin) return;
+    if (plugin.isPlaying()) plugin.stop();
+    else plugin.play();
   }
 
-  const buttonClass =
-    'grid h-12 w-12 place-items-center rounded-full bg-brand-600 text-white shadow-lg transition ' +
-    'hover:scale-105 hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-lav-300 disabled:text-white disabled:shadow-none ' +
-    'disabled:hover:scale-100 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-brand-600';
+  const showControls = position.snaps > 1;
 
   return (
     <div role="group" aria-roledescription="carousel" aria-label={label}>
-      <ul
-        ref={trackRef}
-        onScroll={measure}
-        className="no-scrollbar -mx-6 flex snap-x snap-mandatory scroll-pl-6 gap-6 overflow-x-auto scroll-smooth px-6 pb-6 pt-2"
-      >
-        {items.map((item, index) => (
-          <li key={index} className="shrink-0 basis-[86%] snap-start sm:basis-[46%] lg:basis-[31.5%]">
-            {item}
-          </li>
-        ))}
-      </ul>
+      {/* The viewport reaches into the section padding so cards can bleed to the edge and shadows are not clipped. */}
+      <div ref={viewportRef} className="-mx-6 -my-4 overflow-hidden py-4">
+        <ul className="flex touch-pan-y">
+          {items.map((item, index) => (
+            <li key={index} className="min-w-0 shrink-0 grow-0 basis-[86%] pl-6 sm:basis-[46%] lg:basis-[33.333%]">
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      {position.pages > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-6">
-          <button type="button" className={buttonClass} aria-label="Precedente" disabled={position.atStart} onClick={() => scrollByPage(-1)}>
+      {showControls && (
+        <div className="mt-8 flex items-center justify-center gap-5">
+          <button type="button" className={roundButton} aria-label="Precedente" disabled={!position.canPrev} onClick={() => api?.scrollPrev()}>
             <ChevronLeft size={22} aria-hidden="true" />
           </button>
-          <div aria-hidden="true" className="flex items-center gap-2">
-            {Array.from({ length: position.pages }, (_, index) => (
-              <span
+
+          <div className="flex items-center gap-2">
+            {Array.from({ length: position.snaps }, (_, index) => (
+              <button
                 key={index}
-                className={`h-1.5 rounded-full transition-all duration-300 ${index === position.page ? 'w-10 bg-brand-600' : 'w-6 bg-lav-300'}`}
-              />
+                type="button"
+                aria-label={`Vai alla pagina ${index + 1}`}
+                aria-current={index === position.selected}
+                onClick={() => api?.scrollTo(index)}
+                className="grid h-6 place-items-center focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+              >
+                <span className={`h-1.5 rounded-full transition-all duration-300 ${index === position.selected ? 'w-10 bg-brand-600' : 'w-6 bg-lav-300'}`} />
+              </button>
             ))}
           </div>
-          <button type="button" className={buttonClass} aria-label="Successivo" disabled={position.atEnd} onClick={() => scrollByPage(1)}>
+
+          <button type="button" className={roundButton} aria-label="Successivo" disabled={!position.canNext} onClick={() => api?.scrollNext()}>
             <ChevronRight size={22} aria-hidden="true" />
           </button>
+
+          {!reducedMotion && (
+            <button
+              type="button"
+              aria-label={playing ? 'Metti in pausa lo scorrimento automatico' : 'Avvia lo scorrimento automatico'}
+              onClick={toggleAutoplay}
+              className="grid h-10 w-10 place-items-center rounded-full border border-lav-300 bg-white text-brand-700 transition hover:bg-lav-100 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+            >
+              {playing ? <Pause size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
+            </button>
+          )}
         </div>
       )}
     </div>

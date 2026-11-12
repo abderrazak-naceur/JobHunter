@@ -1,9 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import PortfolioPage from './PortfolioPage';
 import type { PortfolioContent } from './content';
 import { sampleContent as portfolio } from '../test/fixtures';
+// Embla measures real layout and uses IntersectionObserver, which jsdom does not provide.
+vi.mock('embla-carousel-react', () => ({ default: () => [vi.fn(), undefined] }));
+
 
 const full: PortfolioContent = {
   ...portfolio,

@@ -5,6 +5,9 @@ import { portfolio } from './content';
 import { fetchPortfolio } from '../services/portfolioApi';
 
 vi.mock('../services/portfolioApi', () => ({ fetchPortfolio: vi.fn(), savePortfolio: vi.fn() }));
+// Embla measures real layout and uses IntersectionObserver, which jsdom does not provide.
+vi.mock('embla-carousel-react', () => ({ default: () => [vi.fn(), undefined] }));
+
 
 const fetchMock = vi.mocked(fetchPortfolio);
 
