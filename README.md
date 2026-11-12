@@ -1,4 +1,11 @@
-# JobHunter
+# Portfolio (repository: JobHunter)
+
+Personal site with two parts:
+
+- `/` — public one-page portfolio used to apply for jobs. Content lives in `src/frontend/src/portfolio/content.ts` for now; sections with no entries are hidden.
+- `/admin` — private area for job search, Company Radar and application tracking.
+
+> Do not deploy publicly yet: the admin area and API have no authentication (see TASK-036 in `AGENT_TASKS.md`).
 
 Personal career management platform: portfolio, job pipeline, interview tracking, job-description analysis, Company Radar and learning academy.
 

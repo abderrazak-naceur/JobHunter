@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import CompanyRadar from './CompanyRadar';
+import './styles.css';
 import { BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, CircleUserRound, FileText, GraduationCap, LayoutDashboard, Plus, Settings, Sparkles, Target, CalendarDays, ExternalLink } from 'lucide-react';
 type Tab = 'overview' | 'portfolio' | 'opportunities' | 'companies' | 'academy' | 'admin';
 const nav = [
@@ -12,9 +13,10 @@ const nav = [
 ];
 export default function App(){
  const [tab,setTab]=useState<Tab>('portfolio');
+ useEffect(() => { document.title = 'Area privata · Portfolio'; }, []);
  useEffect(() => { let active = true; import('preline/non-auto').then(({ HSStaticMethods }) => { if (active) HSStaticMethods.autoInit(); }).catch(error => console.error('Preline initialization failed:', error)); return () => { active = false; }; }, [tab]);
  return <div className="app-shell"><aside className="sidebar">
-  <div className="brand"><div className="brand-mark">J</div><div><strong>JobHunter</strong><small>CAREER WORKSPACE</small></div></div>
+  <div className="brand"><div className="brand-mark">P</div><div><strong>Portfolio</strong><small>AREA PRIVATA</small></div></div>
   <div className="workspace-label">WORKSPACE</div>
   <nav>{nav.map(item=>{const Icon=item.icon;return <button key={item.id} className={`nav-item ${tab===item.id?'active':''}`} onClick={()=>setTab(item.id)}><Icon size={18}/><span>{item.label}</span>{item.id==='admin'&&<span className="nav-tag">ADMIN</span>}</button>})}</nav>
   <div className="sidebar-bottom"><div className="profile-mini"><div className="avatar">ZN</div><div><strong>Il mio account</strong><small>Spazio personale</small></div><ChevronDown size={15}/></div></div>
@@ -25,6 +27,6 @@ export default function App(){
  <div className="stats-grid"><div className="stat-card"><div className="stat-icon violet"><BriefcaseBusiness size={19}/></div><span>Esperienza</span><strong>10+ anni</strong><small>Esperienza professionale</small></div><div className="stat-card"><div className="stat-icon blue"><ChartNoAxesCombined size={19}/></div><span>RAL obiettivo</span><strong>€40–50k+</strong><small>Range modificabile</small></div><div className="stat-card"><div className="stat-icon green"><GraduationCap size={19}/></div><span>Competenze</span><strong>12</strong><small>Da valorizzare nel profilo</small></div><div className="stat-card"><div className="stat-icon orange"><CalendarDays size={19}/></div><span>Prossimi passi</span><strong>3 attività</strong><small>Completa il tuo portfolio</small></div></div>
  <div className="two-columns"><div className="panel"><div className="panel-head"><div><h3>Competenze principali</h3><p>Le tecnologie da mettere in evidenza.</p></div><button className="text-button" onClick={()=>setTab('admin')}>Gestisci</button></div><div className="skills">{['C# / .NET','ASP.NET Core','React / TypeScript','SQL Server','PostgreSQL','Docker','Azure','REST API'].map(s=><span key={s}>{s}</span>)}</div></div>
  <div className="panel"><div className="panel-head"><div><h3>Career Coach</h3><p>Il prossimo passo per crescere.</p></div><Sparkles size={19} className="sparkle"/></div><div className="coach-box"><div className="coach-icon"><Sparkles size={18}/></div><div><strong>Costruisci il tuo percorso</strong><p>Carica una Job Description per individuare competenze richieste e argomenti da approfondire.</p><button className="text-button" onClick={()=>setTab('academy')}>Esplora Academy <ExternalLink size={13}/></button></div></div></div></div>
- <div className="section-heading lower"><div><h3>Esperienze professionali</h3><p>Il percorso che racconta il tuo valore.</p></div><button className="outline"><Plus size={15}/> Aggiungi esperienza</button></div><div className="panel experience"><div className="timeline-dot"/><div><strong>Esperienza professionale</strong><p>Inserisci azienda, ruolo, periodo e risultati principali.</p><span className="muted">Sezione pronta per la compilazione</span></div><FileText size={19} className="muted-icon"/></div><footer>JobHunter <span>·</span> Il tuo spazio per la prossima opportunità.</footer>
+ <div className="section-heading lower"><div><h3>Esperienze professionali</h3><p>Il percorso che racconta il tuo valore.</p></div><button className="outline"><Plus size={15}/> Aggiungi esperienza</button></div><div className="panel experience"><div className="timeline-dot"/><div><strong>Esperienza professionale</strong><p>Inserisci azienda, ruolo, periodo e risultati principali.</p><span className="muted">Sezione pronta per la compilazione</span></div><FileText size={19} className="muted-icon"/></div><footer>Portfolio <span>·</span> Il tuo spazio per la prossima opportunità.</footer>
  </> }</section></main></div>
 }

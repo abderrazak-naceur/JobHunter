@@ -20,6 +20,16 @@
 
 ## 2026 Roadmap — Quality, reliability and growth
 
+### Portfolio launch track (priority — product is branded "Portfolio", deployed on Render)
+
+The product is split into a public single-page portfolio at `/` (no menu) used to apply for jobs, and a private admin area at `/admin` used to find jobs and track applications. **Do not deploy publicly before TASK-036 is done**: the API currently has no authentication.
+
+- [x] TASK-034 — Public one-page Portfolio at `/` (no menu): hero, skills, experience, projects, contacts, SEO meta tags; admin moved to `/admin`; rebrand from "JobHunter" to "Portfolio" in the UI. Content comes from `src/frontend/src/portfolio/content.ts` until TASK-035. Still to fill in by the owner: email, real experiences, CV link and the display name.
+- [ ] TASK-035 — Portfolio content in PostgreSQL and editable from the admin area (profile, experience, skills, projects, contacts, CV link); public read-only endpoint exposing only fields marked public (replaces the static content file; builds on TASK-002)
+- [ ] TASK-036 — Single-user authentication for the admin area and API: protected admin endpoints, public read-only portfolio endpoint, secure password/secret handling, rate limiting on login (subset of TASK-010)
+- [ ] TASK-037 — Render deployment: static site + web service + managed PostgreSQL, SPA rewrite for `/admin`, environment variables, CORS, `render.yaml` and a release checklist (extends TASK-033)
+- [ ] TASK-038 — Application tracker in the admin area: save a job, status pipeline (Saved, Applied, Interview, Offer, Rejected), notes, source link and event history (TASK-005 first slice)
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.
