@@ -10,24 +10,27 @@ namespace JobHunter.Api.Endpoints;
 public static class AuthEndpoints
 {
     public const string LoginRateLimitPolicy = "login";
+    public const int MinPasswordLength = 12;
+    public const int MaxPasswordLength = 256;
 
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/v1/auth").WithTags("Auth");
 
-        group.MapPost("/login", (
+        group.MapPost("/login", async (
             LoginRequest request,
-            IOptions<AdminOptions> adminOptions,
-            TokenService tokens) =>
+            AdminAccountStore accounts,
+            TokenService tokens,
+            CancellationToken cancellationToken) =>
         {
             var errors = new Dictionary<string, string[]>();
             if (string.IsNullOrWhiteSpace(request.Username) || request.Username.Length > 100)
                 errors[nameof(request.Username)] = ["Inserisci lo username."];
-            if (string.IsNullOrEmpty(request.Password) || request.Password.Length > 256)
+            if (string.IsNullOrEmpty(request.Password) || request.Password.Length > MaxPasswordLength)
                 errors[nameof(request.Password)] = ["Inserisci la password."];
             if (errors.Count > 0) return Results.ValidationProblem(errors);
 
-            var admin = adminOptions.Value;
+            var admin = await accounts.GetAsync(cancellationToken);
 
             // Always verify the password hash and compare the username in constant time, so a wrong
             // username and a wrong password take the same time and give the same answer.
@@ -39,7 +42,7 @@ public static class AuthEndpoints
             if (!passwordOk || !usernameOk)
                 return Results.Json(new { message = "Credenziali non valide." }, statusCode: StatusCodes.Status401Unauthorized);
 
-            var token = tokens.CreateToken(admin.Username);
+            var token = tokens.CreateToken(admin.Username, admin.PasswordHash);
             return Results.Ok(new LoginResponse(token.AccessToken, token.ExpiresAt));
         })
         .AllowAnonymous()
@@ -48,6 +51,44 @@ public static class AuthEndpoints
         group.MapGet("/me", (ClaimsPrincipal user) =>
             Results.Ok(new CurrentUserResponse(user.Identity?.Name ?? "")))
             .RequireAuthorization();
+
+        // A wrong current password answers 400 (not 401), so the app does not mistake it for an expired session.
+        // It shares the login rate limit: the current password cannot be guessed by retrying.
+        group.MapPost("/change-password", async (
+            ChangePasswordRequest request,
+            ClaimsPrincipal user,
+            AdminAccountStore accounts,
+            TokenService tokens,
+            IOptions<AdminOptions> adminOptions,
+            CancellationToken cancellationToken) =>
+        {
+            var admin = await accounts.GetAsync(cancellationToken);
+            var errors = new Dictionary<string, string[]>();
+
+            if (string.IsNullOrEmpty(request.CurrentPassword))
+                errors[nameof(request.CurrentPassword)] = ["Inserisci la password attuale."];
+            else if (!PasswordHasher.Verify(request.CurrentPassword, admin.PasswordHash))
+                errors[nameof(request.CurrentPassword)] = ["La password attuale non è corretta."];
+
+            var newPassword = request.NewPassword ?? "";
+            if (newPassword.Length < MinPasswordLength || newPassword.Length > MaxPasswordLength)
+                errors[nameof(request.NewPassword)] = [$"La nuova password deve avere da {MinPasswordLength} a {MaxPasswordLength} caratteri."];
+            else if (newPassword == request.CurrentPassword)
+                errors[nameof(request.NewPassword)] = ["La nuova password deve essere diversa da quella attuale."];
+            else if (string.Equals(newPassword, admin.Username, StringComparison.OrdinalIgnoreCase))
+                errors[nameof(request.NewPassword)] = ["La password non può coincidere con lo username."];
+
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+
+            var hash = PasswordHasher.Hash(newPassword, adminOptions.Value.HashIterations);
+            await accounts.SetPasswordAsync(admin.Username, hash, cancellationToken);
+
+            // Every older token stops working; this response carries the fresh one for the current session.
+            var token = tokens.CreateToken(admin.Username, hash);
+            return Results.Ok(new LoginResponse(token.AccessToken, token.ExpiresAt));
+        })
+        .RequireAuthorization()
+        .RequireRateLimiting(LoginRateLimitPolicy);
 
         return endpoints;
     }

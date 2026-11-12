@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { BriefcaseBusiness, ExternalLink, LayoutDashboard, LogOut, Palette, Target, type LucideIcon } from 'lucide-react';
+import { BriefcaseBusiness, ExternalLink, KeyRound, LayoutDashboard, LogOut, Palette, Target, type LucideIcon } from 'lucide-react';
 import { Toaster } from 'sonner';
+import AccountPage from './admin/account/AccountPage';
 import ApplicationsPage from './admin/applications/ApplicationsPage';
 import Dashboard, { type AdminTab } from './admin/Dashboard';
 import PortfolioAdmin from './admin/portfolio/PortfolioAdmin';
@@ -12,7 +13,8 @@ const nav: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Panoramica', icon: LayoutDashboard },
   { id: 'applications', label: 'Candidature', icon: BriefcaseBusiness },
   { id: 'portfolio', label: 'Portfolio', icon: Palette },
-  { id: 'companies', label: 'Company Radar', icon: Target }
+  { id: 'companies', label: 'Company Radar', icon: Target },
+  { id: 'account', label: 'Sicurezza', icon: KeyRound }
 ];
 
 /** Private area: everything that can be created, edited and deleted lives here. */
@@ -54,6 +56,7 @@ export default function App() {
           {tab === 'applications' && <ApplicationsPage />}
           {tab === 'portfolio' && <PortfolioAdmin />}
           {tab === 'companies' && <CompanyRadar />}
+          {tab === 'account' && <AccountPage />}
         </section>
       </main>
 

@@ -9,6 +9,7 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
     public DbSet<PortfolioProfile> PortfolioProfiles => Set<PortfolioProfile>();
     public DbSet<PortfolioAsset> PortfolioAssets => Set<PortfolioAsset>();
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
+    public DbSet<AdminAccount> AdminAccounts => Set<AdminAccount>();
     public DbSet<ApplicationEvent> ApplicationEvents => Set<ApplicationEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -39,6 +40,13 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
         asset.Property(x => x.Kind).HasMaxLength(20);
         asset.Property(x => x.ContentType).HasMaxLength(100).IsRequired();
         asset.Property(x => x.Data).IsRequired();
+
+        var adminAccount = modelBuilder.Entity<AdminAccount>();
+        adminAccount.ToTable("AdminAccounts");
+        adminAccount.HasKey(x => x.Id);
+        adminAccount.Property(x => x.Id).ValueGeneratedNever();
+        adminAccount.Property(x => x.Username).HasMaxLength(100).IsRequired();
+        adminAccount.Property(x => x.PasswordHash).HasMaxLength(500).IsRequired();
 
         var application = modelBuilder.Entity<JobApplication>();
         application.ToTable("JobApplications");

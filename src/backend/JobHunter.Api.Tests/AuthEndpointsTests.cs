@@ -109,7 +109,7 @@ public sealed class AuthEndpointsTests : IClassFixture<JobHunterApiFactory>
     public async Task ExpiredToken_IsRejected()
     {
         var tokens = _factory.Services.GetRequiredService<TokenService>();
-        var expired = tokens.CreateToken("admin", lifetime: TimeSpan.FromMinutes(5), now: DateTimeOffset.UtcNow.AddHours(-1));
+        var expired = tokens.CreateToken("admin", JobHunterApiFactory.AdminPasswordHash, lifetime: TimeSpan.FromMinutes(5), now: DateTimeOffset.UtcNow.AddHours(-1));
 
         var response = await ClientWithToken(expired.AccessToken).GetAsync("/api/v1/companies");
 
@@ -119,7 +119,7 @@ public sealed class AuthEndpointsTests : IClassFixture<JobHunterApiFactory>
     [Fact]
     public async Task TamperedToken_IsRejected()
     {
-        var token = _factory.Services.GetRequiredService<TokenService>().CreateToken("admin").AccessToken;
+        var token = _factory.Services.GetRequiredService<TokenService>().CreateToken("admin", JobHunterApiFactory.AdminPasswordHash).AccessToken;
         var tampered = token[..^3] + (token.EndsWith("AAA") ? "BBB" : "AAA");
 
         var response = await ClientWithToken(tampered).GetAsync("/api/v1/companies");
@@ -133,7 +133,7 @@ public sealed class AuthEndpointsTests : IClassFixture<JobHunterApiFactory>
         var foreign = new TokenService(Microsoft.Extensions.Options.Options.Create(new JwtOptions
         {
             SigningKey = "another-signing-key-another-signing-key-987654321"
-        })).CreateToken("admin");
+        })).CreateToken("admin", JobHunterApiFactory.AdminPasswordHash);
 
         var response = await ClientWithToken(foreign.AccessToken).GetAsync("/api/v1/companies");
 

@@ -107,6 +107,11 @@ To call the protected endpoints:
 
 Swagger and the OpenAPI document are on only in Development. Elsewhere they are off unless you set `Swagger__Enabled=true`, which is not recommended on a public site.
 
+### Change the admin password
+
+Sign in, open **Sicurezza** and fill in current and new password (at least 12 characters). The new password is stored as a hash in the AdminAccounts table and takes over from Admin__PasswordHash, which is only used until the first change. Other sessions are closed. Apply the migration first with dotnet ef database update.
+
+If you forget the password, run DELETE FROM "AdminAccounts"; on the database: the configured credentials work again.
 ### 4. Configure and run the frontend
 
 Create `src/frontend/.env.local`:

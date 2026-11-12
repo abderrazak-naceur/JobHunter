@@ -13,6 +13,10 @@ public sealed class AdminOptions
     /// <summary>Generate with <c>dotnet run --project src/backend/JobHunter.Api -- hash-password</c>.</summary>
     [Required]
     public string PasswordHash { get; set; } = "";
+
+    /// <summary>Work factor for the hash of a password changed from the app (the configured hash carries its own).</summary>
+    [Range(1000, 10_000_000)]
+    public int HashIterations { get; set; } = PasswordHasher.DefaultIterations;
 }
 
 public sealed class JwtOptions

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { APPLICATION_STATUSES, applicationApi, type ApplicationSummary } from '@/services/applicationApi';
 import { formatDate, isOverdue, statusMeta } from './applications/statusMeta';
 
-export type AdminTab = 'overview' | 'applications' | 'portfolio' | 'companies';
+export type AdminTab = 'overview' | 'applications' | 'portfolio' | 'companies' | 'account';
 
 /** Where the job search stands, and what to do next. */
 export default function Dashboard({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {

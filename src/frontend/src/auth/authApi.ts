@@ -1,4 +1,5 @@
 import { apiBaseUrl, unreachableApiMessage } from '../services/apiConfig';
+import { apiRequest } from '../services/http';
 import { saveSession, type Session } from './session';
 
 export async function login(username: string, password: string): Promise<void> {
@@ -19,5 +20,23 @@ export async function login(username: string, password: string): Promise<void> {
   if (!response.ok) throw new Error(`Errore API: HTTP ${response.status}`);
 
   const body = (await response.json()) as Session;
+  saveSession({ accessToken: body.accessToken, expiresAt: body.expiresAt });
+}
+
+/** Reads the username of the signed-in admin. */
+export async function getCurrentUsername(): Promise<string> {
+  const me = await apiRequest<{ username: string }>('/api/v1/auth/me');
+  return me.username;
+}
+
+/**
+ * Changes the admin password. Every older token stops working, so the fresh token
+ * returned by the server replaces the current session.
+ */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const body = await apiRequest<Session>('/api/v1/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword })
+  });
   saveSession({ accessToken: body.accessToken, expiresAt: body.expiresAt });
 }

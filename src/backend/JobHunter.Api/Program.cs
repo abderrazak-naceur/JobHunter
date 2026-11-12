@@ -28,6 +28,7 @@ builder.Services.AddOptions<AdminOptions>().BindConfiguration(AdminOptions.Secti
 builder.Services.AddOptions<JwtOptions>().BindConfiguration(JwtOptions.SectionName).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<LoginRateLimitOptions>().BindConfiguration(LoginRateLimitOptions.SectionName).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddSingleton<TokenService>();
+builder.Services.AddScoped<AdminAccountStore>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
@@ -35,6 +36,8 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
     {
         bearer.MapInboundClaims = false;
         bearer.TokenValidationParameters = TokenService.CreateValidationParameters(jwt.Value);
+        // Tokens issued before the last password change are refused.
+        bearer.Events = new JwtBearerEvents { OnTokenValidated = PasswordChangeTokenCheck.ValidateAsync };
     });
 
 // Secure by default: every endpoint requires a signed-in admin unless it explicitly calls AllowAnonymous().

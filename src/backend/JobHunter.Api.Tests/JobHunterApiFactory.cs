@@ -21,7 +21,7 @@ public class JobHunterApiFactory : WebApplicationFactory<Program>
     public const string SigningKey = "test-signing-key-test-signing-key-0123456789";
 
     // Low iteration count keeps the test suite fast; production uses PasswordHasher.DefaultIterations.
-    private static readonly string AdminPasswordHash = PasswordHasher.Hash(AdminPassword, iterations: 1_000);
+    public static readonly string AdminPasswordHash = PasswordHasher.Hash(AdminPassword, iterations: 1_000);
 
     private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
@@ -39,6 +39,7 @@ public class JobHunterApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("ConnectionStrings:DefaultConnection", "Host=unused;Database=unused");
         builder.UseSetting("Admin:Username", AdminUsername);
         builder.UseSetting("Admin:PasswordHash", AdminPasswordHash);
+        builder.UseSetting("Admin:HashIterations", "1000"); // keeps passwords changed during tests fast
         builder.UseSetting("Jwt:SigningKey", SigningKey);
         builder.UseSetting("RateLimiting:LoginPermitLimit", LoginPermitLimit.ToString());
         builder.UseSetting("Swagger:Enabled", SwaggerEnabled ? "true" : "false");
@@ -69,7 +70,7 @@ public class JobHunterApiFactory : WebApplicationFactory<Program>
     public HttpClient CreateAuthenticatedClient()
     {
         var client = CreateClient();
-        var token = Services.GetRequiredService<TokenService>().CreateToken(AdminUsername);
+        var token = Services.GetRequiredService<TokenService>().CreateToken(AdminUsername, AdminPasswordHash);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
         return client;
     }
