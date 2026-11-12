@@ -10,6 +10,7 @@ export type PortfolioDraft = {
   workMode: string;
   email: string;
   cvUrl: string;
+  photoUrl: string;
   links: PortfolioLink[];
   skillGroups: { title: string; skills: string }[]; // comma separated
   experiences: { company: string; role: string; period: string; description: string; highlights: string }[]; // one per line
@@ -39,6 +40,7 @@ export function toDraft(content: PortfolioContent): PortfolioDraft {
     workMode: content.workMode,
     email: content.email ?? '',
     cvUrl: content.cvUrl ?? '',
+    photoUrl: content.photoUrl ?? '',
     links: content.links.map(link => ({ ...link })),
     skillGroups: content.skillGroups.map(group => ({ title: group.title, skills: group.skills.join(', ') })),
     experiences: content.experiences.map(item => ({
@@ -68,6 +70,7 @@ export function fromDraft(draft: PortfolioDraft): PortfolioContent {
     workMode: draft.workMode.trim(),
     email: draft.email.trim() || null,
     cvUrl: draft.cvUrl.trim() || null,
+    photoUrl: draft.photoUrl.trim() || null,
     links: draft.links.map(link => ({ label: link.label.trim(), url: link.url.trim() })),
     skillGroups: draft.skillGroups.map(group => ({ title: group.title.trim(), skills: splitComma(group.skills) })),
     experiences: draft.experiences.map(item => ({

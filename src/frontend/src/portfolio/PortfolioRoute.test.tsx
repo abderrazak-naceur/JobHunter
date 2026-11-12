@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import PortfolioRoute from './PortfolioRoute';
 import { portfolio } from './content';
@@ -27,7 +27,7 @@ describe('PortfolioRoute', () => {
     render(<PortfolioRoute />);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Mario Rossi' })).toBeInTheDocument();
-    expect(document.title).toBe('Mario Rossi — Backend Engineer');
+    await waitFor(() => expect(document.title).toBe('Mario Rossi — Backend Engineer'));
   });
 
   it('falls back to the bundled content when the API fails', async () => {

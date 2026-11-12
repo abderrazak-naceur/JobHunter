@@ -146,6 +146,19 @@ public sealed class PortfolioEndpointsTests : IClassFixture<JobHunterApiFactory>
     }
 
     [Fact]
+    public async Task Put_SavesThePhotoUrl_AndTreatsBlankAsNone()
+    {
+        await _admin.PutAsJsonAsync(Route, Valid() with { PhotoUrl = " https://example.com/me.jpg " });
+        var withPhoto = await _anonymous.GetFromJsonAsync<PortfolioContentDto>(Route);
+
+        await _admin.PutAsJsonAsync(Route, Valid() with { PhotoUrl = "  " });
+        var withoutPhoto = await _anonymous.GetFromJsonAsync<PortfolioContentDto>(Route);
+
+        Assert.Equal("https://example.com/me.jpg", withPhoto!.PhotoUrl);
+        Assert.Null(withoutPhoto!.PhotoUrl);
+    }
+
+    [Fact]
     public async Task Get_ReturnsAnEmptyStatsList_ForContentSavedBeforeStatsExisted()
     {
         using (var scope = _factory.Services.CreateScope())
@@ -166,6 +179,8 @@ public sealed class PortfolioEndpointsTests : IClassFixture<JobHunterApiFactory>
 
     public static TheoryData<string, PortfolioContentDto> InvalidContent() => new()
     {
+        { "PhotoUrl", Valid() with { PhotoUrl = "javascript:alert(1)" } },
+        { "PhotoUrl", Valid() with { PhotoUrl = "/me.jpg" } },
         { "Stats[0].Value", Valid() with { Stats = [new("", "Anni")] } },
         { "Stats[0].Label", Valid() with { Stats = [new("10+", "  ")] } },
         { "Stats[0].Value", Valid() with { Stats = [new(new string('9', 21), "Anni")] } },

@@ -1,6 +1,6 @@
 import { Cloud, Database, MonitorSmartphone, Server, Sparkles } from 'lucide-react';
 import { describe, expect, it } from 'vitest';
-import { initialsOf, isExternal, iconForGroup } from './helpers';
+import { initialsOf, isExternal, iconForGroup, pluralize } from './helpers';
 
 describe('portfolio helpers', () => {
   it.each([
@@ -26,6 +26,12 @@ describe('portfolio helpers', () => {
     ['', '?']
   ])('builds initials for %j', (name, expected) => {
     expect(initialsOf(name)).toBe(expected);
+  });
+
+  it('pluralizes counts', () => {
+    expect(pluralize(1, 'competenza', 'competenze')).toBe('1 competenza');
+    expect(pluralize(0, 'competenza', 'competenze')).toBe('0 competenze');
+    expect(pluralize(7, 'competenza', 'competenze')).toBe('7 competenze');
   });
 
   it('tells external links from internal ones', () => {

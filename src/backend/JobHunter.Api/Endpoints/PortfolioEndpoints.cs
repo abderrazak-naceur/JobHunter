@@ -141,6 +141,7 @@ public static class PortfolioEndpoints
         else if (email.Length > 254 || !IsEmail(email)) Fail(nameof(request.Email), "Inserisci un indirizzo email valido.");
 
         var cvUrl = OptionalUrl(request.CvUrl, nameof(request.CvUrl), "Il link al CV");
+        var photoUrl = OptionalUrl(request.PhotoUrl, nameof(request.PhotoUrl), "Il link alla foto");
 
         var links = new List<PortfolioLinkDto>();
         var rawLinks = request.Links ?? [];
@@ -208,7 +209,7 @@ public static class PortfolioEndpoints
         }
 
         var content = new PortfolioContentDto(name, role, tagline, summary, location, workMode, email, cvUrl,
-            links, skillGroups, experiences, projects, stats);
+            links, skillGroups, experiences, projects, stats, photoUrl);
         return (content, errors);
     }
 

@@ -93,6 +93,7 @@ export default function PortfolioEditor() {
           <label>Ruolo *<input value={draft.role} onChange={e => change({ role: e.target.value })} required maxLength={120} /></label>
           <label className="wide">Slogan<input value={draft.tagline} onChange={e => change({ tagline: e.target.value })} maxLength={250} /></label>
           <label className="wide">Chi sono *<textarea value={draft.summary} onChange={e => change({ summary: e.target.value })} required maxLength={2000} rows={5} /></label>
+          <label className="wide">Foto profilo (URL dell’immagine)<input type="url" value={draft.photoUrl} onChange={e => change({ photoUrl: e.target.value })} maxLength={500} placeholder="https://... (foto quadrata, anche trasparente)" /></label>
           <label>Località<input value={draft.location} onChange={e => change({ location: e.target.value })} maxLength={120} /></label>
           <label>Modalità di lavoro<input value={draft.workMode} onChange={e => change({ workMode: e.target.value })} maxLength={120} /></label>
         </div>

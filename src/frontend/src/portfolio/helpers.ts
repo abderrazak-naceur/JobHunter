@@ -29,3 +29,15 @@ export const cardGradients = [
   'from-emerald-500 to-cyan-400',
   'from-orange-500 to-rose-500'
 ] as const;
+
+/** Small coloured labels on the cards, cycling. */
+export const tagStyles = [
+  'bg-rose-600 text-white',
+  'bg-brand-900 text-white',
+  'bg-accent-300 text-brand-900',
+  'bg-white text-brand-800 ring-1 ring-brand-200'
+] as const;
+
+export function pluralize(count: number, singular: string, plural: string): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}

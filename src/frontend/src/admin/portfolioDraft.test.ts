@@ -4,6 +4,7 @@ import { fromDraft, splitComma, splitLines, toDraft } from './portfolioDraft';
 
 const content: PortfolioContent = {
   ...portfolio,
+  photoUrl: null,
   email: 'me@example.com',
   cvUrl: 'https://example.com/cv.pdf',
   experiences: [{ company: 'Acme', role: 'Dev', period: '2020', description: 'Work', highlights: ['One', 'Two'] }],

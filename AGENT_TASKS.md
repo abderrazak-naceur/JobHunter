@@ -32,6 +32,8 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-039 — Professional visual redesign of the public portfolio with Tailwind CSS: animated gradient hero with monogram and floating skills, overlapping "numbers" cards (editable from the admin, max 4), skills strip, skill cards with icons, experience timeline, project cards, contact banner, scroll progress bar and scroll-reveal animations (all disabled for users who prefer reduced motion). The public bundle only contains its own styles and is loaded only on `/`. Checked visually in headless Chrome at desktop and 390 px width (no horizontal overflow). Not yet done: dark mode, real project screenshots/images, Lighthouse accessibility audit.
 
+- [x] TASK-040 — Portfolio visual redesign v2, inspired by the visual language of large telecom/retail sites (own colours, no brand assets): lavender page, bento hero (profile card + skills and projects teasers), very rounded cards with diagonal panels, round arrow buttons, sticky header with section links and a mobile "Menu", skills carousel (arrows, dots, swipe), deep-navy projects section with a featured banner and project tiles, royal-blue contact cards and a call-to-action strip. New optional profile photo (`photoUrl`, http/https only) with initials fallback. Checked in headless Chrome at 1440 px and 390 px (no horizontal overflow). Not yet done: dark mode, project images, Lighthouse audit.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.

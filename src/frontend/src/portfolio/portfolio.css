@@ -1,6 +1,9 @@
 /*
  * Public portfolio styles. Tailwind only scans this folder (source(none) + @source), so the public
  * bundle stays small and independent from the admin stylesheet.
+ *
+ * Visual language: pale lavender page, very rounded cards with soft diagonal panels, royal-blue and
+ * deep-navy sections, round arrow buttons and carousels.
  */
 @import "tailwindcss" source(none);
 @source "./";
@@ -8,30 +11,30 @@
 @theme {
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-  --color-brand-50: #eef5ff;
-  --color-brand-100: #d9e8ff;
-  --color-brand-200: #b6d2ff;
-  --color-brand-500: #2a6bff;
-  --color-brand-600: #0a4bd6;
-  --color-brand-700: #0838a8;
-  --color-brand-800: #062a7d;
-  --color-brand-900: #001a4d;
+  --color-brand-50: #eef1ff;
+  --color-brand-100: #dfe4ff;
+  --color-brand-200: #c3cbff;
+  --color-brand-500: #3550e8;
+  --color-brand-600: #1c33c8;
+  --color-brand-700: #1428a0;
+  --color-brand-800: #0e1d7e;
+  --color-brand-900: #081355;
+  --color-navy-950: #030a33;
+  --color-lav-50: #f5f6fe;
+  --color-lav-100: #eceefc;
+  --color-lav-200: #e0e4fa;
+  --color-lav-300: #cdd3f3;
   --color-accent-300: #67e8f9;
   --color-accent-400: #22d3ee;
 
   --animate-float: float 9s ease-in-out infinite;
   --animate-float-slow: float 14s ease-in-out infinite reverse;
-  --animate-marquee: marquee 45s linear infinite;
   --animate-spin-slow: spin 24s linear infinite;
   --animate-bob: bob 2.2s ease-in-out infinite;
 
   @keyframes float {
     0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-    50% { transform: translate3d(0, -28px, 0) scale(1.06); }
-  }
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+    50% { transform: translate3d(0, -24px, 0) scale(1.05); }
   }
   @keyframes bob {
     0%, 100% { transform: translateY(0); }
@@ -39,9 +42,40 @@
   }
 }
 
-/* Smooth anchor scrolling and a sensible base for the public page. */
-html { scroll-behavior: smooth; }
-body { margin: 0; background: #f8fafc; }
+html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+body { margin: 0; background: var(--color-lav-100); }
+
+/* Lavender card with a lighter diagonal panel. */
+.card-lavender {
+  background:
+    linear-gradient(135deg, transparent 0 48%, rgb(255 255 255 / 60%) 48% 100%),
+    linear-gradient(160deg, var(--color-lav-200) 0%, var(--color-lav-300) 100%);
+}
+
+/* Royal blue card with a soft diagonal highlight. */
+.card-blue {
+  background:
+    linear-gradient(120deg, rgb(255 255 255 / 9%) 0 38%, transparent 38%),
+    linear-gradient(155deg, var(--color-brand-600) 0%, var(--color-brand-800) 60%, var(--color-brand-900) 100%);
+}
+
+/* Mint card used for the skills teaser. */
+.card-mint {
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 30%) 0 42%, transparent 42%),
+    linear-gradient(150deg, #bdeedd 0%, #8ad8cf 55%, #62c5d6 100%);
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 7%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 7%) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* Scroll-reveal: elements fade and rise once when they enter the viewport. */
 .reveal {
@@ -51,18 +85,6 @@ body { margin: 0; background: #f8fafc; }
   transition-delay: var(--reveal-delay, 0ms);
 }
 .reveal.is-visible { opacity: 1; transform: none; }
-
-/* Subtle grid texture used on dark backgrounds. */
-.bg-grid {
-  background-image:
-    linear-gradient(to right, rgb(255 255 255 / 7%) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(255 255 255 / 7%) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
-}
-
-/* The skills strip pauses when hovered so it can be read. */
-.marquee:hover .marquee-track { animation-play-state: paused; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

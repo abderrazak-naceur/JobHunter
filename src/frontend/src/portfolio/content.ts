@@ -28,6 +28,7 @@ export type PortfolioContent = {
   workMode: string;
   email?: string | null;
   cvUrl?: string | null;
+  photoUrl?: string | null;
   links: PortfolioLink[];
   skillGroups: SkillGroup[];
   experiences: Experience[];

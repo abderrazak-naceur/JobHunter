@@ -23,4 +23,5 @@ public sealed record PortfolioContentDto(
     IReadOnlyList<SkillGroupDto> SkillGroups,
     IReadOnlyList<ExperienceDto> Experiences,
     IReadOnlyList<ProjectDto> Projects,
-    IReadOnlyList<StatDto>? Stats = null);
+    IReadOnlyList<StatDto>? Stats = null,
+    string? PhotoUrl = null);
