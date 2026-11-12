@@ -32,8 +32,10 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
   }
   if (response.status === 404) throw new Error('Elemento non trovato.');
   if (!response.ok) {
-    const problem = (await response.json().catch(() => null)) as { title?: string } | null;
-    throw new Error(problem?.title || `Errore API: HTTP ${response.status}`);
+    const problem = (await response.json().catch(() => null)) as { title?: string; correlationId?: string } | null;
+    // The reference lets the owner find the failure in the server log.
+    const reference = problem?.correlationId ? ` (rif. ${problem.correlationId})` : '';
+    throw new Error((problem?.title || `Errore API: HTTP ${response.status}`) + reference);
   }
 
   if (response.status === 204) return undefined as T;

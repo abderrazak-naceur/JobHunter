@@ -14,6 +14,11 @@ if (args.Length > 0 && args[0] == PasswordHashCommand.Name)
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Every error answers as application/problem+json with the correlation id, and unexpected failures never leak details.
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
+{
+    context.ProblemDetails.Extensions["correlationId"] = context.HttpContext.TraceIdentifier;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddPortfolioOpenApi();
 
@@ -93,6 +98,8 @@ if (swaggerEnabled)
 }
 
 app.UseCorrelationId();
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseCors("Frontend");
 app.UseRateLimiter();
 app.UseAuthentication();

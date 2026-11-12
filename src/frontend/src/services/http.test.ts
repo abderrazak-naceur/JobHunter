@@ -70,6 +70,11 @@ describe('apiRequest', () => {
     await expect(apiRequest('/x')).rejects.toThrow('Errore API: HTTP 500');
   });
 
+  it('adds the correlation id of a failed request, so it can be found in the server log', async () => {
+    mockFetch({ ok: false, status: 500, json: async () => ({ title: 'An error occurred.', correlationId: 'abc123def456' }) });
+    await expect(apiRequest('/x')).rejects.toThrow('An error occurred. (rif. abc123def456)');
+  });
+
   it('reports an unreachable API', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
 

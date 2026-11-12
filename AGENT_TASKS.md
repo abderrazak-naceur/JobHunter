@@ -59,11 +59,13 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-028 — Contacts tracker (Contatti): recruiters, referrals, colleagues and others with company, role, email, phone, profile link, notes, date of the last contact and date to get back to them. List with search, filter by type, paging, create/edit/delete, late follow-ups highlighted and a reminder banner with how many are due. API `/api/v1/contacts` (+ `/summary`), migration `AddContacts` (run `dotnet ef database update`). Contacts are part of the JSON backup. Not done: link a contact to an application, a log of each conversation.
 
+- [x] TASK-019 (partly) — Errors in one shape: every failure answers as `application/problem+json` with a `correlationId` (unexpected errors give no stack trace, SQL or paths; the details go to the log), also for unknown routes and empty 401/404/429 bodies. Validation errors keep the `errors` map per field. The admin shows the reference ("rif. ...") on server errors so it can be found in the log. Not done: FluentValidation (the hand-written validators are tested and consistent), API versioning beyond `/api/v1`, a generated OpenAPI client.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.
 - [x] TASK-018 — CI hardening: build, test, lint, format check and dependency vulnerability scan on every pull request; migration drift check. Dependabot enabled for NuGet, npm and GitHub Actions. Not yet verified on GitHub: the workflow has only been exercised locally, command by command.
-- [ ] TASK-019 — API standardization: ProblemDetails errors, FluentValidation, consistent pagination/sorting, versioning and generated OpenAPI client for the frontend
+- [ ] TASK-019 — API standardization, remaining part: FluentValidation, consistent sorting, a generated OpenAPI client. Error format is done (see "TASK-019 (partly)" above).
 - [ ] TASK-020 — Observability, remaining part: structured logging (Serilog, JSON output) and basic metrics. Health checks and correlation ids are done (see "TASK-020 (partly)" above).
 - [x] TASK-021 — Secrets and configuration hygiene: done, see the entry in the Portfolio launch track.
 
