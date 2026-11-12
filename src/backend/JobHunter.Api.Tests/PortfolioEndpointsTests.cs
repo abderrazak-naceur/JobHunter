@@ -134,8 +134,42 @@ public sealed class PortfolioEndpointsTests : IClassFixture<JobHunterApiFactory>
         Assert.Equal(PortfolioEndpoints.DefaultContent.Name, content!.Name);
     }
 
+    [Fact]
+    public async Task Put_SavesStats_AndTrimsThem()
+    {
+        var request = Valid() with { Stats = [new("  10+ ", " Anni di esperienza "), new("50", "Progetti")] };
+
+        await _admin.PutAsJsonAsync(Route, request);
+        var published = await _anonymous.GetFromJsonAsync<PortfolioContentDto>(Route);
+
+        Assert.Equal([new StatDto("10+", "Anni di esperienza"), new StatDto("50", "Progetti")], published!.Stats);
+    }
+
+    [Fact]
+    public async Task Get_ReturnsAnEmptyStatsList_ForContentSavedBeforeStatsExisted()
+    {
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<JobHunterDbContext>();
+            var profile = await db.PortfolioProfiles.FirstOrDefaultAsync();
+            if (profile is null) db.PortfolioProfiles.Add(profile = new PortfolioProfile());
+            profile.ContentJson = """{"name":"Old","role":"Dev","tagline":"","summary":"s","location":"","workMode":"","email":null,"cvUrl":null,"links":[],"skillGroups":[],"experiences":[],"projects":[]}""";
+            await db.SaveChangesAsync();
+        }
+
+        var published = await _anonymous.GetFromJsonAsync<PortfolioContentDto>(Route);
+
+        Assert.Equal("Old", published!.Name);
+        Assert.NotNull(published.Stats);
+        Assert.Empty(published.Stats);
+    }
+
     public static TheoryData<string, PortfolioContentDto> InvalidContent() => new()
     {
+        { "Stats[0].Value", Valid() with { Stats = [new("", "Anni")] } },
+        { "Stats[0].Label", Valid() with { Stats = [new("10+", "  ")] } },
+        { "Stats[0].Value", Valid() with { Stats = [new(new string('9', 21), "Anni")] } },
+        { "Stats", Valid() with { Stats = Enumerable.Range(0, 5).Select(i => new StatDto($"{i}", "x")).ToList() } },
         { "Name", Valid() with { Name = "  " } },
         { "Name", Valid() with { Name = new string('a', 121) } },
         { "Role", Valid() with { Role = "" } },

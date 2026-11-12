@@ -2,11 +2,13 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { ExternalLink, Plus, Trash2 } from 'lucide-react';
 import { fetchPortfolio, savePortfolio } from '../services/portfolioApi';
 import {
-  emptyExperience, emptyLink, emptyProject, emptySkillGroup, fromDraft, toDraft, type PortfolioDraft
+  emptyExperience, emptyLink, emptyProject, emptySkillGroup, emptyStat, fromDraft, toDraft, type PortfolioDraft
 } from './portfolioDraft';
 import './editor.css';
 
-type ListKey = 'links' | 'skillGroups' | 'experiences' | 'projects';
+type ListKey = 'links' | 'skillGroups' | 'experiences' | 'projects' | 'stats';
+
+const MAX_STATS = 4;
 
 export default function PortfolioEditor() {
   const [draft, setDraft] = useState<PortfolioDraft | null>(null);
@@ -94,6 +96,21 @@ export default function PortfolioEditor() {
           <label>Località<input value={draft.location} onChange={e => change({ location: e.target.value })} maxLength={120} /></label>
           <label>Modalità di lavoro<input value={draft.workMode} onChange={e => change({ workMode: e.target.value })} maxLength={120} /></label>
         </div>
+      </fieldset>
+
+      <fieldset className="panel editor-section">
+        <legend>Numeri in evidenza</legend>
+        <p className="muted">Fino a {MAX_STATS} card con un numero grande, ad esempio “10+” e “Anni di esperienza”.</p>
+        {draft.stats.map((stat, i) => (
+          <div className="editor-row" key={i}>
+            <label>Valore<span className="sr-only"> {i + 1}</span><input value={stat.value} onChange={e => updateItem('stats', i, { value: e.target.value })} maxLength={20} placeholder="10+" /></label>
+            <label>Etichetta<span className="sr-only"> numero {i + 1}</span><input value={stat.label} onChange={e => updateItem('stats', i, { label: e.target.value })} maxLength={60} placeholder="Anni di esperienza" /></label>
+            <button type="button" className="icon-button" aria-label={`Rimuovi numero ${i + 1}`} onClick={() => removeItem('stats', i)}><Trash2 size={16} /></button>
+          </div>
+        ))}
+        {draft.stats.length < MAX_STATS && (
+          <button type="button" className="outline" onClick={() => addItem('stats', emptyStat())}><Plus size={15} /> Aggiungi numero</button>
+        )}
       </fieldset>
 
       <fieldset className="panel editor-section">

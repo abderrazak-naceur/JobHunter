@@ -8,6 +8,8 @@ public sealed record ExperienceDto(string Company, string Role, string Period, s
 
 public sealed record ProjectDto(string Name, string Description, IReadOnlyList<string> Technologies, string? Url);
 
+public sealed record StatDto(string Value, string Label);
+
 public sealed record PortfolioContentDto(
     string Name,
     string Role,
@@ -20,4 +22,5 @@ public sealed record PortfolioContentDto(
     IReadOnlyList<PortfolioLinkDto> Links,
     IReadOnlyList<SkillGroupDto> SkillGroups,
     IReadOnlyList<ExperienceDto> Experiences,
-    IReadOnlyList<ProjectDto> Projects);
+    IReadOnlyList<ProjectDto> Projects,
+    IReadOnlyList<StatDto>? Stats = null);

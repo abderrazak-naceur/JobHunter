@@ -17,6 +17,7 @@ public static class PortfolioEndpoints
     public const int MaxHighlights = 15;
     public const int MaxProjects = 30;
     public const int MaxTechnologies = 20;
+    public const int MaxStats = 4;
 
     /// <summary>Shown until the owner saves their own content from the admin area.</summary>
     public static PortfolioContentDto DefaultContent { get; } = new(
@@ -37,7 +38,8 @@ public static class PortfolioEndpoints
             new("Cloud e DevOps", ["Azure", "Docker"])
         ],
         Experiences: [],
-        Projects: []);
+        Projects: [],
+        Stats: [new("10+", "Anni di esperienza")]);
 
     public static IEndpointRouteBuilder MapPortfolioEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -64,6 +66,8 @@ public static class PortfolioEndpoints
                     loggerFactory.CreateLogger("Portfolio").LogError(exception, "Stored portfolio content is not valid JSON; serving defaults.");
                 }
             }
+
+            content = content with { Stats = content.Stats ?? [] };
 
             http.Response.Headers.CacheControl = "public, max-age=60";
             return Results.Ok(content);
@@ -193,8 +197,18 @@ public static class PortfolioEndpoints
             projects.Add(new ProjectDto(projectName, description, technologies, url));
         }
 
+        var stats = new List<StatDto>();
+        var rawStats = request.Stats ?? [];
+        if (rawStats.Count > MaxStats) Fail(nameof(request.Stats), $"Massimo {MaxStats} numeri in evidenza.");
+        for (var i = 0; i < Math.Min(rawStats.Count, MaxStats); i++)
+        {
+            var value = Required(rawStats[i]?.Value, $"Stats[{i}].Value", "Il valore", 20);
+            var label = Required(rawStats[i]?.Label, $"Stats[{i}].Label", "L'etichetta", 60);
+            stats.Add(new StatDto(value, label));
+        }
+
         var content = new PortfolioContentDto(name, role, tagline, summary, location, workMode, email, cvUrl,
-            links, skillGroups, experiences, projects);
+            links, skillGroups, experiences, projects, stats);
         return (content, errors);
     }
 

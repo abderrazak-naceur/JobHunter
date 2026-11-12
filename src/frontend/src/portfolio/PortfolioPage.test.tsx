@@ -55,6 +55,37 @@ describe('PortfolioPage', () => {
     expect(screen.queryByRole('link', { name: /Scrivimi/ })).not.toBeInTheDocument();
   });
 
+  it('shows the highlighted numbers as a list', () => {
+    render(<PortfolioPage content={{ ...full, stats: [{ value: '10+', label: 'Anni di esperienza' }, { value: '25', label: 'Progetti' }] }} />);
+
+    const list = screen.getByRole('list', { name: 'In numeri' });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(list).getByText('10+')).toBeInTheDocument();
+    expect(within(list).getByText('Progetti')).toBeInTheDocument();
+  });
+
+  it('works with content that has no numbers at all', () => {
+    render(<PortfolioPage content={{ ...full, stats: undefined }} />);
+
+    expect(screen.queryByRole('list', { name: 'In numeri' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
+
+  it('keeps decorative effects out of the accessibility tree', () => {
+    const { container } = render(<PortfolioPage content={full} />);
+
+    // The skills strip and the monogram repeat information that is already available as text.
+    expect(container.querySelector('.marquee')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getAllByText('ASP.NET Core').length).toBeGreaterThan(1);
+    expect(within(screen.getByRole('region', { name: 'Competenze' })).getAllByText('ASP.NET Core')).toHaveLength(1);
+  });
+
+  it('shows the same text for every visitor even when scroll animations are unavailable', () => {
+    render(<PortfolioPage content={full} />);
+
+    document.querySelectorAll('.reveal').forEach(element => expect(element).toHaveClass('is-visible'));
+  });
+
   it('opens external links safely in a new tab', () => {
     render(<PortfolioPage content={full} />);
 

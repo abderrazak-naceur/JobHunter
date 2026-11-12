@@ -17,6 +17,8 @@ export type Project = {
   url?: string | null;
 };
 
+export type Stat = { value: string; label: string };
+
 export type PortfolioContent = {
   name: string;
   role: string;
@@ -30,6 +32,7 @@ export type PortfolioContent = {
   skillGroups: SkillGroup[];
   experiences: Experience[];
   projects: Project[];
+  stats?: Stat[] | null;
 };
 
 /**
@@ -56,6 +59,7 @@ export const portfolio: PortfolioContent = {
     { title: 'Cloud e DevOps', skills: ['Azure', 'Docker'] }
   ],
   experiences: [],
+  stats: [{ value: '10+', label: 'Anni di esperienza' }],
   projects: [
     {
       name: 'Portfolio e Job Tracker',

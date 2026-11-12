@@ -14,6 +14,7 @@ export type PortfolioDraft = {
   skillGroups: { title: string; skills: string }[]; // comma separated
   experiences: { company: string; role: string; period: string; description: string; highlights: string }[]; // one per line
   projects: { name: string; description: string; technologies: string; url: string }[]; // technologies comma separated
+  stats: { value: string; label: string }[];
 };
 
 const splitOn = (text: string, separator: RegExp) =>
@@ -26,6 +27,7 @@ export const emptyLink = (): PortfolioLink => ({ label: '', url: '' });
 export const emptySkillGroup = () => ({ title: '', skills: '' });
 export const emptyExperience = () => ({ company: '', role: '', period: '', description: '', highlights: '' });
 export const emptyProject = () => ({ name: '', description: '', technologies: '', url: '' });
+export const emptyStat = () => ({ value: '', label: '' });
 
 export function toDraft(content: PortfolioContent): PortfolioDraft {
   return {
@@ -51,7 +53,8 @@ export function toDraft(content: PortfolioContent): PortfolioDraft {
       description: project.description,
       technologies: project.technologies.join(', '),
       url: project.url ?? ''
-    }))
+    })),
+    stats: (content.stats ?? []).map(stat => ({ ...stat }))
   };
 }
 
@@ -79,6 +82,7 @@ export function fromDraft(draft: PortfolioDraft): PortfolioContent {
       description: project.description.trim(),
       technologies: splitComma(project.technologies),
       url: project.url.trim() || null
-    }))
+    })),
+    stats: draft.stats.map(stat => ({ value: stat.value.trim(), label: stat.label.trim() }))
   };
 }

@@ -30,6 +30,8 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 - [ ] TASK-037 — Render deployment: static site + web service + managed PostgreSQL, SPA rewrite for `/admin`, environment variables, CORS, `render.yaml` and a release checklist (extends TASK-033)
 - [ ] TASK-038 — Application tracker in the admin area: save a job, status pipeline (Saved, Applied, Interview, Offer, Rejected), notes, source link and event history (TASK-005 first slice)
 
+- [x] TASK-039 — Professional visual redesign of the public portfolio with Tailwind CSS: animated gradient hero with monogram and floating skills, overlapping "numbers" cards (editable from the admin, max 4), skills strip, skill cards with icons, experience timeline, project cards, contact banner, scroll progress bar and scroll-reveal animations (all disabled for users who prefer reduced motion). The public bundle only contains its own styles and is loaded only on `/`. Checked visually in headless Chrome at desktop and 390 px width (no horizontal overflow). Not yet done: dark mode, real project screenshots/images, Lighthouse accessibility audit.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.

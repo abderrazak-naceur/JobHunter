@@ -68,6 +68,21 @@ describe('PortfolioEditor', () => {
     expect(screen.queryByLabelText(/Azienda \*/)).not.toBeInTheDocument();
   });
 
+  it('adds highlighted numbers, limits them to four and sends them', async () => {
+    fetchMock.mockResolvedValue({ ...stored, stats: [] });
+    render(<PortfolioEditor />);
+    await screen.findByLabelText(/^Nome \*/);
+
+    await userEvent.click(screen.getByRole('button', { name: /Aggiungi numero/ }));
+    await userEvent.type(screen.getByLabelText(/^Valore/), '10+');
+    await userEvent.type(screen.getByLabelText(/^Etichetta/), 'Anni di esperienza');
+    for (let i = 0; i < 3; i++) await userEvent.click(screen.getByRole('button', { name: /Aggiungi numero/ }));
+    expect(screen.queryByRole('button', { name: /Aggiungi numero/ })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Rimuovi numero 4' }));
+    expect(screen.getByRole('button', { name: /Aggiungi numero/ })).toBeInTheDocument();
+  });
+
   it('removes a link from the contacts', async () => {
     fetchMock.mockResolvedValue({ ...stored, links: [{ label: 'GitHub', url: 'https://github.com/x' }] });
     render(<PortfolioEditor />);
