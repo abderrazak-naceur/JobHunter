@@ -1,21 +1,23 @@
 import { useState } from 'react';
-import { ExternalLink, LogOut, Palette, Target, type LucideIcon } from 'lucide-react';
+import { BriefcaseBusiness, ExternalLink, LayoutDashboard, LogOut, Palette, Target, type LucideIcon } from 'lucide-react';
 import { Toaster } from 'sonner';
+import ApplicationsPage from './admin/applications/ApplicationsPage';
+import Dashboard, { type AdminTab } from './admin/Dashboard';
 import PortfolioAdmin from './admin/portfolio/PortfolioAdmin';
 import CompanyRadar from './CompanyRadar';
 import { signOut } from './auth/session';
 import './styles.css';
 
-type Tab = 'portfolio' | 'companies';
-
-const nav: { id: Tab; label: string; icon: LucideIcon }[] = [
+const nav: { id: AdminTab; label: string; icon: LucideIcon }[] = [
+  { id: 'overview', label: 'Panoramica', icon: LayoutDashboard },
+  { id: 'applications', label: 'Candidature', icon: BriefcaseBusiness },
   { id: 'portfolio', label: 'Portfolio', icon: Palette },
   { id: 'companies', label: 'Company Radar', icon: Target }
 ];
 
 /** Private area: everything that can be created, edited and deleted lives here. */
 export default function App() {
-  const [tab, setTab] = useState<Tab>('portfolio');
+  const [tab, setTab] = useState<AdminTab>('overview');
   const current = nav.find(item => item.id === tab)!;
 
   return (
@@ -48,6 +50,8 @@ export default function App() {
           <div className="avatar small" aria-hidden="true">AN</div>
         </header>
         <section className="content">
+          {tab === 'overview' && <Dashboard onNavigate={setTab} />}
+          {tab === 'applications' && <ApplicationsPage />}
           {tab === 'portfolio' && <PortfolioAdmin />}
           {tab === 'companies' && <CompanyRadar />}
         </section>

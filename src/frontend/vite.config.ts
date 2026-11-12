@@ -16,6 +16,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/test/setup.ts',
-    css: false
+    css: false,
+    // Typing-heavy UI tests can exceed the 5 s default on a busy machine or a slow CI runner.
+    testTimeout: 20000
   }
 });

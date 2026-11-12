@@ -26,6 +26,12 @@ if (typeof window.ResizeObserver !== 'function') {
   };
 }
 
+// Radix UI (Select, Dialog) calls these browser methods, which jsdom does not implement.
+Element.prototype.hasPointerCapture ??= () => false;
+Element.prototype.setPointerCapture ??= () => {};
+Element.prototype.releasePointerCapture ??= () => {};
+Element.prototype.scrollIntoView ??= () => {};
+
 afterEach(() => {
   cleanup();
   sessionStorage.clear();

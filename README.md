@@ -3,7 +3,7 @@
 Personal site with two parts:
 
 - `/` — public one-page portfolio used to apply for jobs. Its content is stored in PostgreSQL and edited from `/admin` → "Modifica portfolio"; sections with no entries are hidden. The text shown before anything is saved (and if the API is unreachable) comes from `content/portfolio.default.json`, which the API embeds and the website bundles, so there is a single source of truth: edit that file to change the starting content. It deliberately leaves out private details such as date of birth and phone number.
-- `/admin` — private area for job search, Company Radar and application tracking.
+- `/admin` — private area (login required) with four sections: **Panoramica** (numbers and next steps), **Candidature** (job application tracker: create, edit, delete, change stage, filter, search, status history), **Portfolio** (create, edit, delete and reorder every part of the public site) and **Company Radar**.
 
 > The admin area and API require a login (TASK-036). Before the first public deploy rotate the old local database password (it was committed in earlier history) and follow the deployment task (TASK-037).
 
@@ -89,6 +89,7 @@ Protected endpoints (`Authorization: Bearer <token>`); every endpoint is protect
 - `PUT /api/v1/portfolio` (replace the published content)
 - `PUT /api/v1/portfolio/photo` (upload the profile photo as the raw request body: JPEG, PNG or WebP, max 2 MB; the type is detected from the file content) and `DELETE /api/v1/portfolio/photo`
 - `GET /api/v1/auth/me`
+- `GET /api/v1/applications?search=&status=&page=&pageSize=`, `GET /api/v1/applications/summary`, `GET /api/v1/applications/{id}` (with the status history), `POST /api/v1/applications`, `PUT /api/v1/applications/{id}`, `DELETE /api/v1/applications/{id}` (job application tracker)
 - `GET /api/v1/companies?search=dotnet&page=1&pageSize=20`
 - `GET /api/v1/companies/{id}`
 - `POST /api/v1/companies`
