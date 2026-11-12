@@ -5,7 +5,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: { port: 5173 },
+  // The default portfolio content is shared with the API and lives outside this folder.
+  server: { port: 5173, fs: { allow: ['../..'] } },
   test: {
     environment: 'jsdom',
     globals: true,

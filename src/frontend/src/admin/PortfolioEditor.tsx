@@ -1,6 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { ExternalLink, Plus, Trash2 } from 'lucide-react';
-import { fetchPortfolio, savePortfolio } from '../services/portfolioApi';
+import { resolveAssetUrl } from '../services/apiConfig';
+import { deletePhoto, fetchPortfolio, savePortfolio, uploadPhoto } from '../services/portfolioApi';
 import {
   emptyExperience, emptyLink, emptyProject, emptySkillGroup, emptyStat, fromDraft, toDraft, type PortfolioDraft
 } from './portfolioDraft';
@@ -16,6 +17,7 @@ export default function PortfolioEditor() {
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -55,6 +57,37 @@ export default function PortfolioEditor() {
     setSaved(false);
   }
 
+  /** A photo uploaded to the API has an address like "/api/v1/portfolio/photo?v=..."; anything else is a manual URL. */
+  const photoUploaded = draft.photoUrl.startsWith('/api/');
+
+  async function onPhotoSelected(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = ''; // lets the same file be chosen again
+    if (!file) return;
+
+    setError('');
+    setPhotoBusy(true);
+    try {
+      change({ photoUrl: await uploadPhoto(file) });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Caricamento della foto non riuscito.');
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
+  async function onPhotoRemoved() {
+    setError('');
+    setPhotoBusy(true);
+    try {
+      if (photoUploaded) await deletePhoto();
+      change({ photoUrl: '' });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Rimozione della foto non riuscita.');
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft) return;
@@ -93,7 +126,25 @@ export default function PortfolioEditor() {
           <label>Ruolo *<input value={draft.role} onChange={e => change({ role: e.target.value })} required maxLength={120} /></label>
           <label className="wide">Slogan<input value={draft.tagline} onChange={e => change({ tagline: e.target.value })} maxLength={250} /></label>
           <label className="wide">Chi sono *<textarea value={draft.summary} onChange={e => change({ summary: e.target.value })} required maxLength={2000} rows={5} /></label>
-          <label className="wide">Foto profilo (URL dell’immagine)<input type="url" value={draft.photoUrl} onChange={e => change({ photoUrl: e.target.value })} maxLength={500} placeholder="https://... (foto quadrata, anche trasparente)" /></label>
+          <div className="wide editor-photo">
+            <span className="editor-photo-title">Foto profilo</span>
+            <div className="editor-photo-row">
+              {draft.photoUrl
+                ? <img src={resolveAssetUrl(draft.photoUrl)} alt="Anteprima della foto profilo" className="editor-photo-preview" />
+                : <div aria-hidden="true" className="editor-photo-empty">Nessuna foto</div>}
+              <div className="editor-photo-actions">
+                <label className="outline editor-upload">
+                  {photoBusy ? 'Attendi...' : draft.photoUrl ? 'Cambia foto' : 'Carica foto'}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={photoBusy} onChange={onPhotoSelected} />
+                </label>
+                {draft.photoUrl && <button type="button" className="outline" disabled={photoBusy} onClick={onPhotoRemoved}>Rimuovi foto</button>}
+                <p className="muted">JPEG, PNG o WebP, massimo 2 MB. Una foto caricata viene pubblicata subito.</p>
+              </div>
+            </div>
+            {!photoUploaded && (
+              <label>Oppure indica l’URL di una foto<input type="url" value={draft.photoUrl} onChange={e => change({ photoUrl: e.target.value })} maxLength={500} placeholder="https://..." /></label>
+            )}
+          </div>
           <label>Località<input value={draft.location} onChange={e => change({ location: e.target.value })} maxLength={120} /></label>
           <label>Modalità di lavoro<input value={draft.workMode} onChange={e => change({ workMode: e.target.value })} maxLength={120} /></label>
         </div>

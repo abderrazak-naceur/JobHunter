@@ -67,6 +67,8 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
 
   const allSkills = [...new Set(skillGroups.flatMap(group => group.skills))];
   const hasContacts = Boolean(email) || links.length > 0;
+  // With few contacts the cards are wider, so an email address fits on one line.
+  const contactCardWidth = (email ? 1 : 0) + links.length <= 3 ? 'lg:w-[calc(33.333%-1rem)]' : 'lg:w-[calc(25%-1.125rem)]';
   const [featured, ...otherProjects] = projects;
 
   const sections = [
@@ -414,7 +416,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
             <SectionHeading id="pf-contacts" eyebrow="Lavoriamo insieme" title="Contatti" />
             <ul className="flex flex-wrap justify-center gap-6">
               {email && (
-                <li className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)]">
+                <li className={`w-full sm:w-[calc(50%-0.75rem)] ${contactCardWidth}`}>
                   <Reveal className="h-full">
                     <a href={`mailto:${email}`} className={`card-blue group flex h-full min-h-[15rem] flex-col rounded-[2rem] p-7 text-white hover:shadow-2xl hover:shadow-brand-800/40 ${lift} ${focusRing}`}>
                       <Mail size={28} aria-hidden="true" className="text-accent-300" />
@@ -425,7 +427,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
                 </li>
               )}
               {links.map((link, index) => (
-                <li key={link.url} className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)]">
+                <li key={link.url} className={`w-full sm:w-[calc(50%-0.75rem)] ${contactCardWidth}`}>
                   <Reveal delay={(index + 1) * 100} className="h-full">
                     <a
                       href={link.url}

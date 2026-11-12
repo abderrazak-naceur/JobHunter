@@ -18,28 +18,27 @@ public static class PortfolioEndpoints
     public const int MaxProjects = 30;
     public const int MaxTechnologies = 20;
     public const int MaxStats = 4;
+    public const int MaxPhotoBytes = 2 * 1024 * 1024;
 
-    /// <summary>Shown until the owner saves their own content from the admin area.</summary>
-    public static PortfolioContentDto DefaultContent { get; } = new(
-        Name: "Il tuo nome",
-        Role: "Senior .NET Developer",
-        Tagline: "Costruisco applicazioni web affidabili con C#, ASP.NET Core e React.",
-        Summary: "Presentati in poche righe: esperienza, tipo di progetti e cosa cerchi.",
-        Location: "Milano e dintorni",
-        WorkMode: "Remote / Hybrid",
-        Email: null,
-        CvUrl: null,
-        Links: [],
-        SkillGroups:
-        [
-            new("Backend", ["C# / .NET", "ASP.NET Core", "REST API"]),
-            new("Frontend", ["React", "TypeScript"]),
-            new("Dati", ["SQL Server", "PostgreSQL"]),
-            new("Cloud e DevOps", ["Azure", "Docker"])
-        ],
-        Experiences: [],
-        Projects: [],
-        Stats: [new("10+", "Anni di esperienza")]);
+    /// <summary>Public address of the uploaded profile photo (relative to the API).</summary>
+    public const string PhotoPath = "/api/v1/portfolio/photo";
+
+    private static string PhotoUrlFor(DateTimeOffset updatedAt) => $"{PhotoPath}?v={updatedAt.UtcTicks}";
+
+    /// <summary>
+    /// Shown until the owner saves their own content from the admin area. Loaded from
+    /// <c>content/portfolio.default.json</c>, which is embedded in the assembly and also used as the
+    /// offline fallback of the website, so there is a single source of truth.
+    /// </summary>
+    public static PortfolioContentDto DefaultContent { get; } = LoadDefaultContent();
+
+    private static PortfolioContentDto LoadDefaultContent()
+    {
+        using var stream = typeof(PortfolioEndpoints).Assembly.GetManifestResourceStream("portfolio.default.json")
+            ?? throw new InvalidOperationException("Embedded resource 'portfolio.default.json' is missing.");
+        return JsonSerializer.Deserialize<PortfolioContentDto>(stream, JsonOptions)
+            ?? throw new InvalidOperationException("Embedded resource 'portfolio.default.json' is empty.");
+    }
 
     public static IEndpointRouteBuilder MapPortfolioEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -69,6 +68,13 @@ public static class PortfolioEndpoints
 
             content = content with { Stats = content.Stats ?? [] };
 
+            // An uploaded photo always wins over a manually entered photo URL.
+            var photoUpdatedAt = await db.PortfolioAssets.AsNoTracking()
+                .Where(x => x.Kind == PortfolioAsset.PhotoKind)
+                .Select(x => (DateTimeOffset?)x.UpdatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (photoUpdatedAt is not null) content = content with { PhotoUrl = PhotoUrlFor(photoUpdatedAt.Value) };
+
             http.Response.Headers.CacheControl = "public, max-age=60";
             return Results.Ok(content);
         }).AllowAnonymous().WithTags("Portfolio");
@@ -96,7 +102,85 @@ public static class PortfolioEndpoints
             return Results.Ok(content);
         }).RequireAuthorization().WithTags("Portfolio");
 
+        // Public: the uploaded profile photo.
+        endpoints.MapGet(PhotoPath, async (HttpContext http, JobHunterDbContext db, CancellationToken cancellationToken) =>
+        {
+            var asset = await db.PortfolioAssets.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Kind == PortfolioAsset.PhotoKind, cancellationToken);
+            if (asset is null) return Results.NotFound();
+
+            // The address changes (?v=...) whenever the photo changes, so it can be cached for a long time.
+            http.Response.Headers.CacheControl = "public, max-age=86400";
+            http.Response.Headers["X-Content-Type-Options"] = "nosniff";
+            return Results.File(asset.Data, asset.ContentType);
+        }).AllowAnonymous().WithTags("Portfolio");
+
+        // Admin only: upload the photo as the raw request body (image/jpeg, image/png or image/webp).
+        endpoints.MapPut(PhotoPath, async (HttpRequest request, JobHunterDbContext db, CancellationToken cancellationToken) =>
+        {
+            const string tooLarge = "La foto supera i 2 MB.";
+            if (request.ContentLength > MaxPhotoBytes) return Results.Problem(title: tooLarge, statusCode: StatusCodes.Status413PayloadTooLarge);
+
+            var data = await ReadLimitedAsync(request.Body, MaxPhotoBytes, cancellationToken);
+            if (data is null) return Results.Problem(title: tooLarge, statusCode: StatusCodes.Status413PayloadTooLarge);
+
+            // The type is detected from the file content, never trusted from the Content-Type header.
+            var contentType = DetectImageType(data);
+            if (contentType is null)
+                return Results.Problem(title: "Formato non supportato. Usa un file JPEG, PNG o WebP.", statusCode: StatusCodes.Status415UnsupportedMediaType);
+
+            var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == PortfolioAsset.PhotoKind, cancellationToken);
+            if (asset is null)
+            {
+                asset = new PortfolioAsset { Kind = PortfolioAsset.PhotoKind };
+                db.PortfolioAssets.Add(asset);
+            }
+
+            asset.ContentType = contentType;
+            asset.Data = data;
+            asset.UpdatedAt = DateTimeOffset.UtcNow;
+            await db.SaveChangesAsync(cancellationToken);
+
+            return Results.Ok(new PhotoResponse(PhotoUrlFor(asset.UpdatedAt)));
+        }).RequireAuthorization().WithTags("Portfolio");
+
+        // Admin only: remove the photo (safe to call when there is none).
+        endpoints.MapDelete(PhotoPath, async (JobHunterDbContext db, CancellationToken cancellationToken) =>
+        {
+            var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == PortfolioAsset.PhotoKind, cancellationToken);
+            if (asset is not null)
+            {
+                db.PortfolioAssets.Remove(asset);
+                await db.SaveChangesAsync(cancellationToken);
+            }
+
+            return Results.NoContent();
+        }).RequireAuthorization().WithTags("Portfolio");
+
         return endpoints;
+    }
+
+    private static async Task<byte[]?> ReadLimitedAsync(Stream body, int maxBytes, CancellationToken cancellationToken)
+    {
+        using var buffer = new MemoryStream();
+        var chunk = new byte[16 * 1024];
+        int read;
+        while ((read = await body.ReadAsync(chunk, cancellationToken)) > 0)
+        {
+            if (buffer.Length + read > maxBytes) return null;
+            buffer.Write(chunk, 0, read);
+        }
+
+        return buffer.ToArray();
+    }
+
+    /// <summary>Recognises JPEG, PNG and WebP by their signature. SVG is deliberately not accepted (it can carry scripts).</summary>
+    public static string? DetectImageType(ReadOnlySpan<byte> data)
+    {
+        if (data.Length >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) return "image/jpeg";
+        if (data.Length >= 8 && data[..8].SequenceEqual<byte>([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])) return "image/png";
+        if (data.Length >= 12 && data[..4].SequenceEqual<byte>("RIFF"u8) && data[8..12].SequenceEqual<byte>("WEBP"u8)) return "image/webp";
+        return null;
     }
 
     /// <summary>Trims every text and returns the cleaned document, or the validation errors.</summary>
@@ -141,7 +225,10 @@ public static class PortfolioEndpoints
         else if (email.Length > 254 || !IsEmail(email)) Fail(nameof(request.Email), "Inserisci un indirizzo email valido.");
 
         var cvUrl = OptionalUrl(request.CvUrl, nameof(request.CvUrl), "Il link al CV");
-        var photoUrl = OptionalUrl(request.PhotoUrl, nameof(request.PhotoUrl), "Il link alla foto");
+        // The address of the uploaded photo is derived by the server; it is never stored in the content.
+        var photoUrl = request.PhotoUrl?.Trim() is { } submittedPhoto && submittedPhoto.StartsWith(PhotoPath, StringComparison.Ordinal)
+            ? null
+            : OptionalUrl(request.PhotoUrl, nameof(request.PhotoUrl), "Il link alla foto");
 
         var links = new List<PortfolioLinkDto>();
         var rawLinks = request.Links ?? [];

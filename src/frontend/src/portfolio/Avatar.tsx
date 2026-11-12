@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { resolveAssetUrl } from '../services/apiConfig';
 import { initialsOf } from './helpers';
 
 type Props = { name: string; photoUrl?: string | null; className?: string };
@@ -11,7 +12,7 @@ export default function Avatar({ name, photoUrl, className = '' }: Props) {
   if (showPhoto) {
     return (
       <img
-        src={photoUrl!}
+        src={resolveAssetUrl(photoUrl!)}
         alt={`Foto di ${name}`}
         width={448}
         height={448}

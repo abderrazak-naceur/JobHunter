@@ -2,7 +2,8 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import PortfolioPage from './PortfolioPage';
-import { portfolio, type PortfolioContent } from './content';
+import type { PortfolioContent } from './content';
+import { sampleContent as portfolio } from '../test/fixtures';
 
 const full: PortfolioContent = {
   ...portfolio,
@@ -118,6 +119,12 @@ describe('PortfolioPage', () => {
     fireEvent.error(photo);
 
     expect(screen.queryByRole('img', { name: /Foto di/ })).not.toBeInTheDocument();
+  });
+
+  it('loads a photo uploaded to the API from the API address', () => {
+    render(<PortfolioPage content={{ ...full, photoUrl: '/api/v1/portfolio/photo?v=1' }} />);
+
+    expect(screen.getByRole('img', { name: `Foto di ${full.name}` }).getAttribute('src')).toMatch(/^https?:\/\/.+\/api\/v1\/portfolio\/photo\?v=1$/);
   });
 
   it('shows no photo element when none is set', () => {

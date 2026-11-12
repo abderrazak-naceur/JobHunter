@@ -10,6 +10,8 @@ public sealed record ProjectDto(string Name, string Description, IReadOnlyList<s
 
 public sealed record StatDto(string Value, string Label);
 
+public sealed record PhotoResponse(string PhotoUrl);
+
 public sealed record PortfolioContentDto(
     string Name,
     string Role,

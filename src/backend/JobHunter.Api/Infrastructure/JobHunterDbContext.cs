@@ -7,6 +7,7 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
 {
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<PortfolioProfile> PortfolioProfiles => Set<PortfolioProfile>();
+    public DbSet<PortfolioAsset> PortfolioAssets => Set<PortfolioAsset>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,5 +30,12 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
         portfolio.HasKey(x => x.Id);
         portfolio.Property(x => x.Id).ValueGeneratedNever();
         portfolio.Property(x => x.ContentJson).IsRequired();
+
+        var asset = modelBuilder.Entity<PortfolioAsset>();
+        asset.ToTable("PortfolioAssets");
+        asset.HasKey(x => x.Kind);
+        asset.Property(x => x.Kind).HasMaxLength(20);
+        asset.Property(x => x.ContentType).HasMaxLength(100).IsRequired();
+        asset.Property(x => x.Data).IsRequired();
     }
 }

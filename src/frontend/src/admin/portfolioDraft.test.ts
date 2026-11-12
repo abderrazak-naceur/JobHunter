@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { portfolio, type PortfolioContent } from '../portfolio/content';
+import type { PortfolioContent } from '../portfolio/content';
+import { sampleContent as portfolio } from '../test/fixtures';
 import { fromDraft, splitComma, splitLines, toDraft } from './portfolioDraft';
 
 const content: PortfolioContent = {
