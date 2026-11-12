@@ -43,4 +43,32 @@ describe('App (private area)', () => {
 
     expect(getAccessToken()).toBeNull();
   });
-});
+
+  it('has a skip link to the content and names the main area', () => {
+    render(<App />);
+
+    expect(screen.getByRole('link', { name: 'Vai al contenuto' })).toHaveAttribute('href', '#contenuto');
+    expect(screen.getByRole('main', { name: 'Panoramica' })).toHaveAttribute('id', 'contenuto');
+  });
+
+  it('updates the page title and moves the focus to the content when the area changes', async () => {
+    render(<App />);
+    expect(document.title).toBe('Panoramica · Portfolio - area privata');
+    expect(screen.getByRole('main')).not.toHaveFocus(); // not stolen on first load
+
+    await userEvent.click(screen.getByRole('button', { name: 'Candidature' }));
+
+    expect(document.title).toBe('Candidature · Portfolio - area privata');
+    expect(screen.getByRole('main', { name: 'Candidature' })).toHaveFocus();
+  });
+
+  it('keeps every menu button named when the labels are hidden on small screens', () => {
+    render(<App />);
+
+    const menu = screen.getByRole('navigation', { name: 'Aree di gestione' });
+    for (const button of menu.querySelectorAll('button')) {
+      expect(button.getAttribute('aria-label')).toBe(button.textContent);
+    }
+    expect(screen.getByRole('button', { name: 'Esci' })).toHaveAttribute('aria-label', 'Esci');
+    expect(screen.getByRole('link', { name: /nuova scheda/ })).toHaveAttribute('href', '/');
+  });});

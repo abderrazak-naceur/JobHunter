@@ -80,3 +80,7 @@ body{background:#f8fafc;color:#172033}
   --input: #cdd3f3;
   --ring: #3550e8;
 }
+
+/* Keyboard users: the menu buttons show where the focus is; the main area only receives focus from code. */
+.nav-item:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+.main:focus { outline: none; }

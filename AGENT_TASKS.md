@@ -61,6 +61,8 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-019 (partly) — Errors in one shape: every failure answers as `application/problem+json` with a `correlationId` (unexpected errors give no stack trace, SQL or paths; the details go to the log), also for unknown routes and empty 401/404/429 bodies. Validation errors keep the `errors` map per field. The admin shows the reference ("rif. ...") on server errors so it can be found in the log. Not done: FluentValidation (the hand-written validators are tested and consistent), API versioning beyond `/api/v1`, a generated OpenAPI client.
 
+- [x] TASK-031 (partly) — Accessibility of the admin shell: a "Vai al contenuto" skip link, a named `main` landmark, the page title follows the area, the focus moves to the content after choosing an area (not on first load), menu buttons keep their name when the labels are hidden on small screens, decorative icons are hidden from screen readers, visible focus on the menu. The public site already had landmarks, a skip link, a single h1 and reduced-motion handling. Not done: dark mode (the admin mixes a legacy dark stylesheet with light shadcn components, so it needs a restyle first), a contrast audit with a tool, testing with a real screen reader.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.
@@ -83,7 +85,7 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 ### Platform (Q2 2027)
 
 - [ ] TASK-030 — Background job runner for scheduled searches and Company Radar scans (Hosted Services or Hangfire) with retries and run history
-- [ ] TASK-031 — Accessibility and UX pass: keyboard navigation, contrast, responsive layouts, dark mode and empty/error/loading states
+- [ ] TASK-031 — Accessibility and UX pass, remaining part: dark mode, a contrast audit with a tool, a check with a real screen reader. Keyboard/landmark work is done (see "TASK-031 (partly)" above).
 - [ ] TASK-032 — Internationalization: Italian and English UI with locale-aware dates and currency
 - [ ] TASK-033 — Deployment guide: self-hosted setup on a single machine, environment configuration and upgrade/migration procedure
 
