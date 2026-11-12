@@ -17,6 +17,24 @@
     { "value": "2", "label": "Certificazioni Microsoft" },
     { "value": "4", "label": "Lingue parlate" }
   ],
+  "education": [
+    {
+      "institution": "Università di Milano-Bicocca",
+      "degree": "Laurea magistrale in Informatica",
+      "period": "In corso",
+      "description": ""
+    }
+  ],
+  "certifications": [
+    { "name": "Microsoft Azure Fundamentals (AZ-900)", "issuer": "Microsoft", "year": "", "url": null },
+    { "name": "Microsoft Azure AI Fundamentals (AI-900)", "issuer": "Microsoft", "year": "", "url": null }
+  ],
+  "languages": [
+    { "name": "Italiano", "level": "Fluente" },
+    { "name": "Inglese", "level": "Professionale" },
+    { "name": "Francese", "level": "Professionale" },
+    { "name": "Arabo", "level": "Madrelingua" }
+  ],
   "skillGroups": [
     {
       "title": "Backend",

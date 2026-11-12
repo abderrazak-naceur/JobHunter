@@ -45,6 +45,8 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-046 � Change the admin password from the app (Admin > Sicurezza). The new password is stored as a PBKDF2 hash in an AdminAccounts table and replaces the configured one; every older token stops working (tokens carry a fingerprint of the password hash), and the current session gets a fresh token. Rules: 12-256 characters, different from the current one and from the username, wrong current password answers 400, same rate limit as login. Needs dotnet ef database update once. Recovery if forgotten: DELETE FROM "AdminAccounts"; makes the configured credentials valid again.
 
+- [x] TASK-047 — Education, certifications and languages: three new optional lists in the portfolio content (no migration, content is one JSON document; older saved content simply has them empty). Public site gets a "Formazione e lingue" section (also in the menu and footer), shown only when at least one list has entries; the admin gets the tabs Formazione, Certificazioni and Lingue with add/edit/delete/reorder. Server validation with limits (10 / 30 / 12 items). The bundled default content now lists the Master's degree in progress, AZ-900, AI-900 and four languages; the language levels there are a first guess to be corrected in the admin.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.

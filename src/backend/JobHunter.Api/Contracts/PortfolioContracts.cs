@@ -10,6 +10,12 @@ public sealed record ProjectDto(string Name, string Description, IReadOnlyList<s
 
 public sealed record StatDto(string Value, string Label);
 
+public sealed record EducationDto(string Institution, string Degree, string Period, string Description);
+
+public sealed record CertificationDto(string Name, string Issuer, string Year, string? Url);
+
+public sealed record LanguageDto(string Name, string Level);
+
 public sealed record PhotoResponse(string PhotoUrl);
 
 public sealed record PortfolioContentDto(
@@ -26,4 +32,7 @@ public sealed record PortfolioContentDto(
     IReadOnlyList<ExperienceDto> Experiences,
     IReadOnlyList<ProjectDto> Projects,
     IReadOnlyList<StatDto>? Stats = null,
-    string? PhotoUrl = null);
+    string? PhotoUrl = null,
+    IReadOnlyList<EducationDto>? Education = null,
+    IReadOnlyList<CertificationDto>? Certifications = null,
+    IReadOnlyList<LanguageDto>? Languages = null);

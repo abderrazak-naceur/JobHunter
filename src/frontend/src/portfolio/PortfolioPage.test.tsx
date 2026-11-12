@@ -225,4 +225,36 @@ describe('PortfolioPage', () => {
     expect(github).toHaveAttribute('target', '_blank');
     expect(github.getAttribute('rel')).toContain('noopener');
   });
-});
+
+  it('shows education, certifications and languages, and links the section', () => {
+    render(
+      <PortfolioPage
+        content={{
+          ...full,
+          education: [{ institution: 'Ateneo', degree: 'Laurea in Informatica', period: 'In corso', description: '' }],
+          certifications: [
+            { name: 'AZ-900', issuer: 'Microsoft', year: '2023', url: 'https://example.com/az900' },
+            { name: 'AI-900', issuer: 'Microsoft', year: '', url: null }
+          ],
+          languages: [{ name: 'Inglese', level: 'C1' }]
+        }}
+      />
+    );
+
+    const nav = screen.getByRole('navigation', { name: 'Sezioni' });
+    expect(within(nav).getByRole('link', { name: 'Formazione' })).toHaveAttribute('href', '#formazione');
+    const section = document.getElementById('formazione')!;
+    expect(within(section).getByText('Laurea in Informatica')).toBeInTheDocument();
+    expect(within(section).getByRole('link', { name: 'AZ-900' })).toHaveAttribute('href', 'https://example.com/az900');
+    expect(within(section).getByText('AI-900')).toBeInTheDocument();
+    expect(within(section).queryByRole('link', { name: 'AI-900' })).toBeNull();
+    expect(within(section).getByText('Inglese')).toBeInTheDocument();
+    expect(within(section).getByText('C1')).toBeInTheDocument();
+  });
+
+  it('hides the education section when none of its lists has entries', () => {
+    render(<PortfolioPage content={{ ...full, education: [], certifications: null, languages: undefined }} />);
+
+    expect(document.getElementById('formazione')).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Formazione' })).toBeNull();
+  });});

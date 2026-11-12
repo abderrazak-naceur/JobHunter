@@ -177,8 +177,57 @@ public sealed class PortfolioEndpointsTests : IClassFixture<JobHunterApiFactory>
         Assert.Empty(published.Stats);
     }
 
+    [Fact]
+    public async Task Put_SavesEducationCertificationsAndLanguages_AndTrimsThem()
+    {
+        var request = Valid() with
+        {
+            Education = [new("  Politecnico ", " Laurea in Informatica ", " 2010 – 2015 ", " Tesi su reti ")],
+            Certifications = [new(" AZ-900 ", " Microsoft ", " 2023 ", " https://example.com/cert ")],
+            Languages = [new(" Italiano ", " Madrelingua ")]
+        };
+
+        var save = await _admin.PutAsJsonAsync(Route, request);
+        var published = await _anonymous.GetFromJsonAsync<PortfolioContentDto>(Route);
+
+        Assert.Equal(HttpStatusCode.OK, save.StatusCode);
+        Assert.Equal([new EducationDto("Politecnico", "Laurea in Informatica", "2010 – 2015", "Tesi su reti")], published!.Education);
+        Assert.Equal([new CertificationDto("AZ-900", "Microsoft", "2023", "https://example.com/cert")], published.Certifications);
+        Assert.Equal([new LanguageDto("Italiano", "Madrelingua")], published.Languages);
+    }
+
+    [Fact]
+    public async Task Get_ReturnsEmptyNewSections_ForContentSavedBeforeTheyExisted()
+    {
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<JobHunterDbContext>();
+            var profile = await db.PortfolioProfiles.FirstOrDefaultAsync();
+            if (profile is null) db.PortfolioProfiles.Add(profile = new PortfolioProfile());
+            profile.ContentJson = """{"name":"Old","role":"Dev","tagline":"","summary":"s","location":"","workMode":"","email":null,"cvUrl":null,"links":[],"skillGroups":[],"experiences":[],"projects":[]}""";
+            await db.SaveChangesAsync();
+        }
+
+        var published = await _anonymous.GetFromJsonAsync<PortfolioContentDto>(Route);
+
+        Assert.Empty(published!.Education!);
+        Assert.Empty(published.Certifications!);
+        Assert.Empty(published.Languages!);
+    }
     public static TheoryData<string, PortfolioContentDto> InvalidContent() => new()
     {
+        { "Education[0].Institution", Valid() with { Education = [new("", "Laurea", "2015", "")] } },
+        { "Education[0].Degree", Valid() with { Education = [new("Ateneo", " ", "2015", "")] } },
+        { "Education[0].Period", Valid() with { Education = [new("Ateneo", "Laurea", "", "")] } },
+        { "Education[0].Description", Valid() with { Education = [new("Ateneo", "Laurea", "2015", new string('a', 1001))] } },
+        { "Education", Valid() with { Education = Enumerable.Range(0, 11).Select(i => new EducationDto("A", "B", "C", "")).ToList() } },
+        { "Certifications[0].Name", Valid() with { Certifications = [new("", "Microsoft", "", null)] } },
+        { "Certifications[0].Issuer", Valid() with { Certifications = [new("AZ-900", "", "", null)] } },
+        { "Certifications[0].Url", Valid() with { Certifications = [new("AZ-900", "Microsoft", "", "javascript:alert(1)")] } },
+        { "Certifications", Valid() with { Certifications = Enumerable.Range(0, 31).Select(i => new CertificationDto("A", "B", "", null)).ToList() } },
+        { "Languages[0].Name", Valid() with { Languages = [new("", "B2")] } },
+        { "Languages[0].Level", Valid() with { Languages = [new("Inglese", " ")] } },
+        { "Languages", Valid() with { Languages = Enumerable.Range(0, 13).Select(i => new LanguageDto($"L{i}", "B1")).ToList() } },
         { "PhotoUrl", Valid() with { PhotoUrl = "javascript:alert(1)" } },
         { "PhotoUrl", Valid() with { PhotoUrl = "/me.jpg" } },
         { "Stats[0].Value", Valid() with { Stats = [new("", "Anni")] } },

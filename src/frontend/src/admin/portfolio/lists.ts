@@ -1,4 +1,4 @@
-import type { Experience, PortfolioLink, Project, SkillGroup, Stat } from '@/portfolio/content';
+import type { Certification, Education, Experience, Language, PortfolioLink, Project, SkillGroup, Stat } from '@/portfolio/content';
 
 /** One input of a create/edit dialog. Every value is edited as text. */
 export type FieldDef = {
@@ -132,4 +132,68 @@ export const linksConfig: EntityConfig<PortfolioLink> = {
   subtitle: link => link.url,
   toForm: link => ({ label: link.label, url: link.url }),
   fromForm: values => ({ label: values.label.trim(), url: values.url.trim() })
+};
+
+export const educationConfig: EntityConfig<Education> = {
+  singular: 'percorso di studio',
+  plural: 'Formazione',
+  description: 'Lauree, diplomi e corsi. In ordine cronologico inverso: il primo è il più recente.',
+  max: 10,
+  fields: [
+    { name: 'institution', label: 'Istituto', required: true, maxLength: 120, placeholder: 'Università di Milano-Bicocca' },
+    { name: 'degree', label: 'Titolo', required: true, maxLength: 160, placeholder: 'Laurea magistrale in Informatica' },
+    { name: 'period', label: 'Periodo', required: true, maxLength: 60, placeholder: '2023 – in corso' },
+    { name: 'description', label: 'Descrizione', kind: 'textarea', maxLength: 1000 }
+  ],
+  title: item => item.degree,
+  subtitle: item => `${item.institution} · ${item.period}`,
+  toForm: item => ({
+    institution: item.institution,
+    degree: item.degree,
+    period: item.period,
+    description: item.description ?? ''
+  }),
+  fromForm: values => ({
+    institution: values.institution.trim(),
+    degree: values.degree.trim(),
+    period: values.period.trim(),
+    description: values.description.trim()
+  })
+};
+
+export const certificationsConfig: EntityConfig<Certification> = {
+  singular: 'certificazione',
+  plural: 'Certificazioni',
+  description: 'Certificazioni professionali, con un link di verifica se ne hai uno.',
+  max: 30,
+  fields: [
+    { name: 'name', label: 'Nome', required: true, maxLength: 160, placeholder: 'Microsoft Azure Fundamentals (AZ-900)' },
+    { name: 'issuer', label: 'Ente', required: true, maxLength: 120, placeholder: 'Microsoft' },
+    { name: 'year', label: 'Anno', maxLength: 20, placeholder: '2024' },
+    { name: 'url', label: 'Link di verifica', kind: 'url', maxLength: 500, placeholder: 'https://...' }
+  ],
+  title: item => item.name,
+  subtitle: item => [item.issuer, item.year].filter(Boolean).join(' · '),
+  toForm: item => ({ name: item.name, issuer: item.issuer, year: item.year ?? '', url: item.url ?? '' }),
+  fromForm: values => ({
+    name: values.name.trim(),
+    issuer: values.issuer.trim(),
+    year: values.year.trim(),
+    url: values.url.trim() || null
+  })
+};
+
+export const languagesConfig: EntityConfig<Language> = {
+  singular: 'lingua',
+  plural: 'Lingue',
+  description: 'Le lingue che parli, con il livello (ad esempio Madrelingua, C1, Professionale).',
+  max: 12,
+  fields: [
+    { name: 'name', label: 'Lingua', required: true, maxLength: 60, placeholder: 'Inglese' },
+    { name: 'level', label: 'Livello', required: true, maxLength: 60, placeholder: 'Professionale' }
+  ],
+  title: item => item.name,
+  subtitle: item => item.level,
+  toForm: item => ({ name: item.name, level: item.level }),
+  fromForm: values => ({ name: values.name.trim(), level: values.level.trim() })
 };

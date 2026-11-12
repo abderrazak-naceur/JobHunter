@@ -18,6 +18,9 @@ public static class PortfolioEndpoints
     public const int MaxProjects = 30;
     public const int MaxTechnologies = 20;
     public const int MaxStats = 4;
+    public const int MaxEducation = 10;
+    public const int MaxCertifications = 30;
+    public const int MaxLanguages = 12;
     public const int MaxPhotoBytes = 2 * 1024 * 1024;
 
     /// <summary>Public address of the uploaded profile photo (relative to the API).</summary>
@@ -66,7 +69,13 @@ public static class PortfolioEndpoints
                 }
             }
 
-            content = content with { Stats = content.Stats ?? [] };
+            content = content with
+            {
+                Stats = content.Stats ?? [],
+                Education = content.Education ?? [],
+                Certifications = content.Certifications ?? [],
+                Languages = content.Languages ?? []
+            };
 
             // An uploaded photo always wins over a manually entered photo URL.
             var photoUpdatedAt = await db.PortfolioAssets.AsNoTracking()
@@ -295,8 +304,43 @@ public static class PortfolioEndpoints
             stats.Add(new StatDto(value, label));
         }
 
+        var education = new List<EducationDto>();
+        var rawEducation = request.Education ?? [];
+        if (rawEducation.Count > MaxEducation) Fail(nameof(request.Education), $"Massimo {MaxEducation} percorsi di studio.");
+        for (var i = 0; i < Math.Min(rawEducation.Count, MaxEducation); i++)
+        {
+            var item = rawEducation[i];
+            var institution = Required(item?.Institution, $"Education[{i}].Institution", "L'istituto", 120);
+            var degree = Required(item?.Degree, $"Education[{i}].Degree", "Il titolo di studio", 160);
+            var period = Required(item?.Period, $"Education[{i}].Period", "Il periodo", 60);
+            var description = Optional(item?.Description, $"Education[{i}].Description", "La descrizione", 1000);
+            education.Add(new EducationDto(institution, degree, period, description));
+        }
+
+        var certifications = new List<CertificationDto>();
+        var rawCertifications = request.Certifications ?? [];
+        if (rawCertifications.Count > MaxCertifications) Fail(nameof(request.Certifications), $"Massimo {MaxCertifications} certificazioni.");
+        for (var i = 0; i < Math.Min(rawCertifications.Count, MaxCertifications); i++)
+        {
+            var item = rawCertifications[i];
+            var certName = Required(item?.Name, $"Certifications[{i}].Name", "Il nome della certificazione", 160);
+            var issuer = Required(item?.Issuer, $"Certifications[{i}].Issuer", "L'ente", 120);
+            var year = Optional(item?.Year, $"Certifications[{i}].Year", "L'anno", 20);
+            var certUrl = OptionalUrl(item?.Url, $"Certifications[{i}].Url", "Il link della certificazione");
+            certifications.Add(new CertificationDto(certName, issuer, year, certUrl));
+        }
+
+        var languages = new List<LanguageDto>();
+        var rawLanguages = request.Languages ?? [];
+        if (rawLanguages.Count > MaxLanguages) Fail(nameof(request.Languages), $"Massimo {MaxLanguages} lingue.");
+        for (var i = 0; i < Math.Min(rawLanguages.Count, MaxLanguages); i++)
+        {
+            var languageName = Required(rawLanguages[i]?.Name, $"Languages[{i}].Name", "La lingua", 60);
+            var level = Required(rawLanguages[i]?.Level, $"Languages[{i}].Level", "Il livello", 60);
+            languages.Add(new LanguageDto(languageName, level));
+        }
         var content = new PortfolioContentDto(name, role, tagline, summary, location, workMode, email, cvUrl,
-            links, skillGroups, experiences, projects, stats, photoUrl);
+            links, skillGroups, experiences, projects, stats, photoUrl, education, certifications, languages);
         return (content, errors);
     }
 

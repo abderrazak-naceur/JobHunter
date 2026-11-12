@@ -21,6 +21,12 @@ export type Project = {
 
 export type Stat = { value: string; label: string };
 
+export type Education = { institution: string; degree: string; period: string; description?: string | null };
+
+export type Certification = { name: string; issuer: string; year?: string | null; url?: string | null };
+
+export type Language = { name: string; level: string };
+
 export type PortfolioContent = {
   name: string;
   role: string;
@@ -36,6 +42,9 @@ export type PortfolioContent = {
   experiences: Experience[];
   projects: Project[];
   stats?: Stat[] | null;
+  education?: Education[] | null;
+  certifications?: Certification[] | null;
+  languages?: Language[] | null;
 };
 
 /**

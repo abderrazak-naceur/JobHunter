@@ -301,5 +301,48 @@ describe('PortfolioAdmin', () => {
         { label: 'LinkedIn', url: 'https://linkedin.com/in/x' }
       ]);
     });
-  });
+
+    it('manages education', async () => {
+      await renderOnTab('Formazione');
+
+      await userEvent.click(await screen.findByRole('button', { name: /Aggiungi percorso di studio/ }));
+      const dialog = await screen.findByRole('dialog');
+      await userEvent.type(within(dialog).getByLabelText(/^Istituto/), ' Ateneo ');
+      await userEvent.type(within(dialog).getByLabelText(/^Titolo/), 'Laurea');
+      await userEvent.type(within(dialog).getByLabelText(/^Periodo/), '2015');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salva' }));
+
+      await waitFor(() => expect(saveMock).toHaveBeenCalledTimes(1));
+      expect(saveMock.mock.calls[0][0].education).toEqual([
+        { institution: 'Ateneo', degree: 'Laurea', period: '2015', description: '' }
+      ]);
+    });
+
+    it('manages certifications and stores an empty link as none', async () => {
+      await renderOnTab('Certificazioni');
+
+      await userEvent.click(await screen.findByRole('button', { name: /Aggiungi certificazione/ }));
+      const dialog = await screen.findByRole('dialog');
+      await userEvent.type(within(dialog).getByLabelText(/^Nome/), 'AZ-900');
+      await userEvent.type(within(dialog).getByLabelText(/^Ente/), 'Microsoft');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salva' }));
+
+      await waitFor(() => expect(saveMock).toHaveBeenCalledTimes(1));
+      expect(saveMock.mock.calls[0][0].certifications).toEqual([
+        { name: 'AZ-900', issuer: 'Microsoft', year: '', url: null }
+      ]);
+    });
+
+    it('manages languages', async () => {
+      await renderOnTab('Lingue');
+
+      await userEvent.click(await screen.findByRole('button', { name: /Aggiungi lingua/ }));
+      const dialog = await screen.findByRole('dialog');
+      await userEvent.type(within(dialog).getByLabelText(/^Lingua/), 'Inglese');
+      await userEvent.type(within(dialog).getByLabelText(/^Livello/), 'C1');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salva' }));
+
+      await waitFor(() => expect(saveMock).toHaveBeenCalledTimes(1));
+      expect(saveMock.mock.calls[0][0].languages).toEqual([{ name: 'Inglese', level: 'C1' }]);
+    });  });
 });

@@ -6,10 +6,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PortfolioContent } from '@/portfolio/content';
 import { fetchPortfolio, savePortfolio } from '@/services/portfolioApi';
 import EntityList from './EntityList';
-import { experiencesConfig, linksConfig, projectsConfig, skillGroupsConfig, statsConfig } from './lists';
+import {
+  certificationsConfig,
+  educationConfig,
+  experiencesConfig,
+  languagesConfig,
+  linksConfig,
+  projectsConfig,
+  skillGroupsConfig,
+  statsConfig
+} from './lists';
 import ProfileForm from './ProfileForm';
 
-/** Manage everything shown on the public site: profile, numbers, skills, experience, projects and links. */
+/** Manage everything shown on the public site: profile, numbers, skills, experience, education, certifications, languages, projects and links. */
 export default function PortfolioAdmin() {
   const [content, setContent] = useState<PortfolioContent | null>(null);
   const [loadError, setLoadError] = useState('');
@@ -53,6 +62,9 @@ export default function PortfolioAdmin() {
           <TabsTrigger value="numeri">Numeri</TabsTrigger>
           <TabsTrigger value="competenze">Competenze</TabsTrigger>
           <TabsTrigger value="esperienza">Esperienza</TabsTrigger>
+          <TabsTrigger value="formazione">Formazione</TabsTrigger>
+          <TabsTrigger value="certificazioni">Certificazioni</TabsTrigger>
+          <TabsTrigger value="lingue">Lingue</TabsTrigger>
           <TabsTrigger value="progetti">Progetti</TabsTrigger>
           <TabsTrigger value="link">Link</TabsTrigger>
         </TabsList>
@@ -72,6 +84,15 @@ export default function PortfolioAdmin() {
         </TabsContent>
         <TabsContent value="esperienza">
           <EntityList config={experiencesConfig} items={content.experiences} onChange={experiences => persist({ experiences })} />
+        </TabsContent>
+        <TabsContent value="formazione">
+          <EntityList config={educationConfig} items={content.education ?? []} onChange={education => persist({ education })} />
+        </TabsContent>
+        <TabsContent value="certificazioni">
+          <EntityList config={certificationsConfig} items={content.certifications ?? []} onChange={certifications => persist({ certifications })} />
+        </TabsContent>
+        <TabsContent value="lingue">
+          <EntityList config={languagesConfig} items={content.languages ?? []} onChange={languages => persist({ languages })} />
         </TabsContent>
         <TabsContent value="progetti">
           <EntityList config={projectsConfig} items={content.projects} onChange={projects => persist({ projects })} />

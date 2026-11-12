@@ -71,6 +71,10 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
     links, skillGroups, experiences, projects
   } = content;
   const stats = content.stats ?? [];
+  const education = content.education ?? [];
+  const certifications = content.certifications ?? [];
+  const languages = content.languages ?? [];
+  const hasBackground = education.length > 0 || certifications.length > 0 || languages.length > 0;
   const progressRef = useScrollProgress<HTMLDivElement>();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -81,6 +85,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
   const sections = [
     ...(skillGroups.length > 0 ? [{ id: 'competenze', label: 'Competenze' }] : []),
     ...(experiences.length > 0 ? [{ id: 'esperienza', label: 'Esperienza' }] : []),
+    ...(hasBackground ? [{ id: 'formazione', label: 'Formazione' }] : []),
     ...(projects.length > 0 ? [{ id: 'progetti', label: 'Progetti' }] : []),
     ...(hasContacts ? [{ id: 'contatti', label: 'Contatti' }] : [])
   ];
@@ -391,6 +396,68 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
           </section>
         )}
 
+        {/* Education, certifications and languages */}
+        {hasBackground && (
+          <section id="formazione" aria-labelledby="pf-background" className={`${wrap} pb-16 lg:pb-28`}>
+            <SectionHeading id="pf-background" eyebrow="Le basi" title="Formazione e lingue" />
+            <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr))] lg:gap-8">
+              {education.length > 0 && (
+                <Reveal className="h-full">
+                  <div className="h-full rounded-[2rem] border border-lav-300 bg-white p-6 shadow-lg shadow-brand-900/5 sm:p-8">
+                    <h3 className="text-xl font-extrabold text-brand-900">Formazione</h3>
+                    <ul className="mt-5 space-y-5">
+                      {education.map((item, index) => (
+                        <li key={`${item.institution}-${item.degree}-${index}`}>
+                          <p className="font-bold text-brand-900">{item.degree}</p>
+                          <p className="text-slate-600">{item.institution}</p>
+                          <span className={`${tag} mt-2 bg-brand-50 text-brand-700`}>{item.period}</span>
+                          {item.description && <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
+              )}
+              {certifications.length > 0 && (
+                <Reveal delay={80} className="h-full">
+                  <div className="h-full rounded-[2rem] border border-lav-300 bg-white p-6 shadow-lg shadow-brand-900/5 sm:p-8">
+                    <h3 className="text-xl font-extrabold text-brand-900">Certificazioni</h3>
+                    <ul className="mt-5 space-y-5">
+                      {certifications.map((item, index) => (
+                        <li key={`${item.name}-${index}`} className="flex gap-3">
+                          <Check size={18} aria-hidden="true" className="mt-1 shrink-0 text-emerald-500" />
+                          <div>
+                            <p className="font-bold text-brand-900">
+                              {item.url ? (
+                                <a href={item.url} target="_blank" rel="noreferrer noopener" className={`underline decoration-brand-300 underline-offset-4 hover:text-brand-600 ${focusRing}`}>{item.name}</a>
+                              ) : item.name}
+                            </p>
+                            <p className="text-sm text-slate-600">{[item.issuer, item.year].filter(Boolean).join(' · ')}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
+              )}
+              {languages.length > 0 && (
+                <Reveal delay={160} className="h-full">
+                  <div className="h-full rounded-[2rem] border border-lav-300 bg-white p-6 shadow-lg shadow-brand-900/5 sm:p-8">
+                    <h3 className="text-xl font-extrabold text-brand-900">Lingue</h3>
+                    <ul className="mt-5 space-y-3">
+                      {languages.map((item, index) => (
+                        <li key={`${item.name}-${index}`} className="flex items-baseline justify-between gap-4 border-b border-lav-300 pb-3 last:border-0 last:pb-0">
+                          <span className="font-bold text-brand-900">{item.name}</span>
+                          <span className="text-slate-600">{item.level}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
+              )}
+            </div>
+          </section>
+        )}
         {/* Projects: deep navy section with rounded top edge */}
         {featured && (
           <section id="progetti" aria-labelledby="pf-projects" className="rounded-t-[2.5rem] bg-navy-950 py-16 text-white lg:rounded-t-[4.5rem] lg:py-28">
