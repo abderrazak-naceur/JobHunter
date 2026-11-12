@@ -249,4 +249,61 @@ describe('ApplicationsPage', () => {
       expect(await screen.findByRole('group', { name: 'Filtra per stato' })).toBeInTheDocument();
       expect(api.list).toHaveBeenLastCalledWith(expect.objectContaining({ pageSize: 10 }));
     });
+  });
+  describe('offers', () => {
+    it('compares the applications in the Offer stage', async () => {
+      api.list.mockResolvedValue(page([app({ status: 'Offer', offer: { grossAnnual: 55000, bonus: null, benefits: '', remoteDaysPerWeek: 3, decisionBy: null } })]));
+      render(<ApplicationsPage />);
+      await screen.findByText('Acme');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Offerte' }));
+
+      expect(await screen.findByRole('table', { name: 'Confronto delle offerte ricevute' })).toBeInTheDocument();
+      expect(api.list).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'Offer', page: 1, pageSize: 100 }));
+      expect(screen.getByText('3 giorni a settimana')).toBeInTheDocument();
+    });
+
+    it('records the offer terms from the dialog, reading Italian amounts', async () => {
+      api.update.mockResolvedValue(detail(app({ status: 'Offer' })));
+      api.list.mockResolvedValue(page([app({ status: 'Offer' })]));
+      render(<ApplicationsPage />);
+      await screen.findByText('Acme');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Modifica Acme' }));
+      const dialog = await screen.findByRole('dialog');
+      await userEvent.type(within(dialog).getByLabelText('RAL (lordo annuo, €)'), '55.000');
+      await userEvent.type(within(dialog).getByLabelText('Bonus annuo (lordo, €)'), '4k');
+      await userEvent.type(within(dialog).getByLabelText('Smart working (giorni a settimana)'), '3');
+      await userEvent.type(within(dialog).getByLabelText('Benefit'), 'Buoni pasto');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salva' }));
+
+      await waitFor(() => expect(api.update).toHaveBeenCalledTimes(1));
+      expect(api.update.mock.calls[0][1].offer).toEqual({
+        grossAnnual: 55000, bonus: 4000, benefits: 'Buoni pasto', remoteDaysPerWeek: 3, decisionBy: null
+      });
+    });
+
+    it('refuses an amount that is not a number, without calling the API', async () => {
+      api.list.mockResolvedValue(page([app({ status: 'Offer' })]));
+      render(<ApplicationsPage />);
+      await screen.findByText('Acme');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Modifica Acme' }));
+      const dialog = await screen.findByRole('dialog');
+      await userEvent.type(within(dialog).getByLabelText('RAL (lordo annuo, €)'), 'tanti');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Salva' }));
+
+      expect(await within(dialog).findByRole('alert')).toHaveTextContent('RAL: inserisci un importo');
+      expect(api.update).not.toHaveBeenCalled();
+    });
+
+    it('hides the offer fields for an application that is not an offer', async () => {
+      render(<ApplicationsPage />);
+      await screen.findByText('Acme');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Modifica Acme' }));
+      const dialog = await screen.findByRole('dialog');
+
+      expect(within(dialog).queryByLabelText('RAL (lordo annuo, €)')).toBeNull();
+    });
   });});

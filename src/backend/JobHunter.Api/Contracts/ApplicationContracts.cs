@@ -1,5 +1,11 @@
 namespace JobHunter.Api.Contracts;
 
+/// <summary>
+/// Terms of a job offer, to compare offers side by side. Amounts are gross (before tax) per year, in euro.
+/// <c>RemoteDaysPerWeek</c> is 0-5. Every field is optional.
+/// </summary>
+public sealed record OfferDto(decimal? GrossAnnual, decimal? Bonus, string? Benefits, int? RemoteDaysPerWeek, DateOnly? DecisionBy);
+
 public sealed record ApplicationRequest(
     string Company,
     string Role,
@@ -13,7 +19,8 @@ public sealed record ApplicationRequest(
     DateOnly? AppliedOn,
     string? NextStep,
     DateOnly? NextStepOn,
-    string? Notes);
+    string? Notes,
+    OfferDto? Offer = null);
 
 public sealed record ApplicationResponse(
     Guid Id,
@@ -31,7 +38,8 @@ public sealed record ApplicationResponse(
     DateOnly? NextStepOn,
     string Notes,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    OfferDto? Offer = null);
 
 public sealed record ApplicationEventResponse(Guid Id, DateTime At, string? FromStatus, string ToStatus);
 
@@ -53,7 +61,8 @@ public sealed record ApplicationDetailResponse(
     string Notes,
     DateTime CreatedAt,
     DateTime UpdatedAt,
-    IReadOnlyList<ApplicationEventResponse> Events);
+    IReadOnlyList<ApplicationEventResponse> Events,
+    OfferDto? Offer = null);
 
 public sealed record PagedApplicationsResponse(IReadOnlyList<ApplicationResponse> Items, int Page, int PageSize, int TotalCount);
 

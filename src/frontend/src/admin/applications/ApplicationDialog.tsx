@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import {
   APPLICATION_STATUSES, applicationApi, toInput,
-  type Application, type ApplicationDetail, type ApplicationInput, type ApplicationStatus
+  emptyOffer, type Application, type ApplicationDetail, type ApplicationInput, type ApplicationStatus
 } from '@/services/applicationApi';
+import { parseAmount } from './offers';
 import { formatDate, statusLabel, statusMeta, todayIso } from './statusMeta';
 
 type Props = {
@@ -21,18 +22,37 @@ type Props = {
 };
 
 type FormState = Record<
-  'company' | 'role' | 'status' | 'source' | 'url' | 'location' | 'salaryRange' | 'contactName' | 'contactEmail' | 'appliedOn' | 'nextStep' | 'nextStepOn' | 'notes',
+  | 'company' | 'role' | 'status' | 'source' | 'url' | 'location' | 'salaryRange' | 'contactName' | 'contactEmail' | 'appliedOn' | 'nextStep' | 'nextStepOn' | 'notes'
+  | 'offerGross' | 'offerBonus' | 'offerBenefits' | 'offerRemoteDays' | 'offerDecisionBy',
   string
 >;
 
 const empty: FormState = {
   company: '', role: '', status: 'Saved', source: '', url: '', location: '', salaryRange: '',
-  contactName: '', contactEmail: '', appliedOn: '', nextStep: '', nextStepOn: '', notes: ''
+  contactName: '', contactEmail: '', appliedOn: '', nextStep: '', nextStepOn: '', notes: '',
+  offerGross: '', offerBonus: '', offerBenefits: '', offerRemoteDays: '', offerDecisionBy: ''
 };
 
 function fromApplication(application: Application): FormState {
-  const input = toInput(application);
-  return { ...input, appliedOn: input.appliedOn ?? '', nextStepOn: input.nextStepOn ?? '' };
+  const { offer, ...input } = toInput(application);
+  const terms = offer ?? emptyOffer;
+  return {
+    ...input,
+    appliedOn: input.appliedOn ?? '',
+    nextStepOn: input.nextStepOn ?? '',
+    offerGross: terms.grossAnnual === null ? '' : String(terms.grossAnnual),
+    offerBonus: terms.bonus === null ? '' : String(terms.bonus),
+    offerBenefits: terms.benefits,
+    offerRemoteDays: terms.remoteDaysPerWeek === null ? '' : String(terms.remoteDaysPerWeek),
+    offerDecisionBy: terms.decisionBy ?? ''
+  };
+}
+
+/** Reads an amount field; a value that is not a number stops the save with a clear message. */
+function amount(text: string, label: string): number | null {
+  const value = parseAmount(text);
+  if (Number.isNaN(value)) throw new Error(`${label}: inserisci un importo, ad esempio 55.000.`);
+  return value;
 }
 
 function toApplicationInput(form: FormState): ApplicationInput {
@@ -49,7 +69,14 @@ function toApplicationInput(form: FormState): ApplicationInput {
     appliedOn: form.appliedOn || null,
     nextStep: form.nextStep.trim(),
     nextStepOn: form.nextStepOn || null,
-    notes: form.notes.trim()
+    notes: form.notes.trim(),
+    offer: {
+      grossAnnual: amount(form.offerGross, 'RAL'),
+      bonus: amount(form.offerBonus, 'Bonus'),
+      benefits: form.offerBenefits.trim(),
+      remoteDaysPerWeek: form.offerRemoteDays === '' ? null : Number(form.offerRemoteDays),
+      decisionBy: form.offerDecisionBy || null
+    }
   };
 }
 
@@ -162,6 +189,32 @@ export default function ApplicationDialog({ application, open, onOpenChange, onS
               <Textarea id="app-notes" rows={4} maxLength={4000} value={form.notes} onChange={e => set({ notes: e.target.value })} />
             </div>
           </div>
+
+          {(form.status === 'Offer' || form.offerGross || form.offerBonus || form.offerBenefits || form.offerRemoteDays || form.offerDecisionBy) && (
+            <fieldset className="grid gap-4 rounded-lg border p-3 sm:grid-cols-2">
+              <legend className="px-1 text-sm font-semibold">Dettagli dell’offerta</legend>
+              <div className="space-y-2">
+                <Label htmlFor="app-offer-gross">RAL (lordo annuo, €)</Label>
+                <Input id="app-offer-gross" inputMode="decimal" placeholder="55.000" value={form.offerGross} onChange={e => set({ offerGross: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="app-offer-bonus">Bonus annuo (lordo, €)</Label>
+                <Input id="app-offer-bonus" inputMode="decimal" placeholder="4.000" value={form.offerBonus} onChange={e => set({ offerBonus: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="app-offer-remote">Smart working (giorni a settimana)</Label>
+                <Input id="app-offer-remote" type="number" min={0} max={5} step={1} value={form.offerRemoteDays} onChange={e => set({ offerRemoteDays: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="app-offer-decision">Decidere entro</Label>
+                <Input id="app-offer-decision" type="date" value={form.offerDecisionBy} onChange={e => set({ offerDecisionBy: e.target.value })} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="app-offer-benefits">Benefit</Label>
+                <Textarea id="app-offer-benefits" rows={2} maxLength={1000} placeholder="Buoni pasto, assicurazione sanitaria, auto..." value={form.offerBenefits} onChange={e => set({ offerBenefits: e.target.value })} />
+              </div>
+            </fieldset>
+          )}
 
           {application && history.length > 0 && (
             <section aria-label="Storico degli stati" className="rounded-lg border p-3">

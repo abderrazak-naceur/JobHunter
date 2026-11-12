@@ -63,6 +63,8 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-031 (partly) — Accessibility of the admin shell: a "Vai al contenuto" skip link, a named `main` landmark, the page title follows the area, the focus moves to the content after choosing an area (not on first load), menu buttons keep their name when the labels are hidden on small screens, decorative icons are hidden from screen readers, visible focus on the menu. The public site already had landmarks, a skip link, a single h1 and reduced-motion handling. Not done: dark mode (the admin mixes a legacy dark stylesheet with light shadcn components, so it needs a restyle first), a contrast audit with a tool, testing with a real screen reader.
 
+- [x] TASK-026 — Offer comparison (Candidature > Offerte): an application can carry the terms of an offer (gross yearly salary, yearly bonus, benefits, smart working days per week, date to decide by), entered in the application dialog when the stage is Offer; Italian amounts such as "55.000", "55.000,50" or "55k" are understood. The Offerte view puts every application in the Offer stage side by side: salary, bonus, total gross, gross per payment over 13 and 14 instalments, smart working, location, benefits and the decision date (late ones flagged), with the highest total highlighted. API: optional `offer` block on applications (older clients keep working), validated (0-10M €, 0-5 days), included in the JSON backup; migration `AddOfferDetails` (run `dotnet ef database update`). Deliberately not done: net pay estimate, because it depends on tax brackets, regional and municipal surcharges and personal deductions that change every year.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.
@@ -77,7 +79,7 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 - [x] TASK-023 — Kanban pipeline view: done, see the entry in the Portfolio launch track.
 - [ ] TASK-024 — Email and calendar integration: import recruiter emails, interview events and ICS export (user-authorized, no credential storage in the repo)
 - [ ] TASK-025 — Browser extension or bookmarklet to save a job posting into the pipeline with source URL
-- [ ] TASK-026 — Salary and offer comparison: ranges, benefits, net estimate and side-by-side offer analysis
+- [x] TASK-026 — Salary and offer comparison: done (gross only), see the entry in the Portfolio launch track.
 - [x] TASK-027 — Data export and backup: done, see the entry in the Portfolio launch track.
 - [x] TASK-028 — Networking tracker: done, see the entry in the Portfolio launch track.
 - [x] TASK-029 — Public portfolio page generated from the profile: done through TASK-034, TASK-035 and TASK-041. Only the public fields are published (no birth date, no phone).

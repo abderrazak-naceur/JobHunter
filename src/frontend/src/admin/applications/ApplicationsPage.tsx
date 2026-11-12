@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ExternalLink, KanbanSquare, List, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { ExternalLink, KanbanSquare, List, Pencil, Plus, Scale, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -17,6 +17,7 @@ import {
 } from '@/services/applicationApi';
 import ApplicationDialog from './ApplicationDialog';
 import KanbanBoard from './KanbanBoard';
+import OffersComparison from './OffersComparison';
 import { formatDate, isOverdue, statusMeta } from './statusMeta';
 
 const PAGE_SIZE = 10;
@@ -28,7 +29,7 @@ export default function ApplicationsPage() {
   const [searchText, setSearchText] = useState('');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<ApplicationStatus | ''>('');
-  const [view, setView] = useState<'list' | 'board'>('list');
+  const [view, setView] = useState<'list' | 'board' | 'offers'>('list');
   const [page, setPage] = useState(1);
   const [data, setData] = useState<PagedApplications | null>(null);
   const [summary, setSummary] = useState<ApplicationSummary | null>(null);
@@ -50,7 +51,9 @@ export default function ApplicationsPage() {
     setError('');
     const query = view === 'board'
       ? { search, status: '' as const, page: 1, pageSize: BOARD_PAGE_SIZE }
-      : { search, status, page, pageSize: PAGE_SIZE };
+      : view === 'offers'
+        ? { search, status: 'Offer' as const, page: 1, pageSize: BOARD_PAGE_SIZE }
+        : { search, status, page, pageSize: PAGE_SIZE };
     Promise.all([applicationApi.list(query), applicationApi.summary()])
       .then(([list, counts]) => { if (active) { setData(list); setSummary(counts); } })
       .catch(err => { if (active) setError(err instanceof Error ? err.message : 'Impossibile caricare le candidature.'); });
@@ -101,6 +104,7 @@ export default function ApplicationsPage() {
           <div role="group" aria-label="Vista" className="flex rounded-md border">
             <Button size="sm" variant={view === 'list' ? 'default' : 'ghost'} aria-pressed={view === 'list'} onClick={() => { setData(null); setPage(1); setView('list'); }}><List /> Elenco</Button>
             <Button size="sm" variant={view === 'board' ? 'default' : 'ghost'} aria-pressed={view === 'board'} onClick={() => { setData(null); setView('board'); }}><KanbanSquare /> Bacheca</Button>
+            <Button size="sm" variant={view === 'offers' ? 'default' : 'ghost'} aria-pressed={view === 'offers'} onClick={() => { setData(null); setView('offers'); }}><Scale /> Offerte</Button>
           </div>
           <Button onClick={() => setEditing(null)}><Plus /> Nuova candidatura</Button>
         </div>
@@ -132,7 +136,8 @@ export default function ApplicationsPage() {
       {view === 'board' && data && data.totalCount > data.items.length && (
         <p className="text-sm text-muted-foreground">Mostrate le prime {data.items.length} di {data.totalCount} candidature: usa la ricerca per restringere.</p>
       )}
-      {view === 'board' && !data && !error && <p role="status" className="text-sm text-muted-foreground">Caricamento candidature...</p>}
+      {view === 'offers' && data && <OffersComparison applications={data.items} onEdit={setEditing} />}
+      {view !== 'list' && !data && !error && <p role="status" className="text-sm text-muted-foreground">Caricamento candidature...</p>}
 
       {view === 'list' && (
       <Card>

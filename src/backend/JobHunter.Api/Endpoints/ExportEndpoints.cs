@@ -76,7 +76,8 @@ public static class ExportEndpoints
     private static ApplicationDetailResponse ToExport(JobApplication a) => new(
         a.Id, a.Company, a.Role, a.Status, a.Source, a.Url, a.Location, a.SalaryRange, a.ContactName, a.ContactEmail,
         a.AppliedOn, a.NextStep, a.NextStepOn, a.Notes, a.CreatedAt, a.UpdatedAt,
-        a.Events.OrderBy(e => e.At).Select(e => new ApplicationEventResponse(e.Id, e.At, e.FromStatus, e.ToStatus)).ToList());
+        a.Events.OrderBy(e => e.At).Select(e => new ApplicationEventResponse(e.Id, e.At, e.FromStatus, e.ToStatus)).ToList(),
+        ApplicationEndpoints.ToOffer(a));
 
     public static string BuildCsv(IEnumerable<JobApplication> applications)
     {

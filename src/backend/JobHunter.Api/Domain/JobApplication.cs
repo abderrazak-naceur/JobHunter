@@ -34,6 +34,13 @@ public sealed class JobApplication
     public string NextStep { get; set; } = "";
     public DateOnly? NextStepOn { get; set; }
     public string Notes { get; set; } = "";
+
+    // Terms of the offer (optional), gross amounts per year in euro.
+    public decimal? OfferGrossAnnual { get; set; }
+    public decimal? OfferBonus { get; set; }
+    public string OfferBenefits { get; set; } = "";
+    public int? OfferRemoteDaysPerWeek { get; set; }
+    public DateOnly? OfferDecisionBy { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

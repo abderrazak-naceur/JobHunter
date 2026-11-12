@@ -3,6 +3,17 @@ import { apiRequest } from './http';
 export const APPLICATION_STATUSES = ['Saved', 'Applied', 'Screening', 'Interview', 'Offer', 'Rejected', 'Withdrawn'] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
 
+/** Terms of an offer: gross amounts per year in euro, smart working days per week (0-5). */
+export type Offer = {
+  grossAnnual: number | null;
+  bonus: number | null;
+  benefits: string;
+  remoteDaysPerWeek: number | null;
+  decisionBy: string | null; // yyyy-MM-dd
+};
+
+export const emptyOffer: Offer = { grossAnnual: null, bonus: null, benefits: '', remoteDaysPerWeek: null, decisionBy: null };
+
 export type Application = {
   id: string;
   company: string;
@@ -20,6 +31,8 @@ export type Application = {
   notes: string;
   createdAt: string;
   updatedAt: string;
+  /** Missing in responses of older API versions. */
+  offer?: Offer | null;
 };
 
 export type ApplicationEvent = { id: string; at: string; fromStatus: string | null; toStatus: string };
@@ -62,7 +75,8 @@ export function toInput(application: Application): ApplicationInput {
     appliedOn: application.appliedOn,
     nextStep: application.nextStep,
     nextStepOn: application.nextStepOn,
-    notes: application.notes
+    notes: application.notes,
+    offer: application.offer ?? emptyOffer
   };
 }
 

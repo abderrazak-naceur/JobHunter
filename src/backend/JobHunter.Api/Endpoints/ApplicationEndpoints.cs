@@ -8,6 +8,8 @@ namespace JobHunter.Api.Endpoints;
 /// <summary>Tracker of the jobs the owner saved and applied for, with the history of each status change.</summary>
 public static class ApplicationEndpoints
 {
+    private const decimal MaxAmount = 10_000_000m;
+
     public static IEndpointRouteBuilder MapApplicationEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/v1/applications").WithTags("Applications").RequireAuthorization();
@@ -151,16 +153,25 @@ public static class ApplicationEndpoints
         application.NextStep = Clean(request.NextStep);
         application.NextStepOn = request.NextStepOn;
         application.Notes = Clean(request.Notes);
+        application.OfferGrossAnnual = request.Offer?.GrossAnnual;
+        application.OfferBonus = request.Offer?.Bonus;
+        application.OfferBenefits = Clean(request.Offer?.Benefits);
+        application.OfferRemoteDaysPerWeek = request.Offer?.RemoteDaysPerWeek;
+        application.OfferDecisionBy = request.Offer?.DecisionBy;
     }
 
     private static ApplicationResponse ToResponse(JobApplication a) => new(
         a.Id, a.Company, a.Role, a.Status, a.Source, a.Url, a.Location, a.SalaryRange, a.ContactName, a.ContactEmail,
-        a.AppliedOn, a.NextStep, a.NextStepOn, a.Notes, a.CreatedAt, a.UpdatedAt);
+        a.AppliedOn, a.NextStep, a.NextStepOn, a.Notes, a.CreatedAt, a.UpdatedAt, ToOffer(a));
 
     private static ApplicationDetailResponse ToDetail(JobApplication a) => new(
         a.Id, a.Company, a.Role, a.Status, a.Source, a.Url, a.Location, a.SalaryRange, a.ContactName, a.ContactEmail,
         a.AppliedOn, a.NextStep, a.NextStepOn, a.Notes, a.CreatedAt, a.UpdatedAt,
-        a.Events.OrderByDescending(e => e.At).Select(e => new ApplicationEventResponse(e.Id, e.At, e.FromStatus, e.ToStatus)).ToList());
+        a.Events.OrderByDescending(e => e.At).Select(e => new ApplicationEventResponse(e.Id, e.At, e.FromStatus, e.ToStatus)).ToList(),
+        ToOffer(a));
+
+    public static OfferDto ToOffer(JobApplication a) =>
+        new(a.OfferGrossAnnual, a.OfferBonus, a.OfferBenefits, a.OfferRemoteDaysPerWeek, a.OfferDecisionBy);
 
     private static Dictionary<string, string[]>? Validate(ApplicationRequest request)
     {
@@ -193,6 +204,19 @@ public static class ApplicationEndpoints
         if (request.NextStepOn is { Year: < 2000 or > 2100 })
             errors[nameof(request.NextStepOn)] = ["La data del prossimo passo non è valida."];
 
+        if (request.Offer is { } offer)
+        {
+            if (offer.GrossAnnual is < 0 or > MaxAmount)
+                errors["Offer.GrossAnnual"] = ["La RAL deve essere tra 0 e 10.000.000 €."];
+            if (offer.Bonus is < 0 or > MaxAmount)
+                errors["Offer.Bonus"] = ["Il bonus deve essere tra 0 e 10.000.000 €."];
+            if (Clean(offer.Benefits).Length > 1000)
+                errors["Offer.Benefits"] = ["I benefit possono contenere al massimo 1000 caratteri."];
+            if (offer.RemoteDaysPerWeek is < 0 or > 5)
+                errors["Offer.RemoteDaysPerWeek"] = ["I giorni di smart working vanno da 0 a 5 a settimana."];
+            if (offer.DecisionBy is { Year: < 2000 or > 2100 })
+                errors["Offer.DecisionBy"] = ["La data entro cui decidere non è valida."];
+        }
         return errors.Count == 0 ? null : errors;
     }
 }

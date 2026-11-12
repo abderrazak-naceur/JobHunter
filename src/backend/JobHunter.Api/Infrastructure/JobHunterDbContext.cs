@@ -63,7 +63,9 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
         application.Property(x => x.ContactEmail).HasMaxLength(254);
         application.Property(x => x.NextStep).HasMaxLength(250);
         application.Property(x => x.Notes).HasMaxLength(4000);
-        application.HasIndex(x => x.Status);
+        application.Property(x => x.OfferGrossAnnual).HasPrecision(12, 2);
+        application.Property(x => x.OfferBonus).HasPrecision(12, 2);
+        application.Property(x => x.OfferBenefits).HasMaxLength(1000); application.HasIndex(x => x.Status);
         application.HasIndex(x => x.UpdatedAt);
         application.HasMany(x => x.Events).WithOne().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.Cascade);
 
