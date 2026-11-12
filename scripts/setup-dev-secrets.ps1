@@ -35,9 +35,15 @@ $username = Read-Host 'Admin username (default: admin)'
 if ([string]::IsNullOrWhiteSpace($username)) { $username = 'admin' }
 Set-Secret 'Admin:Username' $username
 
+# Build quietly first, so compiler messages can never end up inside the hash we capture below.
+dotnet build $project -p:UseAppHost=false --nologo -v q | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'The API does not build. If it is running, stop it and try again.' }
+
 Write-Host 'Choose the admin password (at least 12 characters). It is stored only as a hash.'
-$hash = dotnet run --project $project --no-launch-profile -- hash-password
-if ($LASTEXITCODE -ne 0 -or -not $hash) { throw 'Could not create the password hash.' }
+$output = dotnet run --project $project --no-build --no-launch-profile -- hash-password
+if ($LASTEXITCODE -ne 0) { throw 'Could not create the password hash.' }
+$hash = @($output | Where-Object { $_ -match '^pbkdf2-sha256\$' }) | Select-Object -Last 1
+if (-not $hash) { throw 'The password hash was not produced. Run the script again.' }
 Set-Secret 'Admin:PasswordHash' $hash.Trim()
 
 Write-Host 'Done. Configured keys:'
