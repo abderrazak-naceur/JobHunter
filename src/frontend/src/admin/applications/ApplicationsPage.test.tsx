@@ -213,4 +213,40 @@ describe('ApplicationsPage', () => {
 
     await waitFor(() => expect(api.remove).toHaveBeenCalledWith('1'));
   });
-});
+
+  describe('board view', () => {
+    it('switches to a board that loads everything, ignoring the stage filter and paging', async () => {
+      render(<ApplicationsPage />);
+      await screen.findByText('Acme');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Bacheca' }));
+
+      expect(await screen.findByRole('group', { name: 'Bacheca delle candidature' })).toBeInTheDocument();
+      expect(api.list).toHaveBeenLastCalledWith(expect.objectContaining({ status: '', page: 1, pageSize: 100 }));
+      expect(screen.queryByRole('group', { name: 'Filtra per stato' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Bacheca' })).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('changes the stage of an application moved on the board', async () => {
+      api.update.mockResolvedValue(detail(app({ status: 'Offer' })));
+      render(<ApplicationsPage />);
+      await screen.findByText('Acme');
+      await userEvent.click(screen.getByRole('button', { name: 'Bacheca' }));
+
+      await userEvent.selectOptions(await screen.findByLabelText('Sposta Acme'), 'Offer');
+
+      await waitFor(() => expect(api.update).toHaveBeenCalledWith('1', expect.objectContaining({ status: 'Offer', company: 'Acme' })));
+    });
+
+    it('goes back to the list', async () => {
+      render(<ApplicationsPage />);
+      await screen.findByText('Acme');
+      await userEvent.click(screen.getByRole('button', { name: 'Bacheca' }));
+      await screen.findByRole('group', { name: 'Bacheca delle candidature' });
+
+      await userEvent.click(screen.getByRole('button', { name: 'Elenco' }));
+
+      expect(await screen.findByRole('group', { name: 'Filtra per stato' })).toBeInTheDocument();
+      expect(api.list).toHaveBeenLastCalledWith(expect.objectContaining({ pageSize: 10 }));
+    });
+  });});

@@ -49,6 +49,8 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-020 (partly) — Observability basics: `GET /health/ready` checks the database (503 without details when unreachable, reason goes to the log), and every response carries an `X-Correlation-Id` that is also in the log scope (a safe id sent by the caller is kept, anything else is replaced). Not done: Serilog / structured JSON logs and metrics.
 
+- [x] TASK-023 — Board view of the applications (Candidature > Bacheca): one column per stage, move a card by dragging it onto another column or with the "Sposta" menu on the card (keyboard and touch friendly); a move saves the new stage and writes the status history like the list does. The board loads up to 100 applications and says so when there are more. Not done: ordering inside a column, a column-level "add" button.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.

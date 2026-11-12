@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ExternalLink, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { ExternalLink, KanbanSquare, List, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -16,15 +16,19 @@ import {
   type Application, type ApplicationStatus, type ApplicationSummary, type PagedApplications
 } from '@/services/applicationApi';
 import ApplicationDialog from './ApplicationDialog';
+import KanbanBoard from './KanbanBoard';
 import { formatDate, isOverdue, statusMeta } from './statusMeta';
 
 const PAGE_SIZE = 10;
+/** The board shows every stage at once, so it loads the most the API returns in one page. */
+const BOARD_PAGE_SIZE = 100;
 
 /** Every job saved or applied for: search, filter by stage, change the stage, edit and delete. */
 export default function ApplicationsPage() {
   const [searchText, setSearchText] = useState('');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<ApplicationStatus | ''>('');
+  const [view, setView] = useState<'list' | 'board'>('list');
   const [page, setPage] = useState(1);
   const [data, setData] = useState<PagedApplications | null>(null);
   const [summary, setSummary] = useState<ApplicationSummary | null>(null);
@@ -44,11 +48,14 @@ export default function ApplicationsPage() {
   useEffect(() => {
     let active = true;
     setError('');
-    Promise.all([applicationApi.list({ search, status, page, pageSize: PAGE_SIZE }), applicationApi.summary()])
+    const query = view === 'board'
+      ? { search, status: '' as const, page: 1, pageSize: BOARD_PAGE_SIZE }
+      : { search, status, page, pageSize: PAGE_SIZE };
+    Promise.all([applicationApi.list(query), applicationApi.summary()])
       .then(([list, counts]) => { if (active) { setData(list); setSummary(counts); } })
       .catch(err => { if (active) setError(err instanceof Error ? err.message : 'Impossibile caricare le candidature.'); });
     return () => { active = false; };
-  }, [search, status, page, refresh]);
+  }, [search, status, page, view, refresh]);
 
   const reload = useCallback(() => setRefresh(value => value + 1), []);
 
@@ -90,9 +97,16 @@ export default function ApplicationsPage() {
           <h1 className="text-3xl font-extrabold tracking-tight">Candidature</h1>
           <p className="mt-1 max-w-2xl text-muted-foreground">Salva le offerte, segui lo stato di ogni candidatura e non perdere nessun prossimo passo.</p>
         </div>
-        <Button onClick={() => setEditing(null)}><Plus /> Nuova candidatura</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div role="group" aria-label="Vista" className="flex rounded-md border">
+            <Button size="sm" variant={view === 'list' ? 'default' : 'ghost'} aria-pressed={view === 'list'} onClick={() => { setData(null); setPage(1); setView('list'); }}><List /> Elenco</Button>
+            <Button size="sm" variant={view === 'board' ? 'default' : 'ghost'} aria-pressed={view === 'board'} onClick={() => { setData(null); setView('board'); }}><KanbanSquare /> Bacheca</Button>
+          </div>
+          <Button onClick={() => setEditing(null)}><Plus /> Nuova candidatura</Button>
+        </div>
       </div>
 
+      {view === 'list' && (
       <div className="flex flex-wrap gap-2" role="group" aria-label="Filtra per stato">
         <Button size="sm" variant={status === '' ? 'default' : 'outline'} aria-pressed={status === ''} onClick={() => { setStatus(''); setPage(1); }}>
           Tutte{summary ? ` (${summary.total})` : ''}
@@ -103,6 +117,7 @@ export default function ApplicationsPage() {
           </Button>
         ))}
       </div>
+      )}
 
       <div className="relative max-w-md">
         <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -111,6 +126,15 @@ export default function ApplicationsPage() {
 
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
+      {view === 'board' && data && (
+        <KanbanBoard applications={data.items} onMove={(application, next) => void changeStatus(application, next)} onEdit={setEditing} />
+      )}
+      {view === 'board' && data && data.totalCount > data.items.length && (
+        <p className="text-sm text-muted-foreground">Mostrate le prime {data.items.length} di {data.totalCount} candidature: usa la ricerca per restringere.</p>
+      )}
+      {view === 'board' && !data && !error && <p role="status" className="text-sm text-muted-foreground">Caricamento candidature...</p>}
+
+      {view === 'list' && (
       <Card>
         <CardContent className="p-0">
           {!data ? (
@@ -186,8 +210,9 @@ export default function ApplicationsPage() {
           )}
         </CardContent>
       </Card>
+      )}
 
-      {data && data.totalCount > PAGE_SIZE && (
+      {view === 'list' && data && data.totalCount > PAGE_SIZE && (
         <nav aria-label="Pagine" className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Pagina {page} di {totalPages} · {data.totalCount} candidature</p>
           <div className="flex gap-2">
