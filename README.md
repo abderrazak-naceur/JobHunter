@@ -5,7 +5,7 @@ Personal site with two parts:
 - `/` — public one-page portfolio used to apply for jobs. Content lives in `src/frontend/src/portfolio/content.ts` for now; sections with no entries are hidden.
 - `/admin` — private area for job search, Company Radar and application tracking.
 
-> Do not deploy publicly yet: the admin area and API have no authentication (see TASK-036 in `AGENT_TASKS.md`).
+> The admin area and API require a login (TASK-036). Before the first public deploy rotate the old local database password (it was committed in earlier history) and follow the deployment task (TASK-037).
 
 Personal career management platform: portfolio, job pipeline, interview tracking, job-description analysis, Company Radar and learning academy.
 
@@ -41,12 +41,17 @@ Do not use the example password in a shared or production environment.
 
 ### 3. Configure and run the API (PowerShell)
 
-From the repository root:
+Secrets are never stored in the repository. Store the database connection, the admin login and the JWT signing key in .NET user-secrets with the helper script (it asks for the PostgreSQL password and for the admin password, which is saved only as a PBKDF2 hash):
+
+```powershell
+./scripts/setup-dev-secrets.ps1
+```
+
+Then, from the repository root:
 
 ```powershell
 $env:ASPNETCORE_ENVIRONMENT = "Development"
 $env:ASPNETCORE_URLS = "http://localhost:5000"
-$env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=jobhunter;Username=jobhunter_app;Password=YOUR_LOCAL_PASSWORD"
 
 cd src/backend/JobHunter.Api
 dotnet restore
@@ -59,8 +64,27 @@ If the `dotnet-ef` tool is already installed, update it with `dotnet tool update
 
 The initial migration (`InitialCompanyRadar`) is already committed in `Migrations/`, so `dotnet ef database update` is enough to create the schema. When you change the model, create a new migration with `dotnet ef migrations add <MigrationName>`, commit the generated files, and run `dotnet ef database update` again.
 
-API endpoints:
-- `GET /health`
+The API refuses to start if `Admin:Username`, `Admin:PasswordHash` or `Jwt:SigningKey` (at least 32 characters) are missing. To create a password hash on its own: `dotnet run --project src/backend/JobHunter.Api -- hash-password`.
+
+Configuration keys (environment variables use `__` instead of `:`):
+
+| Key | Purpose |
+| --- | --- |
+| `ConnectionStrings:DefaultConnection` | PostgreSQL connection |
+| `Admin:Username`, `Admin:PasswordHash` | The single admin account (hash from `hash-password`) |
+| `Jwt:SigningKey` | Random secret, at least 32 characters |
+| `Jwt:ExpiryMinutes` | Token lifetime, default 480 |
+| `Cors:AllowedOrigins:0` | Browser origin of the frontend (required outside Development) |
+| `RateLimiting:LoginPermitLimit` | Login attempts per IP per minute, default 5 |
+
+Behind a reverse proxy such as Render set `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` so the login rate limit sees the real client IP.
+
+Public endpoints (no login):
+- `GET /`, `GET /health`, `GET /api/v1/portfolio`
+- `POST /api/v1/auth/login` (rate limited, returns a JWT)
+
+Protected endpoints (`Authorization: Bearer <token>`); every endpoint is protected unless it opts out:
+- `GET /api/v1/auth/me`
 - `GET /api/v1/companies?search=dotnet&page=1&pageSize=20`
 - `GET /api/v1/companies/{id}`
 - `POST /api/v1/companies`
@@ -131,4 +155,6 @@ See `AGENT_TASKS.md` for the task list and current progress.
 
 ## Security
 
-Never commit real CVs, personal documents, database passwords, API keys or `.env.local` files. Use environment variables or a secrets manager for credentials. This initial application does not yet include user authentication; do not expose it publicly or store sensitive personal data until authentication and authorization are implemented.
+Never commit real CVs, personal documents, database passwords, API keys or `.env.local` files. Use environment variables or a secrets manager for credentials. The admin area and the API are protected by a single-user login (JWT bearer, PBKDF2-hashed password, login rate limiting, endpoints protected by default). The token is kept in `sessionStorage`, so the usual XSS precautions apply: do not add untrusted HTML to the app.
+
+Known limits: one admin account only, no password reset flow, no refresh tokens (sign in again after the token expires), and no security headers/HTTPS redirect configuration yet (see the deployment task).

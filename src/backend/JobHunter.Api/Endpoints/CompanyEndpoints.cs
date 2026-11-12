@@ -9,7 +9,7 @@ public static class CompanyEndpoints
 {
     public static IEndpointRouteBuilder MapCompanyEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/companies").WithTags("Companies");
+        var group = endpoints.MapGroup("/api/v1/companies").WithTags("Companies").RequireAuthorization();
 
         group.MapGet("/", async (
             string? search,

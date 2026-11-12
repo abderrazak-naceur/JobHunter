@@ -25,7 +25,7 @@ public sealed class BasicEndpointsTests : IClassFixture<JobHunterApiFactory>
     {
         var body = await _client.GetFromJsonAsync<JsonElement>("/");
 
-        Assert.Equal("JobHunter API", body.GetProperty("name").GetString());
+        Assert.Equal("Portfolio API", body.GetProperty("name").GetString());
         Assert.Equal("running", body.GetProperty("status").GetString());
     }
 }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import CompanyRadar from './CompanyRadar';
 import './styles.css';
-import { BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, CircleUserRound, FileText, GraduationCap, LayoutDashboard, Plus, Settings, Sparkles, Target, CalendarDays, ExternalLink } from 'lucide-react';
+import { signOut } from './auth/session';
+import { LogOut, BriefcaseBusiness, ChartNoAxesCombined, ChevronDown, CircleUserRound, FileText, GraduationCap, LayoutDashboard, Plus, Settings, Sparkles, Target, CalendarDays, ExternalLink } from 'lucide-react';
 type Tab = 'overview' | 'portfolio' | 'opportunities' | 'companies' | 'academy' | 'admin';
 const nav = [
  {id:'overview' as const,label:'Panoramica',icon:LayoutDashboard},
@@ -13,13 +14,12 @@ const nav = [
 ];
 export default function App(){
  const [tab,setTab]=useState<Tab>('portfolio');
- useEffect(() => { document.title = 'Area privata · Portfolio'; }, []);
  useEffect(() => { let active = true; import('preline/non-auto').then(({ HSStaticMethods }) => { if (active) HSStaticMethods.autoInit(); }).catch(error => console.error('Preline initialization failed:', error)); return () => { active = false; }; }, [tab]);
  return <div className="app-shell"><aside className="sidebar">
   <div className="brand"><div className="brand-mark">P</div><div><strong>Portfolio</strong><small>AREA PRIVATA</small></div></div>
   <div className="workspace-label">WORKSPACE</div>
   <nav>{nav.map(item=>{const Icon=item.icon;return <button key={item.id} className={`nav-item ${tab===item.id?'active':''}`} onClick={()=>setTab(item.id)}><Icon size={18}/><span>{item.label}</span>{item.id==='admin'&&<span className="nav-tag">ADMIN</span>}</button>})}</nav>
-  <div className="sidebar-bottom"><div className="profile-mini"><div className="avatar">ZN</div><div><strong>Il mio account</strong><small>Spazio personale</small></div><ChevronDown size={15}/></div></div>
+  <div className="sidebar-bottom"><button className="nav-item" onClick={signOut}><LogOut size={18}/><span>Esci</span></button><div className="profile-mini"><div className="avatar">ZN</div><div><strong>Il mio account</strong><small>Spazio personale</small></div><ChevronDown size={15}/></div></div>
  </aside><main className="main"><header className="topbar"><div className="crumb">Workspace <span>/</span> {nav.find(x=>x.id===tab)?.label}</div><div className="avatar small">ZN</div></header>
  <section className="content">{tab==='companies' ? <CompanyRadar/> : <><div className="welcome-row"><div><div className="eyebrow">IL TUO PROSSIMO CAPITOLO PROFESSIONALE</div><h1>{tab==='portfolio'?'Il mio portfolio':nav.find(x=>x.id===tab)?.label}</h1><p>Gestisci la tua identità professionale e prepara il prossimo passo della tua carriera.</p></div><button className="primary"><Plus size={17}/> Completa il profilo</button></div>
  <div className="profile-hero"><div className="hero-main"><div className="avatar hero-avatar">ZN</div><div><div className="status"><span/> PROFILO IN COSTRUZIONE</div><h2>Senior .NET Developer</h2><p className="hero-sub">C# · ASP.NET Core · React · SQL Server · Cloud</p><div className="hero-meta"><span><Target size={15}/> Milano e dintorni</span><span><BriefcaseBusiness size={15}/> Remote / Hybrid</span></div></div></div><div className="hero-score"><div className="score-ring"><strong>65%</strong></div><span>Profilo completato</span><button className="text-button" onClick={()=>setTab('admin')}>Completa ora <ExternalLink size={13}/></button></div></div>

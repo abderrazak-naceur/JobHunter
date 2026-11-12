@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { getAccessToken, saveSession, SESSION_ENDED_EVENT } from '../auth/session';
 import { companyApi, type CompanyRequest } from './companyApi';
 
 const payload: CompanyRequest = {
@@ -59,6 +60,36 @@ describe('companyApi', () => {
 
     await expect(companyApi.remove('abc')).resolves.toBeUndefined();
     expect(fetchMock.mock.calls[0][1].method).toBe('DELETE');
+  });
+
+  it('sends the bearer token of the current session', async () => {
+    saveSession({ accessToken: 'jwt-123', expiresAt: new Date(Date.now() + 3_600_000).toISOString() });
+    const fetchMock = mockFetch({ json: async () => ({ items: [] }) });
+
+    await companyApi.list();
+
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe('Bearer jwt-123');
+  });
+
+  it('sends no Authorization header without a session', async () => {
+    const fetchMock = mockFetch({ json: async () => ({ items: [] }) });
+
+    await companyApi.list();
+
+    expect(fetchMock.mock.calls[0][1].headers).not.toHaveProperty('Authorization');
+  });
+
+  it('ends the session and reports it on 401', async () => {
+    saveSession({ accessToken: 'expired', expiresAt: new Date(Date.now() + 3_600_000).toISOString() });
+    mockFetch({ ok: false, status: 401 });
+    const listener = vi.fn();
+    window.addEventListener(SESSION_ENDED_EVENT, listener);
+
+    await expect(companyApi.list()).rejects.toThrow('Sessione scaduta');
+    window.removeEventListener(SESSION_ENDED_EVENT, listener);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(getAccessToken()).toBeNull();
   });
 
   it('maps 409 to the server message', async () => {

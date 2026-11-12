@@ -9,7 +9,7 @@ public sealed class CompanyEndpointsTests : IClassFixture<JobHunterApiFactory>
     private const string BaseRoute = "/api/v1/companies";
     private readonly HttpClient _client;
 
-    public CompanyEndpointsTests(JobHunterApiFactory factory) => _client = factory.CreateClient();
+    public CompanyEndpointsTests(JobHunterApiFactory factory) => _client = factory.CreateAuthenticatedClient();
 
     private static CompanyRequest NewRequest(
         string? name = null,

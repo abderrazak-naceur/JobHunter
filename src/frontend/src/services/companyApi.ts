@@ -1,3 +1,6 @@
+import { getAccessToken, signOut } from '../auth/session';
+import { apiBaseUrl, unreachableApiMessage } from './apiConfig';
+
 export type CompanyPriority = 'Alta' | 'Media' | 'Bassa';
 
 export type Company = {
@@ -19,17 +22,26 @@ export type CompanyRequest = Omit<Company, 'id' | 'createdAt' | 'updatedAt'>;
 
 type PagedCompanies = { items: Company[]; page: number; pageSize: number; totalCount: number };
 
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
-
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getAccessToken();
   let response: Response;
   try {
     response = await fetch(`${apiBaseUrl}${path}`, {
       ...init,
-      headers: { 'Content-Type': 'application/json', ...init?.headers }
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...init?.headers
+      }
     });
   } catch {
-    throw new Error(`API non raggiungibile (${apiBaseUrl}). Avvia il backend .NET e verifica VITE_API_BASE_URL.`);
+    throw new Error(unreachableApiMessage);
+  }
+
+  if (response.status === 401) {
+    // Token missing, expired or rejected: go back to the login screen.
+    signOut();
+    throw new Error('Sessione scaduta. Accedi di nuovo.');
   }
 
   if (!response.ok) {
