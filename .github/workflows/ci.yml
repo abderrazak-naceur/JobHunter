@@ -74,3 +74,33 @@ jobs:
         run: npm run build
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Block committed credentials in tracked config files
+        run: |
+          # Real values belong in user-secrets or environment variables, never in the repository.
+          if git grep -nIE '(Password|Pwd)=[^;"[:space:]]+' -- 'src/backend/**/appsettings*.json' ; then
+            echo "::error::A password is written in an appsettings file. Use user-secrets or environment variables."
+            exit 1
+          fi
+          if git ls-files | grep -E '(^|/)\.env($|\.local$|\.production$)|secrets\.json$'; then
+            echo "::error::A local secrets file is tracked by git."
+            exit 1
+          fi
+      - name: Scan the new commits with gitleaks
+        run: |
+          # Only the commits being added are scanned: older history was reviewed separately.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RANGE="origin/${{ github.base_ref }}..HEAD"
+          else
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then RANGE="HEAD~1..HEAD"; else RANGE="$BEFORE..${{ github.sha }}"; fi
+          fi
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.21.2 detect --source /repo --log-opts="$RANGE" --redact --verbose

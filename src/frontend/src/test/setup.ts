@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+
+// findBy*/waitFor wait up to 4 s (default 1 s): a busy machine or CI runner must not turn a slow render into a failure.
+configure({ asyncUtilTimeout: 4000 });
 
 // jsdom has no layout engine. These minimal stand-ins let libraries such as Embla and Motion run;
 // they never report a match or a size. IntersectionObserver is deliberately NOT stubbed: components

@@ -53,13 +53,17 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-022 — Dashboard analytics (Panoramica > Statistiche): applications sent per week (last 12 weeks, Monday start), response rate (answers = screening, interview or rejection after applying), funnel Applied > Screening > Interview > Offer with the conversion between stages (a skipped stage still counts), average days in each waiting stage (open stages count until today), and a ranking of sources by interviews and offers. `GET /api/v1/applications/analytics` computes everything in memory from the status history (a personal tracker is small); the rules live in `ApplicationAnalytics` and are unit-tested. Charts are plain HTML/CSS with text for screen readers, no chart library. Not done: custom date range, export.
 
+- [x] TASK-021 — Secrets hygiene: a "Secret scan" CI job fails the build if a password is written in an `appsettings*.json`, if a local secrets file (`.env`, `.env.local`, `secrets.json`) is tracked, or if gitleaks finds a credential in the commits being added (older history is not rescanned, so the old database password that is still in history does not block CI; rotate it anyway). Local development already uses user-secrets and `.env.example` is in sync. Not verified: the workflow has not run on GitHub yet.
+
+- [x] TASK-027 — Data export and backup: `GET /api/v1/export` (full JSON: portfolio, applications with history, companies) and `GET /api/v1/export/applications.csv` (UTF-8 with BOM; values that start with = + - @ are neutralised against spreadsheet formula injection). Both need the admin token and never include the admin account, hashes or keys. Buttons in Admin > Sicurezza > "Copia dei dati". `scripts/backup-db.ps1` takes a full `pg_dump` and keeps the newest 14 files; restore steps are in the README. Not verified: the script was only syntax-checked, `pg_dump` is not installed on this machine. Not done: import/restore from the JSON file.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.
 - [x] TASK-018 — CI hardening: build, test, lint, format check and dependency vulnerability scan on every pull request; migration drift check. Dependabot enabled for NuGet, npm and GitHub Actions. Not yet verified on GitHub: the workflow has only been exercised locally, command by command.
 - [ ] TASK-019 — API standardization: ProblemDetails errors, FluentValidation, consistent pagination/sorting, versioning and generated OpenAPI client for the frontend
 - [ ] TASK-020 — Observability, remaining part: structured logging (Serilog, JSON output) and basic metrics. Health checks and correlation ids are done (see "TASK-020 (partly)" above).
-- [ ] TASK-021 — Secrets and configuration hygiene: user-secrets for local development, `.env.example` kept in sync, secret scanning in CI
+- [x] TASK-021 — Secrets and configuration hygiene: done, see the entry in the Portfolio launch track.
 
 ### Product features (Q1 2027)
 
@@ -68,7 +72,7 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 - [ ] TASK-024 — Email and calendar integration: import recruiter emails, interview events and ICS export (user-authorized, no credential storage in the repo)
 - [ ] TASK-025 — Browser extension or bookmarklet to save a job posting into the pipeline with source URL
 - [ ] TASK-026 — Salary and offer comparison: ranges, benefits, net estimate and side-by-side offer analysis
-- [ ] TASK-027 — Data export and backup: JSON/CSV export, PostgreSQL backup script and restore documentation
+- [x] TASK-027 — Data export and backup: done, see the entry in the Portfolio launch track.
 - [ ] TASK-028 — Networking tracker: contacts, referrals, outreach history and follow-up cadence
 - [x] TASK-029 — Public portfolio page generated from the profile: done through TASK-034, TASK-035 and TASK-041. Only the public fields are published (no birth date, no phone).
 

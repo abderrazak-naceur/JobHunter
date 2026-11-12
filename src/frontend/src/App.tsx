@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BriefcaseBusiness, ExternalLink, KeyRound, LayoutDashboard, LogOut, Palette, Target, type LucideIcon } from 'lucide-react';
 import { Toaster } from 'sonner';
 import AccountPage from './admin/account/AccountPage';
+import DataExport from './admin/account/DataExport';
 import ApplicationsPage from './admin/applications/ApplicationsPage';
 import Dashboard, { type AdminTab } from './admin/Dashboard';
 import PortfolioAdmin from './admin/portfolio/PortfolioAdmin';
@@ -56,7 +57,12 @@ export default function App() {
           {tab === 'applications' && <ApplicationsPage />}
           {tab === 'portfolio' && <PortfolioAdmin />}
           {tab === 'companies' && <CompanyRadar />}
-          {tab === 'account' && <AccountPage />}
+          {tab === 'account' && (
+            <div className="space-y-6">
+              <AccountPage />
+              <DataExport />
+            </div>
+          )}
         </section>
       </main>
 
