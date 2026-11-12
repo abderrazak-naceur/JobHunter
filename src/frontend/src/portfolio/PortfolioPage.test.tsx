@@ -173,6 +173,45 @@ describe('PortfolioPage', () => {
     rerender(<PortfolioPage content={{ ...full, projects: [], experiences: [] }} />);
     expect(within(screen.getByRole('region', { name: 'Presentazione' })).getByRole('link', { name: /^Contatti/ })).toHaveAttribute('href', '#contatti');
   });
+  it('keeps the moving skills strip out of the accessibility tree', () => {
+    const { container } = render(<PortfolioPage content={full} />);
+
+    const strip = container.querySelector('.marquee');
+    expect(strip).toHaveAttribute('aria-hidden', 'true');
+    expect(strip).toHaveTextContent('ASP.NET Core');
+  });
+
+  it('has a footer with the section links and the contacts', () => {
+    render(<PortfolioPage content={full} />);
+
+    const footer = screen.getByRole('contentinfo');
+    const nav = within(footer).getByRole('navigation', { name: 'Sezioni del sito' });
+    expect(within(nav).getAllByRole('link').map(link => link.textContent)).toEqual(['Competenze', 'Esperienza', 'Progetti', 'Contatti']);
+    expect(within(footer).getByRole('link', { name: 'me@example.com' })).toHaveAttribute('href', 'mailto:me@example.com');
+    expect(within(footer).getByRole('link', { name: 'GitHub' })).toHaveAttribute('target', '_blank');
+    expect(footer).toHaveTextContent(`© ${new Date().getFullYear()} ${full.name}`);
+  });
+
+  it('has a footer without links or contact blocks when there is nothing to show', () => {
+    render(<PortfolioPage content={{ ...full, skillGroups: [], experiences: [], projects: [], links: [], email: null }} />);
+
+    const footer = screen.getByRole('contentinfo');
+    expect(within(footer).queryByRole('link')).not.toBeInTheDocument();
+    expect(footer).toHaveTextContent(full.name);
+  });
+
+  it('lays out the experience heading next to the timeline, in order', () => {
+    render(<PortfolioPage content={{ ...full, experiences: [
+      { company: 'Acme', role: 'Dev', period: '2020 – oggi', description: '', highlights: [] },
+      { company: 'Beta', role: 'Analyst', period: '2018 – 2020', description: '', highlights: [] }
+    ] }} />);
+
+    const section = screen.getByRole('region', { name: 'Esperienza' });
+    expect(within(section).getByText(/2 esperienze professionali/)).toBeInTheDocument();
+    const entries = within(section).getAllByRole('heading', { level: 3 }).map(heading => heading.textContent);
+    expect(entries).toEqual(['Dev · Acme', 'Analyst · Beta']);
+  });
+
   it('shows the same text for every visitor even when scroll animations are unavailable', () => {
     render(<PortfolioPage content={full} />);
 

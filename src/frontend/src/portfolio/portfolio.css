@@ -31,10 +31,15 @@
   --animate-float-slow: float 14s ease-in-out infinite reverse;
   --animate-spin-slow: spin 24s linear infinite;
   --animate-bob: bob 2.2s ease-in-out infinite;
+  --animate-marquee: marquee 50s linear infinite;
 
   @keyframes float {
     0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
     50% { transform: translate3d(0, -24px, 0) scale(1.05); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
   }
   @keyframes bob {
     0%, 100% { transform: translateY(0); }
@@ -42,7 +47,12 @@
   }
 }
 
-html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+/*
+ * The whole page is built in rem, so growing the root size on large screens scales text, spacing and cards
+ * together: the layout fills a 1440p or 4K monitor instead of staying a small column in the middle.
+ * 16px on phones and tablets, up to about 21px on very large displays.
+ */
+html { font-size: clamp(16px, 0.3vw + 13px, 21px); scroll-behavior: smooth; scroll-padding-top: 5rem; }
 body { margin: 0; background: var(--color-lav-100); }
 
 /* Lavender card with a lighter diagonal panel. */
@@ -73,6 +83,16 @@ body { margin: 0; background: var(--color-lav-100); }
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
 }
+
+/* Soft dot pattern for light backgrounds. */
+.bg-dots {
+  background-image: radial-gradient(rgb(28 51 200 / 14%) 1px, transparent 1.2px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse at center, black 35%, transparent 80%);
+}
+
+/* The skills strip pauses when hovered so it can be read. */
+.marquee:hover .marquee-track { animation-play-state: paused; }
 
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }

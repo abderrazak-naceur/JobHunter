@@ -12,21 +12,27 @@ import './portfolio.css';
 
 type Props = { content?: PortfolioContent };
 
+/** Content width: fluid, edge to edge on every screen, with a generous cap only on ultra-wide monitors. */
+const wrap = 'mx-auto w-full max-w-[112rem] px-5 sm:px-8 lg:px-12 2xl:px-16';
+
 const focusRing = 'focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-brand-600';
 const tag = 'inline-block rounded px-2.5 py-1 text-[0.7rem] font-extrabold uppercase tracking-wider';
 const lift = 'transition duration-300 hover:-translate-y-1.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0';
 
-function SectionHeading({ id, eyebrow, title, dark = false }: { id: string; eyebrow: string; title: string; dark?: boolean }) {
+function SectionHeading({ id, eyebrow, title, dark = false, align = 'center' }: {
+  id: string; eyebrow: string; title: string; dark?: boolean; align?: 'center' | 'left';
+}) {
+  const center = align === 'center';
   return (
-    <Reveal className="mx-auto mb-12 max-w-2xl text-center">
+    <Reveal className={`mb-10 max-w-2xl lg:mb-14 ${center ? 'mx-auto text-center' : ''}`}>
       <p className={`text-sm font-bold uppercase tracking-[0.2em] ${dark ? 'text-accent-300' : 'text-brand-600'}`}>{eyebrow}</p>
-      <h2 id={id} className={`mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl ${dark ? 'text-white' : 'text-brand-900'}`}>{title}</h2>
-      <div aria-hidden="true" className="mx-auto mt-5 h-1.5 w-16 rounded-full bg-gradient-to-r from-brand-600 to-accent-400" />
+      <h2 id={id} className={`mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl ${dark ? 'text-white' : 'text-brand-900'}`}>{title}</h2>
+      <div aria-hidden="true" className={`mt-5 h-1.5 w-16 rounded-full bg-gradient-to-r from-brand-600 to-accent-400 ${center ? 'mx-auto' : ''}`} />
     </Reveal>
   );
 }
 
-/** Round blue arrow button, decorative: the whole card is the link. */
+/** Round arrow button, decorative: the whole card is the link. */
 function ArrowCircle({ light = false }: { light?: boolean }) {
   return (
     <span
@@ -46,11 +52,11 @@ function Teaser({ href, className, title, subtitle, children, light = false }: {
   return (
     <a href={href} className={`block h-full rounded-[2rem] ${focusRing}`}>
       <InteractiveCard
-        className={`group relative flex h-full min-h-[16rem] flex-col justify-between gap-6 overflow-hidden rounded-[2rem] p-8 hover:shadow-2xl ${lift} ${className}`}
+        className={`group relative flex h-full min-h-[13rem] flex-col justify-between gap-5 overflow-hidden rounded-[2rem] p-7 hover:shadow-2xl lg:p-9 ${lift} ${className}`}
       >
         <span className="block">
           <span className="block text-2xl font-extrabold sm:text-3xl">{title}</span>
-          <span className={`mt-2 block max-w-xs text-base ${light ? 'text-brand-100' : 'text-brand-900/80'}`}>{subtitle}</span>
+          <span className={`mt-2 block max-w-sm text-base ${light ? 'text-brand-100' : 'text-brand-900/80'}`}>{subtitle}</span>
         </span>
         {children}
         <span className="flex justify-end"><ArrowCircle light={light} /></span>
@@ -70,8 +76,6 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
 
   const allSkills = [...new Set(skillGroups.flatMap(group => group.skills))];
   const hasContacts = Boolean(email) || links.length > 0;
-  // With few contacts the cards are wider, so an email address fits on one line.
-  const contactCardWidth = (email ? 1 : 0) + links.length <= 3 ? 'lg:w-[calc(33.333%-1rem)]' : 'lg:w-[calc(25%-1.125rem)]';
   const [featured, ...otherProjects] = projects;
 
   const sections = [
@@ -86,7 +90,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
   const hasTeasers = hasSkillsTeaser || hasSecondTeaser;
 
   return (
-    <div id="top" className="min-h-screen bg-lav-100 font-sans text-slate-700 antialiased selection:bg-brand-600 selection:text-white">
+    <div id="top" className="relative min-h-screen overflow-x-clip bg-lav-100 font-sans text-slate-700 antialiased selection:bg-brand-600 selection:text-white">
       <a
         href="#contenuto"
         className={`absolute left-4 top-[-4rem] z-50 rounded-lg bg-brand-600 px-4 py-2 font-semibold text-white focus:top-4 ${focusRing}`}
@@ -102,7 +106,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
 
       {/* Top strip */}
       <div className="bg-brand-700 text-xs text-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-2">
+        <div className={`${wrap} flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2`}>
           <span className="font-bold uppercase tracking-widest">Portfolio</span>
           <span className="flex items-center gap-1.5 text-white/90"><MapPin size={12} aria-hidden="true" /> {location} · {workMode}</span>
         </div>
@@ -110,7 +114,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
 
       {/* Site header */}
       <header className="sticky top-0 z-40 border-b border-lav-300 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
+        <div className={`${wrap} flex items-center justify-between gap-4 py-3`}>
           <a href="#top" className={`flex items-center gap-3 font-extrabold text-brand-900 ${focusRing}`}>
             <span aria-hidden="true" className="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-sm text-white">{initialsOf(name)}</span>
             <span className="hidden sm:inline">{name}</span>
@@ -148,7 +152,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
         </div>
 
         {menuOpen && sections.length > 0 && (
-          <nav id="pf-mobile-menu" aria-label="Sezioni (menu)" className="border-t border-lav-300 bg-white px-6 py-3 md:hidden">
+          <nav id="pf-mobile-menu" aria-label="Sezioni (menu)" className="border-t border-lav-300 bg-white px-5 py-3 sm:px-8 md:hidden">
             <ul className="grid gap-1">
               {sections.map(section => (
                 <li key={section.id}>
@@ -163,96 +167,123 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
       </header>
 
       <main id="contenuto">
-        {/* Hero: one large card and up to two teasers */}
-        <section aria-label="Presentazione" className="mx-auto max-w-6xl px-6 pb-8 pt-10">
-          <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-brand-900">Il mio profilo</p>
-          <div className="grid gap-6 lg:grid-cols-2 lg:grid-rows-2">
-            <Reveal className={`h-full ${hasTeasers ? 'lg:row-span-2' : 'lg:col-span-2'}`}>
-              <InteractiveCard tilt={2} className="card-lavender relative flex h-full min-h-[34rem] flex-col overflow-hidden rounded-[2rem] border border-lav-300 p-8 sm:p-10">
-                <p className={`${tag} w-fit bg-brand-900 text-white`}>{role}</p>
-                <h1 className="mt-5 text-4xl font-black leading-[1.05] tracking-tight text-brand-900 sm:text-5xl lg:text-6xl">{name}</h1>
-                <p className="mt-4 max-w-md text-lg text-slate-700">{tagline}</p>
-                <ul className="mt-6 flex flex-wrap gap-2 text-sm font-semibold text-brand-900">
-                  <li className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2"><MapPin size={15} aria-hidden="true" /> {location}</li>
-                  <li className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2"><Laptop size={15} aria-hidden="true" /> {workMode}</li>
-                </ul>
-                {(email || cvUrl) && (
-                  <div className="mt-8 flex flex-wrap gap-3">
-                    {email && (
-                      <a href={`mailto:${email}`} className={`inline-flex items-center gap-2 rounded-md bg-brand-600 px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-brand-600/30 transition hover:-translate-y-0.5 hover:bg-brand-700 ${focusRing}`}>
-                        <Mail size={16} aria-hidden="true" /> Scrivimi
-                      </a>
-                    )}
-                    {cvUrl && (
-                      <a href={cvUrl} download className={`inline-flex items-center gap-2 rounded-md border-2 border-brand-600 px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-brand-700 transition hover:-translate-y-0.5 hover:bg-white ${focusRing}`}>
-                        <FileDown size={16} aria-hidden="true" /> Scarica il CV
-                      </a>
-                    )}
-                  </div>
-                )}
+        {/* Hero: fills the first screen. One large card and up to two teasers. */}
+        <section aria-label="Presentazione" className="relative isolate">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+            <div className="bg-dots absolute inset-0" />
+            <div className="absolute -left-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-brand-500/20 blur-3xl motion-safe:animate-float" />
+            <div className="absolute -right-32 top-1/3 h-[30rem] w-[30rem] rounded-full bg-accent-400/25 blur-3xl motion-safe:animate-float-slow" />
+            <div className="absolute -bottom-40 left-1/3 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/15 blur-3xl motion-safe:animate-float" />
+          </div>
 
-                <div className="relative mx-auto mt-auto w-full max-w-md pt-12">
-                  <div aria-hidden="true" className="absolute inset-x-10 bottom-0 top-16 rotate-3 rounded-[2.5rem] bg-gradient-to-br from-brand-600 to-brand-500 shadow-2xl motion-safe:animate-float-slow" />
-                  <div className="relative mx-auto h-60 w-60">
-                    <Avatar name={name} photoUrl={photoUrl} className="h-60 w-60 rounded-[2.5rem] shadow-2xl ring-8 ring-white" />
-                  </div>
-                  <div aria-hidden="true">
-                    {allSkills.slice(0, 3).map((skill, index) => (
-                      <span
-                        key={skill}
-                        className={`absolute rounded-full bg-white px-4 py-1.5 text-sm font-bold text-brand-700 shadow-xl motion-safe:animate-float ${['left-0 top-24', 'right-0 top-40', 'bottom-4 left-6'][index]}`}
-                        style={{ animationDelay: `${index * 1.3}s` }}
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </InteractiveCard>
-            </Reveal>
-
-            {hasSkillsTeaser && (
-              <Reveal delay={100} className="h-full">
-                <Teaser
-                  href="#competenze"
-                  className="card-mint text-brand-900"
-                  title="Competenze"
-                  subtitle={`${pluralize(allSkills.length, 'competenza', 'competenze')} in ${pluralize(skillGroups.length, 'area', 'aree')}`}
+          <div className={`${wrap} flex flex-col justify-center py-8 lg:min-h-[min(calc(100svh-6.5rem),62rem)] lg:py-10`}>
+            <p className="mb-4 text-xs font-extrabold uppercase tracking-[0.2em] text-brand-900">Il mio profilo</p>
+            <div className="grid flex-1 gap-5 md:grid-cols-2 lg:grid-cols-12 lg:grid-rows-2 lg:gap-6">
+              <Reveal className={`h-full md:col-span-2 ${hasTeasers ? 'lg:col-span-8 lg:row-span-2' : 'lg:col-span-12 lg:row-span-2'}`}>
+                <InteractiveCard
+                  tilt={1.5}
+                  className="card-lavender relative grid h-full min-h-[28rem] overflow-hidden rounded-[2rem] border border-lav-300 p-6 sm:p-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-10 xl:p-14"
                 >
-                  <span aria-hidden="true" className="flex flex-wrap gap-2">
-                    {allSkills.slice(0, 5).map(skill => (
-                      <span key={skill} className="rounded-full bg-white/70 px-3 py-1 text-sm font-semibold text-brand-800">{skill}</span>
-                    ))}
-                  </span>
-                </Teaser>
-              </Reveal>
-            )}
+                  <div>
+                    <p className={`${tag} w-fit bg-brand-900 text-white`}>{role}</p>
+                    <h1 className="mt-5 text-[clamp(2.4rem,4.4vw,5.25rem)] font-black leading-[1.02] tracking-tight text-brand-900">{name}</h1>
+                    <p className="mt-5 max-w-xl text-lg text-slate-700 xl:text-xl">{tagline}</p>
+                    <ul className="mt-6 flex flex-wrap gap-2 text-sm font-semibold text-brand-900">
+                      <li className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2"><MapPin size={15} aria-hidden="true" /> {location}</li>
+                      <li className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2"><Laptop size={15} aria-hidden="true" /> {workMode}</li>
+                    </ul>
+                    {(email || cvUrl) && (
+                      <div className="mt-8 flex flex-wrap gap-3">
+                        {email && (
+                          <a href={`mailto:${email}`} className={`inline-flex items-center gap-2 rounded-md bg-brand-600 px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-brand-600/30 transition hover:-translate-y-0.5 hover:bg-brand-700 ${focusRing}`}>
+                            <Mail size={16} aria-hidden="true" /> Scrivimi
+                          </a>
+                        )}
+                        {cvUrl && (
+                          <a href={cvUrl} download className={`inline-flex items-center gap-2 rounded-md border-2 border-brand-600 px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-brand-700 transition hover:-translate-y-0.5 hover:bg-white ${focusRing}`}>
+                            <FileDown size={16} aria-hidden="true" /> Scarica il CV
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-            {hasSecondTeaser && (
-              <Reveal delay={200} className="h-full">
-                {projects.length > 0 ? (
-                  <Teaser href="#progetti" className="card-blue text-white" light title="Progetti" subtitle={`${pluralize(projects.length, 'progetto', 'progetti')}: ${projects[0].name}`}>
-                    <span aria-hidden="true" className="pointer-events-none absolute -right-2 top-2 select-none text-[9rem] font-black leading-none text-white/10">{initialsOf(projects[0].name)}</span>
-                  </Teaser>
-                ) : experiences.length > 0 ? (
-                  <Teaser href="#esperienza" className="card-blue text-white" light title="Esperienza" subtitle={`${experiences[0].role} · ${experiences[0].company}`} />
-                ) : (
-                  <Teaser href="#contatti" className="card-blue text-white" light title="Contatti" subtitle="Parliamo del tuo prossimo progetto" />
-                )}
+                  <div className="relative mx-auto mt-10 w-full max-w-md pt-6 lg:mt-0 lg:max-w-none">
+                    <div aria-hidden="true" className="absolute inset-x-[12%] bottom-0 top-10 rotate-3 rounded-[2.5rem] bg-gradient-to-br from-brand-600 to-brand-500 shadow-2xl motion-safe:animate-float-slow" />
+                    <div className="relative mx-auto h-[clamp(14rem,24vw,27rem)] w-[clamp(14rem,24vw,27rem)]">
+                      <Avatar name={name} photoUrl={photoUrl} className="h-full w-full rounded-[2.5rem] shadow-2xl ring-8 ring-white" />
+                    </div>
+                    <div aria-hidden="true">
+                      {allSkills.slice(0, 3).map((skill, index) => (
+                        <span
+                          key={skill}
+                          className={`absolute rounded-full bg-white px-4 py-1.5 text-sm font-bold text-brand-700 shadow-xl motion-safe:animate-float ${['left-0 top-1/4', 'right-0 top-1/2', 'bottom-2 left-[8%]'][index]}`}
+                          style={{ animationDelay: `${index * 1.3}s` }}
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </InteractiveCard>
               </Reveal>
-            )}
+
+              {hasSkillsTeaser && (
+                <Reveal delay={100} className="h-full lg:col-span-4">
+                  <Teaser
+                    href="#competenze"
+                    className="card-mint text-brand-900"
+                    title="Competenze"
+                    subtitle={`${pluralize(allSkills.length, 'competenza', 'competenze')} in ${pluralize(skillGroups.length, 'area', 'aree')}`}
+                  >
+                    <span aria-hidden="true" className="flex flex-wrap gap-2">
+                      {allSkills.slice(0, 6).map(skill => (
+                        <span key={skill} className="rounded-full bg-white/70 px-3 py-1 text-sm font-semibold text-brand-800">{skill}</span>
+                      ))}
+                    </span>
+                  </Teaser>
+                </Reveal>
+              )}
+
+              {hasSecondTeaser && (
+                <Reveal delay={200} className="h-full lg:col-span-4">
+                  {projects.length > 0 ? (
+                    <Teaser href="#progetti" className="card-blue text-white" light title="Progetti" subtitle={`${pluralize(projects.length, 'progetto', 'progetti')}: ${projects[0].name}`}>
+                      <span aria-hidden="true" className="pointer-events-none absolute -right-2 top-2 select-none text-[9rem] font-black leading-none text-white/10">{initialsOf(projects[0].name)}</span>
+                    </Teaser>
+                  ) : experiences.length > 0 ? (
+                    <Teaser href="#esperienza" className="card-blue text-white" light title="Esperienza" subtitle={`${experiences[0].role} · ${experiences[0].company}`} />
+                  ) : (
+                    <Teaser href="#contatti" className="card-blue text-white" light title="Contatti" subtitle="Parliamo del tuo prossimo progetto" />
+                  )}
+                </Reveal>
+              )}
+            </div>
           </div>
         </section>
 
+        {/* Skills strip, edge to edge (decorative: the same skills are listed in the Skills section) */}
+        {allSkills.length > 0 && (
+          <div aria-hidden="true" className="marquee overflow-hidden bg-brand-800 py-4 text-white">
+            <div className="marquee-track flex w-max gap-4 motion-safe:animate-marquee">
+              {[...allSkills, ...allSkills].map((skill, index) => (
+                <span key={`${skill}-${index}`} className="whitespace-nowrap rounded-full border border-white/25 bg-white/10 px-5 py-2 text-sm font-semibold">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Numbers */}
         {stats.length > 0 && (
-          <ul aria-label="In numeri" className="mx-auto flex max-w-6xl flex-wrap justify-center gap-6 px-6 py-6">
+          <ul aria-label="In numeri" className={`${wrap} grid grid-cols-2 gap-4 py-10 lg:grid-cols-4 lg:gap-6 lg:py-14`}>
             {stats.map((stat, index) => (
-              <li key={`${stat.label}-${index}`} className="w-full max-w-xs flex-1 sm:min-w-[14rem]">
+              <li key={`${stat.label}-${index}`}>
                 <Reveal delay={index * 100} className="h-full">
-                  <InteractiveCard spotlight="rgb(28 51 200 / 9%)" className={`h-full overflow-hidden rounded-[2rem] border border-lav-300 bg-white p-7 text-center shadow-lg shadow-brand-900/5 hover:shadow-2xl ${lift}`}>
-                    <p className="bg-gradient-to-r from-brand-600 to-accent-400 bg-clip-text text-5xl font-black tracking-tight text-transparent"><AnimatedNumber value={stat.value} /></p>
-                    <p className="mt-2 text-sm font-bold uppercase tracking-wide text-slate-500">{stat.label}</p>
+                  <InteractiveCard spotlight="rgb(28 51 200 / 9%)" className={`h-full overflow-hidden rounded-[2rem] border border-lav-300 bg-white px-4 py-7 text-center shadow-lg shadow-brand-900/5 hover:shadow-2xl lg:py-10 ${lift}`}>
+                    <p className="bg-gradient-to-r from-brand-600 to-accent-400 bg-clip-text text-[clamp(2.4rem,4.4vw,4.75rem)] font-black leading-none tracking-tight text-transparent"><AnimatedNumber value={stat.value} /></p>
+                    <p className="mt-3 text-xs font-bold uppercase tracking-wide text-slate-500 sm:text-sm">{stat.label}</p>
                   </InteractiveCard>
                 </Reveal>
               </li>
@@ -261,14 +292,14 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
         )}
 
         {/* About */}
-        <section aria-labelledby="pf-about" className="mx-auto max-w-6xl px-6 py-20">
+        <section aria-labelledby="pf-about" className={`${wrap} py-16 lg:py-24`}>
           <SectionHeading id="pf-about" eyebrow="Il mio profilo" title="Chi sono" />
-          <div className="grid items-start gap-8 lg:grid-cols-5">
-            <Reveal delay={100} className="lg:col-span-3">
-              <p className="text-lg leading-8 text-slate-700">{summary}</p>
+          <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-14">
+            <Reveal delay={100} className="lg:col-span-7 xl:col-span-8">
+              <p className="text-lg leading-8 text-slate-700 lg:text-xl lg:leading-9 2xl:text-2xl 2xl:leading-10">{summary}</p>
             </Reveal>
-            <Reveal delay={200} className="lg:col-span-2">
-              <dl className="rounded-[2rem] border border-lav-300 bg-white p-8 shadow-lg shadow-brand-900/5">
+            <Reveal delay={200} className="lg:col-span-5 xl:col-span-4">
+              <dl className="rounded-[2rem] border border-lav-300 bg-white p-8 shadow-lg shadow-brand-900/5 lg:p-10">
                 <div>
                   <dt className="text-xs font-bold uppercase tracking-widest text-slate-400">Ruolo</dt>
                   <dd className="mt-1 text-lg font-extrabold text-brand-900">{role}</dd>
@@ -288,14 +319,14 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
 
         {/* Skills carousel */}
         {skillGroups.length > 0 && (
-          <section id="competenze" aria-labelledby="pf-skills" className="mx-auto max-w-6xl px-6 pb-20">
+          <section id="competenze" aria-labelledby="pf-skills" className={`${wrap} pb-16 lg:pb-24`}>
             <SectionHeading id="pf-skills" eyebrow="Cosa so fare" title="Competenze" />
             <Reveal>
               <Carousel label="Gruppi di competenze">
                 {skillGroups.map((group, index) => {
                   const Icon = iconForGroup(group.title);
                   return (
-                    <InteractiveCard as="article" key={group.title} className={`card-lavender group relative flex h-full min-h-[22rem] flex-col overflow-hidden rounded-[2rem] border border-lav-300 p-8 hover:shadow-2xl hover:shadow-brand-600/15 ${lift}`}>
+                    <InteractiveCard as="article" key={group.title} className={`card-lavender group relative flex h-full min-h-[22rem] flex-col overflow-hidden rounded-[2rem] border border-lav-300 p-7 hover:shadow-2xl hover:shadow-brand-600/15 lg:p-8 ${lift}`}>
                       <span className={`${tag} w-fit ${tagStyles[index % tagStyles.length]}`}>{pluralize(group.skills.length, 'competenza', 'competenze')}</span>
                       <h3 className="mt-5 text-2xl font-extrabold text-brand-900">{group.title}</h3>
                       <ul className="mt-5 flex flex-wrap gap-2">
@@ -317,55 +348,65 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
           </section>
         )}
 
-        {/* Experience */}
+        {/* Experience: heading stays in view on wide screens while the timeline scrolls */}
         {experiences.length > 0 && (
-          <section id="esperienza" aria-labelledby="pf-experience" className="mx-auto max-w-4xl px-6 pb-24">
-            <SectionHeading id="pf-experience" eyebrow="Il mio percorso" title="Esperienza" />
-            <ol className="relative space-y-8 border-l-2 border-brand-200 pl-8 sm:pl-10">
-              {experiences.map((item, index) => (
-                <li key={`${item.company}-${item.period}-${index}`} className="relative">
-                  <span aria-hidden="true" className="absolute -left-[2.55rem] top-8 h-4 w-4 rounded-full border-4 border-lav-100 bg-brand-600 shadow ring-4 ring-brand-200 sm:-left-[3.05rem]" />
-                  <Reveal delay={index * 80}>
-                    <div className={`group rounded-[2rem] border border-lav-300 bg-white p-8 shadow-lg shadow-brand-900/5 hover:shadow-2xl ${lift}`}>
-                      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
-                        <h3 className="text-xl font-extrabold text-brand-900">{item.role} · {item.company}</h3>
-                        <span className={`${tag} bg-brand-50 text-brand-700`}>{item.period}</span>
+          <section id="esperienza" aria-labelledby="pf-experience" className={`${wrap} pb-16 lg:pb-28`}>
+            <div className="grid gap-4 lg:grid-cols-[minmax(15rem,22rem)_1fr] lg:gap-16 xl:gap-24">
+              <div className="lg:sticky lg:top-28 lg:self-start">
+                <SectionHeading id="pf-experience" eyebrow="Il mio percorso" title="Esperienza" align="left" />
+                <Reveal delay={100}>
+                  <p className="-mt-4 hidden text-lg text-slate-600 lg:block">
+                    {pluralize(experiences.length, 'esperienza professionale', 'esperienze professionali')}, dalla più recente alla prima.
+                  </p>
+                </Reveal>
+              </div>
+
+              <ol className="relative space-y-6 border-l-2 border-brand-200 pl-6 sm:pl-10">
+                {experiences.map((item, index) => (
+                  <li key={`${item.company}-${item.period}-${index}`} className="relative">
+                    <span aria-hidden="true" className="absolute -left-[1.95rem] top-9 h-4 w-4 rounded-full border-4 border-lav-100 bg-brand-600 shadow ring-4 ring-brand-200 sm:-left-[3.05rem]" />
+                    <Reveal delay={index * 60}>
+                      <div className={`group rounded-[2rem] border border-lav-300 bg-white p-6 shadow-lg shadow-brand-900/5 hover:shadow-2xl sm:p-8 ${lift}`}>
+                        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
+                          <h3 className="text-xl font-extrabold text-brand-900">{item.role} · {item.company}</h3>
+                          <span className={`${tag} bg-brand-50 text-brand-700`}>{item.period}</span>
+                        </div>
+                        {item.description && <p className="mt-4 leading-7 text-slate-600">{item.description}</p>}
+                        {item.highlights && item.highlights.length > 0 && (
+                          <ul className="mt-5 space-y-2">
+                            {item.highlights.map(highlight => (
+                              <li key={highlight} className="flex gap-3 text-slate-600">
+                                <Check size={18} aria-hidden="true" className="mt-1 shrink-0 text-emerald-500" />
+                                <span>{highlight}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
-                      {item.description && <p className="mt-4 leading-7 text-slate-600">{item.description}</p>}
-                      {item.highlights && item.highlights.length > 0 && (
-                        <ul className="mt-5 space-y-2">
-                          {item.highlights.map(highlight => (
-                            <li key={highlight} className="flex gap-3 text-slate-600">
-                              <Check size={18} aria-hidden="true" className="mt-1 shrink-0 text-emerald-500" />
-                              <span>{highlight}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </Reveal>
-                </li>
-              ))}
-            </ol>
+                    </Reveal>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </section>
         )}
 
-        {/* Projects: deep navy section */}
+        {/* Projects: deep navy section with rounded top edge */}
         {featured && (
-          <section id="progetti" aria-labelledby="pf-projects" className="bg-navy-950 py-24 text-white">
-            <div className="mx-auto max-w-6xl px-6">
+          <section id="progetti" aria-labelledby="pf-projects" className="rounded-t-[2.5rem] bg-navy-950 py-16 text-white lg:rounded-t-[4.5rem] lg:py-28">
+            <div className={wrap}>
               <SectionHeading id="pf-projects" eyebrow="Cosa ho costruito" title="Progetti" dark />
 
               <Reveal>
-                <InteractiveCard as="article" tilt={2} className="card-blue group relative min-h-[22rem] overflow-hidden rounded-[2rem] p-8 ring-1 ring-white/10 sm:p-12">
-                  <span aria-hidden="true" className="pointer-events-none absolute -bottom-10 right-4 select-none text-[11rem] font-black leading-none text-white/10 transition duration-700 group-hover:translate-x-3 sm:text-[17rem]">
+                <InteractiveCard as="article" tilt={1.5} className="card-blue group relative min-h-[22rem] overflow-hidden rounded-[2rem] p-7 ring-1 ring-white/10 sm:p-12 lg:p-16">
+                  <span aria-hidden="true" className="pointer-events-none absolute -bottom-10 right-4 select-none text-[11rem] font-black leading-none text-white/10 transition duration-700 group-hover:translate-x-3 sm:text-[17rem] 2xl:text-[24rem]">
                     {initialsOf(featured.name)}
                   </span>
                   <p className={`${tag} w-fit bg-rose-600 text-white`}>In evidenza</p>
-                  <h3 className="mt-5 max-w-xl text-3xl font-extrabold sm:text-4xl">{featured.name}</h3>
-                  {featured.description && <p className="mt-4 max-w-xl text-lg leading-8 text-brand-100">{featured.description}</p>}
+                  <h3 className="mt-5 max-w-3xl text-3xl font-extrabold sm:text-4xl lg:text-5xl">{featured.name}</h3>
+                  {featured.description && <p className="mt-4 max-w-2xl text-lg leading-8 text-brand-100 xl:text-xl">{featured.description}</p>}
                   {featured.technologies.length > 0 && (
-                    <ul className="mt-6 flex max-w-xl flex-wrap gap-2">
+                    <ul className="mt-6 flex max-w-2xl flex-wrap gap-2">
                       {featured.technologies.map(tech => <li key={tech} className="rounded-full bg-white/15 px-3 py-1 text-sm font-semibold backdrop-blur">{tech}</li>)}
                     </ul>
                   )}
@@ -378,7 +419,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
               </Reveal>
 
               {otherProjects.length > 0 && (
-                <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-6 grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))] lg:gap-6">
                   {otherProjects.map((project, index) => (
                     <Reveal key={project.name} delay={index * 100} className="h-full">
                       <InteractiveCard as="article" spotlight="rgb(28 51 200 / 10%)" className={`group flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-white ring-1 ring-white/10 hover:shadow-2xl hover:shadow-black/40 ${lift}`}>
@@ -413,37 +454,37 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
           </section>
         )}
 
-        {/* Contacts: royal blue cards */}
+        {/* Contacts: royal blue cards across the width */}
         {hasContacts && (
-          <section id="contatti" aria-labelledby="pf-contacts" className="mx-auto max-w-6xl px-6 py-24">
+          <section id="contatti" aria-labelledby="pf-contacts" className={`${wrap} py-16 lg:py-28`}>
             <SectionHeading id="pf-contacts" eyebrow="Lavoriamo insieme" title="Contatti" />
-            <ul className="flex flex-wrap justify-center gap-6">
+            <ul className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr))] lg:gap-6">
               {email && (
-                <li className={`w-full sm:w-[calc(50%-0.75rem)] ${contactCardWidth}`}>
+                <li>
                   <Reveal className="h-full">
                     <a href={`mailto:${email}`} className={`block h-full rounded-[2rem] ${focusRing}`}>
-                    <InteractiveCard className={`card-blue group flex h-full min-h-[15rem] flex-col overflow-hidden rounded-[2rem] p-7 text-white hover:shadow-2xl hover:shadow-brand-800/40 ${lift}`}>
-                      <Mail size={28} aria-hidden="true" className="text-accent-300" />
-                      <span className="mt-6 break-all text-xl font-extrabold">{email}</span>
-                      <span className="mt-auto flex justify-end pt-6"><ArrowCircle light /></span>
-                    </InteractiveCard>
+                      <InteractiveCard className={`card-blue group flex h-full min-h-[14rem] flex-col overflow-hidden rounded-[2rem] p-7 text-white hover:shadow-2xl hover:shadow-brand-800/40 lg:p-9 ${lift}`}>
+                        <Mail size={28} aria-hidden="true" className="text-accent-300" />
+                        <span className="mt-6 break-words text-xl font-extrabold [overflow-wrap:anywhere]">{email}</span>
+                        <span className="mt-auto flex justify-end pt-6"><ArrowCircle light /></span>
+                      </InteractiveCard>
                     </a>
                   </Reveal>
                 </li>
               )}
               {links.map((link, index) => (
-                <li key={link.url} className={`w-full sm:w-[calc(50%-0.75rem)] ${contactCardWidth}`}>
+                <li key={link.url}>
                   <Reveal delay={(index + 1) * 100} className="h-full">
                     <a
                       href={link.url}
                       {...(isExternal(link.url) ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
                       className={`block h-full rounded-[2rem] ${focusRing}`}
                     >
-                      <InteractiveCard className={`card-blue group flex h-full min-h-[15rem] flex-col overflow-hidden rounded-[2rem] p-7 text-white hover:shadow-2xl hover:shadow-brand-800/40 ${lift}`}>
-                      <Link2 size={28} aria-hidden="true" className="text-accent-300" />
-                      <span className="mt-6 break-all text-xl font-extrabold">{link.label}</span>
-                      <span className="mt-auto flex justify-end pt-6"><ArrowCircle light /></span>
-                    </InteractiveCard>
+                      <InteractiveCard className={`card-blue group flex h-full min-h-[14rem] flex-col overflow-hidden rounded-[2rem] p-7 text-white hover:shadow-2xl hover:shadow-brand-800/40 lg:p-9 ${lift}`}>
+                        <Link2 size={28} aria-hidden="true" className="text-accent-300" />
+                        <span className="mt-6 break-words text-xl font-extrabold [overflow-wrap:anywhere]">{link.label}</span>
+                        <span className="mt-auto flex justify-end pt-6"><ArrowCircle light /></span>
+                      </InteractiveCard>
                     </a>
                   </Reveal>
                 </li>
@@ -455,8 +496,8 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
         {/* Call to action strip */}
         {email && (
           <div className="bg-brand-700 text-white">
-            <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6">
-              <p className="flex items-center gap-3 font-semibold">
+            <div className={`${wrap} flex flex-wrap items-center justify-between gap-4 py-6 lg:py-8`}>
+              <p className="flex items-center gap-3 font-semibold lg:text-lg">
                 <Sparkles size={22} aria-hidden="true" className="text-accent-300" />
                 Hai un progetto o un’opportunità in mente? Parliamone.
               </p>
@@ -468,9 +509,43 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
         )}
       </main>
 
-      <footer className="bg-navy-950 py-10 text-center text-sm text-white/70">
-        <p className="font-bold text-white">{name}</p>
-        <p className="mt-1">{role} · © {new Date().getFullYear()}</p>
+      <footer className="bg-navy-950 text-white/70">
+        <div className={`${wrap} grid gap-10 py-12 md:grid-cols-3 lg:py-16`}>
+          <div>
+            <p className="flex items-center gap-3 text-lg font-extrabold text-white">
+              <span aria-hidden="true" className="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-sm">{initialsOf(name)}</span>
+              {name}
+            </p>
+            <p className="mt-3 text-sm">{role}</p>
+            {tagline && <p className="mt-2 max-w-xs text-sm text-white/60">{tagline}</p>}
+          </div>
+
+          {sections.length > 0 && (
+            <nav aria-label="Sezioni del sito">
+              <p className="text-xs font-bold uppercase tracking-widest text-white/50">Esplora</p>
+              <ul className="mt-4 space-y-2 text-sm">
+                {sections.map(section => (
+                  <li key={section.id}><a href={`#${section.id}`} className={`transition hover:text-white ${focusRing}`}>{section.label}</a></li>
+                ))}
+              </ul>
+            </nav>
+          )}
+
+          {hasContacts && (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-white/50">Contatti</p>
+              <ul className="mt-4 space-y-2 text-sm">
+                {email && <li><a href={`mailto:${email}`} className={`break-all transition hover:text-white ${focusRing}`}>{email}</a></li>}
+                {links.map(link => (
+                  <li key={link.url}>
+                    <a href={link.url} {...(isExternal(link.url) ? { target: '_blank', rel: 'noreferrer noopener' } : {})} className={`transition hover:text-white ${focusRing}`}>{link.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+        <div className="border-t border-white/10 py-5 text-center text-sm text-white/50">© {new Date().getFullYear()} {name}</div>
       </footer>
     </div>
   );

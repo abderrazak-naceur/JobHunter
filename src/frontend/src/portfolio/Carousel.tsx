@@ -65,10 +65,10 @@ export default function Carousel({ label, children }: Props) {
   return (
     <div role="group" aria-roledescription="carousel" aria-label={label}>
       {/* The viewport reaches into the section padding so cards can bleed to the edge and shadows are not clipped. */}
-      <div ref={viewportRef} className="-mx-6 -my-4 overflow-hidden py-4">
+      <div ref={viewportRef} className="-mx-5 -my-4 overflow-hidden py-4">
         <ul className="flex touch-pan-y">
           {items.map((item, index) => (
-            <li key={index} className="min-w-0 shrink-0 grow-0 basis-[86%] pl-6 sm:basis-[46%] lg:basis-[33.333%]">
+            <li key={index} className="min-w-0 shrink-0 grow-0 basis-[86%] pl-5 sm:basis-1/2 lg:basis-1/3 xl:basis-1/4 2xl:basis-1/5">
               {item}
             </li>
           ))}

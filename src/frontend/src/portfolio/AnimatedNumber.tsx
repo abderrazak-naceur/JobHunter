@@ -38,7 +38,13 @@ export default function AnimatedNumber({ value, className }: { value: string; cl
       onUpdate: current => setDisplay(formatNumber(parsed, current)),
       onComplete: () => setDisplay(value)
     });
-    return () => controls.stop();
+    // Safety net: if the browser throttles animation frames (background tab, crawler, slow device),
+    // the real value must still end up on screen.
+    const fallback = setTimeout(() => setDisplay(value), 2600);
+    return () => {
+      controls.stop();
+      clearTimeout(fallback);
+    };
   }, [canAnimate, visible, parsed, value]);
 
   if (!canAnimate) return <span className={className}>{value}</span>;
