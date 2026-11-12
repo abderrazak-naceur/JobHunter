@@ -60,3 +60,21 @@ public sealed record PagedApplicationsResponse(IReadOnlyList<ApplicationResponse
 public sealed record UpcomingStepResponse(Guid Id, string Company, string Role, string NextStep, DateOnly NextStepOn);
 
 public sealed record ApplicationSummaryResponse(int Total, IReadOnlyDictionary<string, int> ByStatus, IReadOnlyList<UpcomingStepResponse> Upcoming);
+
+public sealed record WeekCountResponse(DateOnly WeekStart, int Count);
+public sealed record FunnelStageResponse(string Stage, int Count);
+public sealed record ConversionResponse(string From, string To, int FromCount, int ToCount);
+public sealed record StageDurationResponse(string Stage, double? AverageDays, int Samples);
+public sealed record SourceStatsResponse(string Source, int Applications, int Interviews, int Offers);
+
+/// <summary>Numbers for the dashboard. <c>ResponseRatePercent</c> is null until at least one application was sent.</summary>
+public sealed record ApplicationAnalyticsResponse(
+    int Total,
+    int Applied,
+    int Responded,
+    double? ResponseRatePercent,
+    IReadOnlyList<WeekCountResponse> Weekly,
+    IReadOnlyList<FunnelStageResponse> Funnel,
+    IReadOnlyList<ConversionResponse> Conversions,
+    IReadOnlyList<StageDurationResponse> TimeInStage,
+    IReadOnlyList<SourceStatsResponse> BySource);

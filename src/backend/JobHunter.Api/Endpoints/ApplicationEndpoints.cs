@@ -72,6 +72,12 @@ public static class ApplicationEndpoints
             return Results.Ok(new ApplicationSummaryResponse(byStatus.Values.Sum(), byStatus, upcoming));
         });
 
+        group.MapGet("/analytics", async (JobHunterDbContext db, CancellationToken cancellationToken) =>
+        {
+            // A personal tracker holds hundreds of rows at most, so the numbers are computed in memory from the history.
+            var applications = await db.JobApplications.AsNoTracking().Include(x => x.Events).ToListAsync(cancellationToken);
+            return Results.Ok(ApplicationAnalytics.Compute(applications, DateTime.UtcNow));
+        });
         group.MapGet("/{id:guid}", async (Guid id, JobHunterDbContext db, CancellationToken cancellationToken) =>
         {
             var application = await db.JobApplications.AsNoTracking()

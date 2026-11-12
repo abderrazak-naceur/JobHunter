@@ -3,15 +3,15 @@
 ## MVP — Career Management + Unified Job Search
 
 - [ ] TASK-001 — Repository foundation, documentation and local infrastructure (no Docker)
-- [ ] TASK-002 — Portfolio profile, experience, skills and projects (PostgreSQL + EF Core)
-- [ ] TASK-003 — Admin dashboard shell, navigation and shared application layout
+- [x] TASK-002 — Portfolio profile, experience, skills and projects (PostgreSQL + EF Core): done through TASK-035, TASK-041, TASK-043 and TASK-047.
+- [x] TASK-003 — Admin dashboard shell, navigation and shared application layout: sidebar, dashboard, shadcn/ui components and toasts are in place (TASK-042, TASK-043, TASK-038).
 - [ ] TASK-004 — Unified Job Search Engine: multi-source search, filters, normalization, deduplication and source attribution
-- [ ] TASK-005 — Opportunity tracking and application pipeline: statuses, events, notes and full history
+- [x] TASK-005 — Opportunity tracking and application pipeline: statuses, history, notes, list and board views (TASK-038, TASK-023). Reminders and attachments stay in TASK-006.
 - [ ] TASK-006 — Interview timeline, contacts, follow-ups, reminders and attachments
 - [ ] TASK-007 — CV/document management and Job Description upload, extraction and structured analysis
 - [ ] TASK-008 — AI career coach: CV/JD matching, skill gaps, cover letters and interview simulations
 - [ ] TASK-009 — Academy: courses, lessons, learning materials and progress
-- [ ] TASK-010 — Authentication, authorization, privacy and audit trail
+- [ ] TASK-010 — Authentication, authorization, privacy and audit trail. Done: single-user login, protected API, password change (TASK-036, TASK-046). Still open: audit trail of logins and changes, security headers, refresh tokens, privacy/data-export tools.
 - [ ] TASK-011 — Scheduled searches, new-job notifications and configurable search profiles
 - [ ] TASK-012 — Additional job-source integrations through official APIs, feeds, ATS endpoints or other permitted methods
 - [ ] TASK-013 — Employment & NASpI scenario checker: contract, probation, termination scenarios, contribution history and regulatory rule explanations
@@ -22,7 +22,7 @@
 
 ### Portfolio launch track (priority — product is branded "Portfolio", deployed on Render)
 
-The product is split into a public single-page portfolio at `/` (no menu) used to apply for jobs, and a private admin area at `/admin` used to find jobs and track applications. TASK-036 (login) is done; before the first public deploy also rotate the local database password, which was committed in earlier history.sso 
+The product is split into a public single-page portfolio at `/` (no menu) used to apply for jobs, and a private admin area at `/admin` used to find jobs and track applications. TASK-036 (login) is done; before the first public deploy also rotate the local database password, which was committed in earlier history.
 
 - [x] TASK-034 — Public one-page Portfolio at `/` (no menu): hero, skills, experience, projects, contacts, SEO meta tags; admin moved to `/admin`; rebrand from "JobHunter" to "Portfolio" in the UI. Content comes from `src/frontend/src/portfolio/content.ts` until TASK-035. Still to fill in by the owner: email, real experiences, CV link and the display name.
 - [x] TASK-035 — Portfolio content in PostgreSQL and editable from the admin area ("Modifica portfolio"): profile, contacts, skills, experience, projects. `GET /api/v1/portfolio` is public and cacheable for 60 s, `PUT` requires the admin token and validates everything (http/https URLs only). The content is one JSON document in a single-row table (migration `AddPortfolioProfile`). The bundled `content.ts` is only an offline fallback. Run `dotnet ef database update` to create the table. Follow-ups: CV file upload (today a CV URL), preview before publishing, version history.
@@ -43,7 +43,7 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-045 — Swagger UI for the API at `/swagger` (Development, or `Swagger__Enabled=true`): titled OpenAPI document, an Authorize button for the admin token, padlocks only on protected operations, token remembered across reloads. Tests check that the UI is served, that protected and public operations are marked correctly, and that nothing is exposed when it is off. Not yet done: request/response examples and per-field descriptions.
 
-- [x] TASK-046 � Change the admin password from the app (Admin > Sicurezza). The new password is stored as a PBKDF2 hash in an AdminAccounts table and replaces the configured one; every older token stops working (tokens carry a fingerprint of the password hash), and the current session gets a fresh token. Rules: 12-256 characters, different from the current one and from the username, wrong current password answers 400, same rate limit as login. Needs dotnet ef database update once. Recovery if forgotten: DELETE FROM "AdminAccounts"; makes the configured credentials valid again.
+- [x] TASK-046 — Change the admin password from the app (Admin > Sicurezza). The new password is stored as a PBKDF2 hash in an `AdminAccounts` table and replaces the configured one; every older token stops working (tokens carry a fingerprint of the password hash), and the current session gets a fresh token. Rules: 12-256 characters, different from the current one and from the username, a wrong current password answers 400, same rate limit as login. Needs `dotnet ef database update` once (migration `AddAdminAccount`). Recovery if the password is forgotten: `DELETE FROM "AdminAccounts";` makes the configured credentials valid again.
 
 - [x] TASK-047 — Education, certifications and languages: three new optional lists in the portfolio content (no migration, content is one JSON document; older saved content simply has them empty). Public site gets a "Formazione e lingue" section (also in the menu and footer), shown only when at least one list has entries; the admin gets the tabs Formazione, Certificazioni and Lingue with add/edit/delete/reorder. Server validation with limits (10 / 30 / 12 items). The bundled default content now lists the Master's degree in progress, AZ-900, AI-900 and four languages; the language levels there are a first guess to be corrected in the admin.
 
@@ -51,24 +51,26 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 - [x] TASK-023 — Board view of the applications (Candidature > Bacheca): one column per stage, move a card by dragging it onto another column or with the "Sposta" menu on the card (keyboard and touch friendly); a move saves the new stage and writes the status history like the list does. The board loads up to 100 applications and says so when there are more. Not done: ordering inside a column, a column-level "add" button.
 
+- [x] TASK-022 — Dashboard analytics (Panoramica > Statistiche): applications sent per week (last 12 weeks, Monday start), response rate (answers = screening, interview or rejection after applying), funnel Applied > Screening > Interview > Offer with the conversion between stages (a skipped stage still counts), average days in each waiting stage (open stages count until today), and a ranking of sources by interviews and offers. `GET /api/v1/applications/analytics` computes everything in memory from the status history (a personal tracker is small); the rules live in `ApplicationAnalytics` and are unit-tested. Charts are plain HTML/CSS with text for screen readers, no chart library. Not done: custom date range, export.
+
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.
 - [x] TASK-018 — CI hardening: build, test, lint, format check and dependency vulnerability scan on every pull request; migration drift check. Dependabot enabled for NuGet, npm and GitHub Actions. Not yet verified on GitHub: the workflow has only been exercised locally, command by command.
 - [ ] TASK-019 — API standardization: ProblemDetails errors, FluentValidation, consistent pagination/sorting, versioning and generated OpenAPI client for the frontend
-- [ ] TASK-020 — Observability: structured logging (Serilog), correlation IDs, health checks for PostgreSQL and basic metrics
+- [ ] TASK-020 — Observability, remaining part: structured logging (Serilog, JSON output) and basic metrics. Health checks and correlation ids are done (see "TASK-020 (partly)" above).
 - [ ] TASK-021 — Secrets and configuration hygiene: user-secrets for local development, `.env.example` kept in sync, secret scanning in CI
 
 ### Product features (Q1 2027)
 
-- [ ] TASK-022 — Dashboard analytics: applications per week, response rate, conversion by stage, time-in-stage and source effectiveness
-- [ ] TASK-023 — Kanban pipeline view with drag and drop for application statuses
+- [x] TASK-022 — Dashboard analytics: done, see the entry in the Portfolio launch track.
+- [x] TASK-023 — Kanban pipeline view: done, see the entry in the Portfolio launch track.
 - [ ] TASK-024 — Email and calendar integration: import recruiter emails, interview events and ICS export (user-authorized, no credential storage in the repo)
 - [ ] TASK-025 — Browser extension or bookmarklet to save a job posting into the pipeline with source URL
 - [ ] TASK-026 — Salary and offer comparison: ranges, benefits, net estimate and side-by-side offer analysis
 - [ ] TASK-027 — Data export and backup: JSON/CSV export, PostgreSQL backup script and restore documentation
 - [ ] TASK-028 — Networking tracker: contacts, referrals, outreach history and follow-up cadence
-- [ ] TASK-029 — Public portfolio page generated from the profile (opt-in, no private data exposed)
+- [x] TASK-029 — Public portfolio page generated from the profile: done through TASK-034, TASK-035 and TASK-041. Only the public fields are published (no birth date, no phone).
 
 ### Platform (Q2 2027)
 
@@ -79,9 +81,13 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 
 ## Progress notes
 
-- TASK-003: Preline dashboard foundation added to the frontend; navigation and shared layout still to be completed.
+- TASK-003: the first Preline shell was replaced by Tailwind + shadcn/ui (TASK-042); navigation, dashboard and layout are complete.
 - TASK-014 / TASK-016: Company CRUD works through the .NET API and PostgreSQL. Career-page crawling, ATS discovery, scheduled scans and notifications are not implemented.
 - TASK-017 added 26 backend and 21 frontend tests; TASK-016 can now be closed once the tests are merged.
+
+- TASK-046 to TASK-023 (this round): backend 221 tests and frontend 233 tests passing; `dotnet format`, ESLint, the production build and the migration drift check are clean. Not exercised in a real browser: the drag and drop on the board.
+- Open items for the owner: apply new migrations with `dotnet ef database update` (the `AdminAccounts` table is needed for login), replace the temporary admin password from Sicurezza, rotate the old database password that is still in git history, upload the profile photo, correct the language levels in Portfolio > Lingue.
+- Next suggested: TASK-019 (ProblemDetails, shared validation), TASK-021 (secret scanning in CI), TASK-027 (export and backup), TASK-028 (contacts), TASK-026 (offer comparison). TASK-037 (Render deploy) is intentionally last.
 
 ## Unified Job Search principles
 

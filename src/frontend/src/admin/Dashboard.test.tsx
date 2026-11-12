@@ -6,7 +6,7 @@ import Dashboard from './Dashboard';
 
 vi.mock('@/services/applicationApi', async importOriginal => ({
   ...(await importOriginal<typeof import('@/services/applicationApi')>()),
-  applicationApi: { summary: vi.fn() }
+  applicationApi: { summary: vi.fn(), analytics: vi.fn() }
 }));
 
 const api = vi.mocked(applicationApi);
@@ -24,6 +24,7 @@ describe('Dashboard', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     api.summary.mockResolvedValue(summary);
+    api.analytics.mockResolvedValue({ total: 0, applied: 0, responded: 0, responseRatePercent: null, weekly: [], funnel: [], conversions: [], timeInStage: [], bySource: [] });
   });
 
   it('shows the totals, counting applied, screening and interview as "in progress"', async () => {

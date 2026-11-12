@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { APPLICATION_STATUSES, applicationApi, type ApplicationSummary } from '@/services/applicationApi';
+import AnalyticsPanel from './AnalyticsPanel';
 import { formatDate, isOverdue, statusMeta } from './applications/statusMeta';
 
 export type AdminTab = 'overview' | 'applications' | 'portfolio' | 'companies' | 'account';
@@ -107,6 +108,8 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: AdminTab) 
           </div>
         </>
       )}
+
+      <AnalyticsPanel />
 
       <Card>
         <CardHeader>

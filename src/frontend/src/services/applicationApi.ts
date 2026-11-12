@@ -31,6 +31,18 @@ export type PagedApplications = { items: Application[]; page: number; pageSize: 
 export type UpcomingStep = { id: string; company: string; role: string; nextStep: string; nextStepOn: string };
 export type ApplicationSummary = { total: number; byStatus: Record<ApplicationStatus, number>; upcoming: UpcomingStep[] };
 
+export type ApplicationAnalytics = {
+  total: number;
+  applied: number;
+  responded: number;
+  responseRatePercent: number | null;
+  weekly: { weekStart: string; count: number }[];
+  funnel: { stage: string; count: number }[];
+  conversions: { from: string; to: string; fromCount: number; toCount: number }[];
+  timeInStage: { stage: string; averageDays: number | null; samples: number }[];
+  bySource: { source: string; applications: number; interviews: number; offers: number }[];
+};
+
 export type ApplicationQuery = { search?: string; status?: ApplicationStatus | ''; page?: number; pageSize?: number };
 
 const base = '/api/v1/applications';
@@ -75,5 +87,8 @@ export const applicationApi = {
   },
   summary() {
     return apiRequest<ApplicationSummary>(`${base}/summary`);
+  },
+  analytics() {
+    return apiRequest<ApplicationAnalytics>(`${base}/analytics`);
   }
 };
