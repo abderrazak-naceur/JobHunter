@@ -28,6 +28,9 @@ public class JobHunterApiFactory : WebApplicationFactory<Program>
     /// <summary>High by default so unrelated tests are never throttled; overridden by the rate limit tests.</summary>
     protected virtual int LoginPermitLimit => 1000;
 
+    /// <summary>Off by default, like in production; the Swagger tests turn it on.</summary>
+    protected virtual bool SwaggerEnabled => false;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         if (_connection.State != ConnectionState.Open) _connection.Open();
@@ -38,6 +41,7 @@ public class JobHunterApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Admin:PasswordHash", AdminPasswordHash);
         builder.UseSetting("Jwt:SigningKey", SigningKey);
         builder.UseSetting("RateLimiting:LoginPermitLimit", LoginPermitLimit.ToString());
+        builder.UseSetting("Swagger:Enabled", SwaggerEnabled ? "true" : "false");
 
         builder.ConfigureServices(services =>
         {
@@ -75,6 +79,12 @@ public class JobHunterApiFactory : WebApplicationFactory<Program>
         base.Dispose(disposing);
         if (disposing) _connection.Dispose();
     }
+}
+
+/// <summary>Same API with Swagger UI and the OpenAPI document switched on.</summary>
+public sealed class SwaggerApiFactory : JobHunterApiFactory
+{
+    protected override bool SwaggerEnabled => true;
 }
 
 /// <summary>Same API with a tiny login limit, to test throttling.</summary>

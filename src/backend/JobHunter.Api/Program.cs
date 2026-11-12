@@ -15,7 +15,7 @@ if (args.Length > 0 && args[0] == PasswordHashCommand.Name)
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+builder.Services.AddPortfolioOpenApi();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
@@ -71,11 +71,22 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod());
 });
 
+// Swagger UI (/swagger) and the OpenAPI document (/openapi/v1.json). On in Development, off elsewhere
+// unless explicitly enabled with Swagger:Enabled=true (environment variable Swagger__Enabled).
+var swaggerEnabled = builder.Configuration.GetValue("Swagger:Enabled", builder.Environment.IsDevelopment());
+
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (swaggerEnabled)
 {
     app.MapOpenApi().AllowAnonymous();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "Portfolio API v1");
+        options.DocumentTitle = "Portfolio API";
+        options.EnablePersistAuthorization(); // keeps the pasted token after a page reload
+        options.DisplayRequestDuration();
+    });
 }
 
 app.UseCors("Frontend");

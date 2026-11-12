@@ -96,7 +96,16 @@ Protected endpoints (`Authorization: Bearer <token>`); every endpoint is protect
 - `PUT /api/v1/companies/{id}`
 - `DELETE /api/v1/companies/{id}`
 
-OpenAPI is available at `/openapi/v1.json` in Development.
+### Swagger UI
+
+With the API running in Development, open **http://localhost:5000/swagger** to explore and try every endpoint. The OpenAPI document is at `/openapi/v1.json`.
+
+To call the protected endpoints:
+1. Open `POST /api/v1/auth/login`, click **Try it out**, enter the admin `username` and `password`, **Execute**.
+2. Copy the `accessToken` from the response.
+3. Click **Authorize** (top right), paste the token (without the word `Bearer`) and confirm. A closed padlock marks the operations that need it; the token is kept after a page reload.
+
+Swagger and the OpenAPI document are on only in Development. Elsewhere they are off unless you set `Swagger__Enabled=true`, which is not recommended on a public site.
 
 ### 4. Configure and run the frontend
 
