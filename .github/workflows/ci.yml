@@ -4,33 +4,59 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches:
-      - main
-      - feature/task-016-company-radar-api
-      - feature/task-017-automated-tests
+    branches: [main]
 
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend:
     name: Backend (.NET 10)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      API_PROJECT: src/backend/JobHunter.Api/JobHunter.Api.csproj
+      TEST_PROJECT: src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
       - name: Restore
-        run: dotnet restore src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj
+        run: dotnet restore $TEST_PROJECT
+      - name: Check formatting
+        run: |
+          dotnet format $API_PROJECT --verify-no-changes --no-restore
+          dotnet format $TEST_PROJECT --verify-no-changes --no-restore
       - name: Build
-        run: dotnet build src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj --configuration Release --no-restore
+        run: dotnet build $TEST_PROJECT --configuration Release --no-restore
       - name: Test
-        run: dotnet test src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj --configuration Release --no-build --verbosity normal
+        run: dotnet test $TEST_PROJECT --configuration Release --no-build --verbosity normal
+      - name: Scan NuGet packages for known vulnerabilities
+        run: |
+          dotnet list $TEST_PROJECT package --vulnerable --include-transitive 2>&1 | tee vulnerabilities.txt
+          if grep -q "has the following vulnerable packages" vulnerabilities.txt; then
+            echo "::error::Vulnerable NuGet packages found."
+            exit 1
+          fi
+      - name: Check for missing EF Core migrations
+        env:
+          ConnectionStrings__DefaultConnection: Host=localhost;Database=ci_drift_check;Username=ci;Password=ci
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.0
+          dotnet ef migrations has-pending-model-changes --project $API_PROJECT --configuration Release --no-build
 
   frontend:
     name: Frontend (React + TypeScript)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: src/frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,11 +65,12 @@ jobs:
           cache: npm
           cache-dependency-path: src/frontend/package-lock.json
       - name: Install dependencies
-        working-directory: src/frontend
         run: npm ci
+      - name: Lint
+        run: npm run lint
       - name: Test
-        working-directory: src/frontend
         run: npm test
       - name: Build
-        working-directory: src/frontend
         run: npm run build
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high

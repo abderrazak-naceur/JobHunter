@@ -90,12 +90,22 @@ dotnet test src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj
 
 If the API is running and locks `JobHunter.Api.exe`, add `-p:UseAppHost=false` or stop the API first.
 
-Frontend (Vitest + Testing Library):
+Frontend (Vitest + Testing Library, ESLint):
 
 ```powershell
 cd src/frontend
 npm test
+npm run lint
 ```
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and push to `main`:
+
+- Backend: `dotnet format --verify-no-changes`, build, tests, NuGet vulnerability scan and an EF Core check that fails when the model has changes without a migration (`dotnet ef migrations has-pending-model-changes`).
+- Frontend: ESLint, tests, build and `npm audit` on production dependencies (high severity or above).
+
+Run the same checks locally before opening a pull request. Dependabot opens weekly update PRs for NuGet, npm and GitHub Actions.
 
 ### npm or Git fail with a certificate error?
 

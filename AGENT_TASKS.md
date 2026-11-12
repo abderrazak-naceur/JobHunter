@@ -23,7 +23,7 @@
 ### Foundation and quality (Q4 2026)
 
 - [x] TASK-017 — Automated test projects: xUnit for API (endpoints, validation, filtering, paging; in-memory SQLite) and Vitest + Testing Library for the frontend (API client and Company Radar). A test against real PostgreSQL (e.g. Testcontainers) is a possible follow-up.
-- [ ] TASK-018 — CI hardening: build, test, lint, format check and dependency vulnerability scan on every pull request; migration drift check
+- [x] TASK-018 — CI hardening: build, test, lint, format check and dependency vulnerability scan on every pull request; migration drift check. Dependabot enabled for NuGet, npm and GitHub Actions. Not yet verified on GitHub: the workflow has only been exercised locally, command by command.
 - [ ] TASK-019 — API standardization: ProblemDetails errors, FluentValidation, consistent pagination/sorting, versioning and generated OpenAPI client for the frontend
 - [ ] TASK-020 — Observability: structured logging (Serilog), correlation IDs, health checks for PostgreSQL and basic metrics
 - [ ] TASK-021 — Secrets and configuration hygiene: user-secrets for local development, `.env.example` kept in sync, secret scanning in CI
