@@ -1,3 +1,7 @@
+import { useEffect, useState } from 'react';
+import { resolveAssetUrl } from '../services/apiConfig';
+import { fetchPortfolio } from '../services/portfolioApi';
+
 type LoadingVariant = 'portfolio' | 'admin';
 
 type LoadingScreenProps = {
@@ -6,11 +10,32 @@ type LoadingScreenProps = {
 
 /**
  * A focused, animated loading indicator shared by the public portfolio and
- * admin area. CSS-only so it appears immediately, even while lazy chunks load.
+ * admin area. The profile photo is loaded from the same public portfolio data
+ * used by the homepage, while the spinner itself is available immediately.
  */
 export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenProps) {
   const isAdmin = variant === 'admin';
   const label = isAdmin ? 'Preparazione dell’area amministrativa' : 'Preparazione del portfolio';
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoFailed, setPhotoFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    fetchPortfolio()
+      .then(content => {
+        if (active) setPhotoUrl(content.photoUrl ?? null);
+      })
+      .catch(() => {
+        // The loader remains usable even when the API or profile image is unavailable.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const showPhoto = Boolean(photoUrl) && !photoFailed;
 
   return (
     <div
@@ -59,19 +84,28 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
           animation: jh-loader-spin .9s cubic-bezier(.55, .15, .45, .85) infinite;
           will-change: transform;
         }
-        .jh-loader__core {
+        .jh-loader__avatar {
           display: grid;
           width: 58px;
           height: 58px;
           place-items: center;
-          border: 1px solid #e5edf8;
-          border-radius: 19px;
-          background: linear-gradient(145deg, #ffffff, #f3f7ff);
-          box-shadow: 0 6px 22px rgba(37, 99, 235, .10), inset 0 1px 0 #ffffff;
-          color: #1d4ed8;
-          font-size: 14px;
-          font-weight: 800;
-          letter-spacing: -.04em;
+          overflow: hidden;
+          border: 2px solid #ffffff;
+          border-radius: 50%;
+          background: linear-gradient(145deg, #ffffff, #eff6ff);
+          box-shadow: 0 6px 22px rgba(37, 99, 235, .12);
+        }
+        .jh-loader__avatar img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          border-radius: inherit;
+          object-fit: cover;
+        }
+        .jh-loader__avatar-fallback {
+          width: 27px;
+          height: 27px;
+          color: #64748b;
         }
         .jh-loader__title {
           margin: 0;
@@ -133,7 +167,21 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
       <div className="jh-loader" aria-hidden="true">
         <div className="jh-loader__symbol">
           <span className="jh-loader__ring" data-testid="loading-spinner" />
-          <span className="jh-loader__core">ZN</span>
+          <span className="jh-loader__avatar">
+            {showPhoto ? (
+              <img
+                src={resolveAssetUrl(photoUrl!)}
+                alt=""
+                data-testid="loading-profile-photo"
+                onError={() => setPhotoFailed(true)}
+              />
+            ) : (
+              <svg className="jh-loader__avatar-fallback" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.7" />
+                <path d="M4 20c.8-3.7 3.8-5.7 8-5.7s7.2 2 8 5.7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+            )}
+          </span>
         </div>
         <p className="jh-loader__title">Un momento</p>
         <p className="jh-loader__subtitle">
