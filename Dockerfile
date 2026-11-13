@@ -14,6 +14,11 @@ RUN dotnet publish src/backend/JobHunter.Api/JobHunter.Api.csproj \
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
+
+# Npgsql's native GSS support requires the Kerberos GSSAPI runtime library on Debian.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/publish .
 
 # Render's default web-service port. Bind on all interfaces inside the container.
