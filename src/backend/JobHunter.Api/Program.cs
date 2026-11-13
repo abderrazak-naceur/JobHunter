@@ -96,8 +96,11 @@ var swaggerEnabled = builder.Configuration.GetValue("Swagger:Enabled", builder.E
 var app = builder.Build();
 
 // Apply committed EF Core migrations before serving traffic. Render deploys a single API instance.
-await using (var migrationScope = app.Services.CreateAsyncScope())
+// On by default; the automated tests turn it off (Database:MigrateOnStartup=false) because they build their own
+// in-memory SQLite schema, which the PostgreSQL migrations cannot be applied to.
+if (app.Configuration.GetValue("Database:MigrateOnStartup", true))
 {
+    await using var migrationScope = app.Services.CreateAsyncScope();
     var db = migrationScope.ServiceProvider.GetRequiredService<JobHunterDbContext>();
     await db.Database.MigrateAsync();
 }

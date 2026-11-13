@@ -43,6 +43,7 @@ public class JobHunterApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Jwt:SigningKey", SigningKey);
         builder.UseSetting("RateLimiting:LoginPermitLimit", LoginPermitLimit.ToString());
         builder.UseSetting("RateLimiting:ImportPermitLimit", "1000");
+        builder.UseSetting("Database:MigrateOnStartup", "false"); // the schema comes from EnsureCreated below
         builder.UseSetting("Swagger:Enabled", SwaggerEnabled ? "true" : "false");
 
         builder.ConfigureServices(services =>
