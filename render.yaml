@@ -23,7 +23,7 @@ services:
       - key: Jwt__ExpiryMinutes
         value: "480"
       - key: Cors__AllowedOrigins__0
-        value: https://portafoglio-web.onrender.com
+        value: https://portafoglio-web-blu5.onrender.com
 
   - type: web
     name: portafoglio-web
@@ -32,7 +32,7 @@ services:
     staticPublishPath: ./src/frontend/dist
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://portafoglio-api.onrender.com
+        value: https://portafoglio-api-blu5.onrender.com
     routes:
       - type: rewrite
         source: /*
