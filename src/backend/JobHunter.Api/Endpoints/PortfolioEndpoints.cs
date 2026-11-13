@@ -22,11 +22,15 @@ public static class PortfolioEndpoints
     public const int MaxCertifications = 30;
     public const int MaxLanguages = 12;
     public const int MaxPhotoBytes = 2 * 1024 * 1024;
+    public const int MaxCvBytes = 10 * 1024 * 1024;
 
     /// <summary>Public address of the uploaded profile photo (relative to the API).</summary>
     public const string PhotoPath = "/api/v1/portfolio/photo";
+    /// <summary>Public download address of the uploaded CV (relative to the API).</summary>
+    public const string CvPath = "/api/v1/portfolio/cv";
 
     private static string PhotoUrlFor(DateTimeOffset updatedAt) => $"{PhotoPath}?v={updatedAt.UtcTicks}";
+    private static string CvUrlFor(DateTimeOffset updatedAt) => $"{CvPath}?v={updatedAt.UtcTicks}";
 
     /// <summary>
     /// Shown until the owner saves their own content from the admin area. Loaded from
@@ -84,6 +88,13 @@ public static class PortfolioEndpoints
                 .FirstOrDefaultAsync(cancellationToken);
             if (photoUpdatedAt is not null) content = content with { PhotoUrl = PhotoUrlFor(photoUpdatedAt.Value) };
 
+            // An uploaded PDF takes precedence over the optional manual CV link, without replacing it in storage.
+            var cvUpdatedAt = await db.PortfolioAssets.AsNoTracking()
+                .Where(x => x.Kind == PortfolioAsset.CvKind)
+                .Select(x => (DateTimeOffset?)x.UpdatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (cvUpdatedAt is not null) content = content with { CvDownloadUrl = CvUrlFor(cvUpdatedAt.Value) };
+
             http.Response.Headers.CacheControl = "public, max-age=60";
             return Results.Ok(content);
         }).AllowAnonymous().WithTags("Portfolio");
@@ -107,6 +118,12 @@ public static class PortfolioEndpoints
             profile.ContentJson = JsonSerializer.Serialize(content, JsonOptions);
             profile.UpdatedAt = DateTimeOffset.UtcNow;
             await db.SaveChangesAsync(cancellationToken);
+
+            var cvUpdatedAt = await db.PortfolioAssets.AsNoTracking()
+                .Where(x => x.Kind == PortfolioAsset.CvKind)
+                .Select(x => (DateTimeOffset?)x.UpdatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+            content = content with { CvDownloadUrl = cvUpdatedAt is null ? null : CvUrlFor(cvUpdatedAt.Value) };
 
             return Results.Ok(content);
         }).RequireAuthorization().WithTags("Portfolio");
@@ -166,8 +183,66 @@ public static class PortfolioEndpoints
             return Results.NoContent();
         }).RequireAuthorization().WithTags("Portfolio");
 
+        // Public: download the uploaded CV. The fixed filename and nosniff header keep the response predictable.
+        endpoints.MapGet(CvPath, async (HttpContext http, JobHunterDbContext db, CancellationToken cancellationToken) =>
+        {
+            var asset = await db.PortfolioAssets.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Kind == PortfolioAsset.CvKind, cancellationToken);
+            if (asset is null) return Results.NotFound();
+
+            http.Response.Headers.CacheControl = "public, max-age=86400";
+            http.Response.Headers["X-Content-Type-Options"] = "nosniff";
+            return Results.File(asset.Data, "application/pdf", "curriculum-vitae.pdf");
+        }).AllowAnonymous().WithTags("Portfolio");
+
+        // Admin only: upload or replace the CV as a raw PDF request body.
+        endpoints.MapPut(CvPath, async (HttpRequest request, JobHunterDbContext db, CancellationToken cancellationToken) =>
+        {
+            const string tooLarge = "Il CV supera i 10 MB.";
+            if (request.ContentLength > MaxCvBytes)
+                return Results.Problem(title: tooLarge, statusCode: StatusCodes.Status413PayloadTooLarge);
+
+            var data = await ReadLimitedAsync(request.Body, MaxCvBytes, cancellationToken);
+            if (data is null)
+                return Results.Problem(title: tooLarge, statusCode: StatusCodes.Status413PayloadTooLarge);
+
+            // Never trust the browser's Content-Type or filename: verify the PDF signature in the bytes.
+            if (!IsPdf(data))
+                return Results.Problem(title: "Formato non supportato. Carica un documento PDF valido.", statusCode: StatusCodes.Status415UnsupportedMediaType);
+
+            var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == PortfolioAsset.CvKind, cancellationToken);
+            if (asset is null)
+            {
+                asset = new PortfolioAsset { Kind = PortfolioAsset.CvKind };
+                db.PortfolioAssets.Add(asset);
+            }
+
+            asset.ContentType = "application/pdf";
+            asset.Data = data;
+            asset.UpdatedAt = DateTimeOffset.UtcNow;
+            await db.SaveChangesAsync(cancellationToken);
+
+            return Results.Ok(new CvResponse(CvUrlFor(asset.UpdatedAt)));
+        }).RequireAuthorization().WithTags("Portfolio");
+
+        // Admin only: remove the uploaded CV; a manual CV URL, if configured, becomes visible again.
+        endpoints.MapDelete(CvPath, async (JobHunterDbContext db, CancellationToken cancellationToken) =>
+        {
+            var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == PortfolioAsset.CvKind, cancellationToken);
+            if (asset is not null)
+            {
+                db.PortfolioAssets.Remove(asset);
+                await db.SaveChangesAsync(cancellationToken);
+            }
+
+            return Results.NoContent();
+        }).RequireAuthorization().WithTags("Portfolio");
+
         return endpoints;
     }
+
+    public static bool IsPdf(ReadOnlySpan<byte> data) =>
+        data.Length >= 5 && data[..5].SequenceEqual("%PDF-"u8);
 
     private static async Task<byte[]?> ReadLimitedAsync(Stream body, int maxBytes, CancellationToken cancellationToken)
     {

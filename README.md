@@ -83,11 +83,13 @@ Public endpoints (no login):
 - `GET /`, `GET /health` (process is up), `GET /health/ready` (also checks the database, answers 503 if it is unreachable; use it as the Render health check)
 - `GET /api/v1/portfolio` (published portfolio content, cacheable for 60 seconds)
 - `GET /api/v1/portfolio/photo` (the uploaded profile photo, stored in PostgreSQL)
+- `GET /api/v1/portfolio/cv` (the active CV as a PDF attachment, stored in PostgreSQL)
 - `POST /api/v1/auth/login` (rate limited, returns a JWT)
 
 Protected endpoints (`Authorization: Bearer <token>`); every endpoint is protected unless it opts out:
 - `PUT /api/v1/portfolio` (replace the published content)
 - `PUT /api/v1/portfolio/photo` (upload the profile photo as the raw request body: JPEG, PNG or WebP, max 2 MB; the type is detected from the file content) and `DELETE /api/v1/portfolio/photo`
+- `PUT /api/v1/portfolio/cv` (upload or replace the CV as the raw request body: PDF only, max 10 MB; the PDF signature is verified) and `DELETE /api/v1/portfolio/cv`
 - `GET /api/v1/auth/me`
 - `GET /api/v1/applications?search=&status=&page=&pageSize=`, `GET /api/v1/applications/summary`, `GET /api/v1/applications/{id}` (with the status history), `POST /api/v1/applications`, `PUT /api/v1/applications/{id}`, `DELETE /api/v1/applications/{id}` (job application tracker)
 - `GET /api/v1/companies?search=dotnet&page=1&pageSize=20`

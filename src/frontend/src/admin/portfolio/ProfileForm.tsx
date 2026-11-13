@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { PortfolioContent } from '@/portfolio/content';
 import { resolveAssetUrl } from '@/services/apiConfig';
-import { deletePhoto, uploadPhoto } from '@/services/portfolioApi';
+import { deleteCv, deletePhoto, uploadCv, uploadPhoto } from '@/services/portfolioApi';
 
 type Props = {
   content: PortfolioContent;
@@ -14,6 +15,8 @@ type Props = {
   onSave: (patch: Partial<PortfolioContent>) => Promise<void>;
   /** Called after the photo was uploaded or removed (these are published immediately). */
   onPhotoChange: (photoUrl: string | null) => void;
+  /** Called after the CV was uploaded or removed (published immediately). */
+  onCvChange: (cvDownloadUrl: string | null) => void;
 };
 
 type FormState = { name: string; role: string; tagline: string; summary: string; location: string; workMode: string; email: string; cvUrl: string; photoUrl: string };
@@ -32,15 +35,18 @@ function toForm(content: PortfolioContent): FormState {
   };
 }
 
-export default function ProfileForm({ content, onSave, onPhotoChange }: Props) {
+export default function ProfileForm({ content, onSave, onPhotoChange, onCvChange }: Props) {
   const [form, setForm] = useState<FormState>(() => toForm(content));
   const [saving, setSaving] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [cvBusy, setCvBusy] = useState(false);
   const [error, setError] = useState('');
 
   // The photo is stored by the API and its address comes from the parent, not from the text fields.
   const photoUrl = content.photoUrl ?? '';
   const photoUploaded = photoUrl.startsWith('/api/');
+  const cvDownloadUrl = content.cvDownloadUrl ?? '';
+  const cvUploaded = Boolean(cvDownloadUrl);
   const set = (patch: Partial<FormState>) => setForm(current => ({ ...current, ...patch }));
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -80,6 +86,35 @@ export default function ProfileForm({ content, onSave, onPhotoChange }: Props) {
       setError(err instanceof Error ? err.message : 'Caricamento della foto non riuscito.');
     } finally {
       setPhotoBusy(false);
+    }
+  }
+
+  async function onCvSelected(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setError('');
+    setCvBusy(true);
+    try {
+      onCvChange(await uploadCv(file));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Caricamento del CV non riuscito.');
+    } finally {
+      setCvBusy(false);
+    }
+  }
+
+  async function onCvRemoved() {
+    setError('');
+    setCvBusy(true);
+    try {
+      await deleteCv();
+      onCvChange(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Rimozione del CV non riuscita.');
+    } finally {
+      setCvBusy(false);
     }
   }
 
@@ -137,8 +172,34 @@ export default function ProfileForm({ content, onSave, onPhotoChange }: Props) {
               <Input id="profile-email" type="email" maxLength={254} value={form.email} onChange={e => set({ email: e.target.value })} placeholder="nome@esempio.it" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="profile-cv">Link al CV (URL)</Label>
+              <Label htmlFor="profile-cv">Link alternativo al CV (URL)</Label>
               <Input id="profile-cv" type="url" maxLength={500} value={form.cvUrl} onChange={e => set({ cvUrl: e.target.value })} placeholder="https://..." />
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-lg border p-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold">Curriculum Vitae (PDF)</p>
+                <p className="mt-1 text-xs text-muted-foreground">Il PDF caricato viene pubblicato subito e ha priorità sul link alternativo.</p>
+              </div>
+              {cvUploaded && (
+                <a
+                  href={resolveAssetUrl(cvDownloadUrl)}
+                  download
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+                >
+                  <FileDown size={16} aria-hidden="true" /> Scarica PDF attuale
+                </a>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Label className="inline-flex h-9 cursor-pointer items-center rounded-md border bg-background px-4 text-sm font-medium shadow-xs hover:bg-accent focus-within:ring-[3px] focus-within:ring-ring/50">
+                {cvBusy ? 'Attendi...' : cvUploaded ? 'Sostituisci CV' : 'Carica CV'}
+                <input type="file" accept="application/pdf,.pdf" className="sr-only" disabled={cvBusy} onChange={onCvSelected} />
+              </Label>
+              {cvUploaded && <Button type="button" variant="outline" disabled={cvBusy} onClick={onCvRemoved}>Rimuovi CV</Button>}
+              <p className="basis-full text-xs text-muted-foreground">Solo PDF, massimo 10 MB. La sostituzione aggiorna automaticamente il pulsante nella homepage.</p>
             </div>
           </div>
 

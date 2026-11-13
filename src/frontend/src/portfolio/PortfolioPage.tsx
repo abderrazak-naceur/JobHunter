@@ -4,6 +4,7 @@ import AnimatedNumber from './AnimatedNumber';
 import Avatar from './Avatar';
 import Carousel from './Carousel';
 import { portfolio as defaultContent, type PortfolioContent } from './content';
+import { resolveAssetUrl } from '@/services/apiConfig';
 import InteractiveCard from './InteractiveCard';
 import { cardGradients, iconForGroup, initialsOf, isExternal, pluralize, tagStyles } from './helpers';
 import { useScrollProgress } from './hooks';
@@ -67,13 +68,14 @@ function Teaser({ href, className, title, subtitle, children, light = false }: {
 
 export default function PortfolioPage({ content = defaultContent }: Props) {
   const {
-    name, role, tagline, summary, location, workMode, email, cvUrl, photoUrl,
+    name, role, tagline, summary, location, workMode, email, cvUrl, cvDownloadUrl, photoUrl,
     links, skillGroups, experiences, projects
   } = content;
   const stats = content.stats ?? [];
   const education = content.education ?? [];
   const certifications = content.certifications ?? [];
   const languages = content.languages ?? [];
+  const downloadCvUrl = cvDownloadUrl ? resolveAssetUrl(cvDownloadUrl) : cvUrl;
   const hasBackground = education.length > 0 || certifications.length > 0 || languages.length > 0;
   const progressRef = useScrollProgress<HTMLDivElement>();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -197,15 +199,15 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
                       <li className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2"><MapPin size={15} aria-hidden="true" /> {location}</li>
                       <li className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2"><Laptop size={15} aria-hidden="true" /> {workMode}</li>
                     </ul>
-                    {(email || cvUrl) && (
+                    {(email || downloadCvUrl) && (
                       <div className="mt-8 flex flex-wrap gap-3">
                         {email && (
                           <a href={`mailto:${email}`} className={`inline-flex items-center gap-2 rounded-md bg-brand-600 px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-brand-600/30 transition hover:-translate-y-0.5 hover:bg-brand-700 ${focusRing}`}>
                             <Mail size={16} aria-hidden="true" /> Scrivimi
                           </a>
                         )}
-                        {cvUrl && (
-                          <a href={cvUrl} download className={`inline-flex items-center gap-2 rounded-md border-2 border-brand-600 px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-brand-700 transition hover:-translate-y-0.5 hover:bg-white ${focusRing}`}>
+                        {downloadCvUrl && (
+                          <a href={downloadCvUrl} download className={`inline-flex items-center gap-2 rounded-md border-2 border-brand-600 px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-brand-700 transition hover:-translate-y-0.5 hover:bg-white ${focusRing}`}>
                             <FileDown size={16} aria-hidden="true" /> Scarica il CV
                           </a>
                         )}

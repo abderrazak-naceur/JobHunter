@@ -18,6 +18,8 @@ public sealed record LanguageDto(string Name, string Level);
 
 public sealed record PhotoResponse(string PhotoUrl);
 
+public sealed record CvResponse(string CvDownloadUrl);
+
 public sealed record PortfolioContentDto(
     string Name,
     string Role,
@@ -35,4 +37,5 @@ public sealed record PortfolioContentDto(
     string? PhotoUrl = null,
     IReadOnlyList<EducationDto>? Education = null,
     IReadOnlyList<CertificationDto>? Certifications = null,
-    IReadOnlyList<LanguageDto>? Languages = null);
+    IReadOnlyList<LanguageDto>? Languages = null,
+    string? CvDownloadUrl = null);

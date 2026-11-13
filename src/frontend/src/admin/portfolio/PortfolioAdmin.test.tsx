@@ -2,17 +2,19 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PortfolioContent } from '@/portfolio/content';
-import { deletePhoto, fetchPortfolio, savePortfolio, uploadPhoto } from '@/services/portfolioApi';
+import { deleteCv, deletePhoto, fetchPortfolio, savePortfolio, uploadCv, uploadPhoto } from '@/services/portfolioApi';
 import { sampleContent } from '@/test/fixtures';
 import PortfolioAdmin from './PortfolioAdmin';
 
-vi.mock('@/services/portfolioApi', () => ({ fetchPortfolio: vi.fn(), savePortfolio: vi.fn(), uploadPhoto: vi.fn(), deletePhoto: vi.fn() }));
+vi.mock('@/services/portfolioApi', () => ({ fetchPortfolio: vi.fn(), savePortfolio: vi.fn(), uploadPhoto: vi.fn(), deletePhoto: vi.fn(), uploadCv: vi.fn(), deleteCv: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() }, Toaster: () => null }));
 
 const fetchMock = vi.mocked(fetchPortfolio);
 const saveMock = vi.mocked(savePortfolio);
 const uploadMock = vi.mocked(uploadPhoto);
 const deleteMock = vi.mocked(deletePhoto);
+const uploadCvMock = vi.mocked(uploadCv);
+const deleteCvMock = vi.mocked(deleteCv);
 
 const stored: PortfolioContent = {
   ...sampleContent,
@@ -80,6 +82,31 @@ describe('PortfolioAdmin', () => {
       expect(sent.cvUrl).toBeNull();
       expect(sent.experiences).toEqual(stored.experiences);
       expect(sent.skillGroups).toEqual(stored.skillGroups);
+    });
+
+
+    it('uploads a CV PDF and shows the public download link', async () => {
+      uploadCvMock.mockResolvedValue('/api/v1/portfolio/cv?v=4');
+      render(<PortfolioAdmin />);
+      const file = new File(['%PDF-1.7\\nbody'], 'curriculum.pdf', { type: 'application/pdf' });
+
+      await userEvent.upload(await screen.findByLabelText(/Carica CV/), file);
+
+      await waitFor(() => expect(uploadCvMock).toHaveBeenCalledWith(file));
+      expect(await screen.findByRole('link', { name: /Scarica PDF attuale/ })).toHaveAttribute('href', expect.stringContaining('/api/v1/portfolio/cv?v=4'));
+      expect(screen.getByRole('button', { name: 'Rimuovi CV' })).toBeInTheDocument();
+    });
+
+    it('removes an uploaded CV and keeps the manual fallback URL', async () => {
+      fetchMock.mockResolvedValue({ ...stored, cvUrl: 'https://example.com/cv.pdf', cvDownloadUrl: '/api/v1/portfolio/cv?v=4' });
+      deleteCvMock.mockResolvedValue(undefined);
+      render(<PortfolioAdmin />);
+
+      await userEvent.click(await screen.findByRole('button', { name: 'Rimuovi CV' }));
+
+      await waitFor(() => expect(deleteCvMock).toHaveBeenCalledTimes(1));
+      expect(screen.queryByRole('link', { name: /Scarica PDF attuale/ })).not.toBeInTheDocument();
+      expect(screen.getByLabelText(/Link alternativo al CV/)).toHaveValue('https://example.com/cv.pdf');
     });
 
     it('shows the validation message of the server', async () => {

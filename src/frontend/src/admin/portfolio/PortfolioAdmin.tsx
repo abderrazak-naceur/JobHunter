@@ -74,6 +74,7 @@ export default function PortfolioAdmin() {
             content={content}
             onSave={async patch => { await persist(patch); }}
             onPhotoChange={photoUrl => setContent(current => (current ? { ...current, photoUrl } : current))}
+            onCvChange={cvDownloadUrl => setContent(current => (current ? { ...current, cvDownloadUrl } : current))}
           />
         </TabsContent>
         <TabsContent value="numeri">
