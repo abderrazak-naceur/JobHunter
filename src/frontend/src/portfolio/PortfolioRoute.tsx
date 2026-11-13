@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
+import LoadingScreen from '../components/LoadingScreen';
 import { fetchPortfolio } from '../services/portfolioApi';
 import { portfolio as fallbackContent, type PortfolioContent } from './content';
 import PortfolioPage from './PortfolioPage';
 
 /**
  * Loads the published content from the API. While waiting (a sleeping server can take a while to wake up)
- * it shows a neutral message rather than someone else's placeholder data; if the API fails, the bundled
+ * it shows a neutral skeleton matching the public page; if the API fails, the bundled
  * fallback is shown so the page is never blank.
  */
 export default function PortfolioRoute() {
@@ -28,7 +29,7 @@ export default function PortfolioRoute() {
   }, [content]);
 
   if (!content) {
-    return <p role="status" style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>Caricamento...</p>;
+    return <LoadingScreen variant="portfolio" />;
   }
   return <PortfolioPage content={content} />;
 }
