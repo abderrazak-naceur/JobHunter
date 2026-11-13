@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text;
 using JobHunter.Api.Contracts;
 using JobHunter.Api.Domain;
+using JobHunter.Api.Endpoints;
 using JobHunter.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
