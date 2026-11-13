@@ -111,6 +111,10 @@ Swagger and the OpenAPI document are on only in Development. Elsewhere they are 
 
 - **From the app:** Admin > Sicurezza > "Copia dei dati" downloads a JSON backup (portfolio, applications with their history, companies) or the applications as a CSV for Excel. Passwords, hashes and keys are never included, and neither is the profile photo.
 - **Whole database:** `scripts/backup-db.ps1 -Database <name> -User <user>` runs `pg_dump` (needs the PostgreSQL client tools and `$env:PGPASSWORD`) and keeps the 14 newest files in `backups/` (git-ignored). Restore into an empty database with `pg_restore --no-owner --dbname=<db> --host=<host> --username=<user> <file>.dump`, then run `dotnet ef database update` if the dump is older than the code.
+### Change the admin username
+
+Admin > Sicurezza shows the current username. To change it, type the new one (3-100 characters: letters, digits and . _ - @) and confirm with the current password. Like a password change, it closes every other session. The username is stored in the `AdminAccounts` table and takes over from `Admin__Username`.
+
 ### Change the admin password
 
 Sign in, open **Sicurezza** and fill in current and new password (at least 12 characters). The new password is stored as a hash in the AdminAccounts table and takes over from Admin__PasswordHash, which is only used until the first change. Other sessions are closed. Apply the migration first with dotnet ef database update.

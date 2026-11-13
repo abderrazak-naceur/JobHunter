@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import AccountPage, { validatePasswordChange } from './AccountPage';
+import AccountPage, { validatePasswordChange, validateUsernameChange } from './AccountPage';
 import { getAccessToken, saveSession } from '@/auth/session';
 
 const expiresAt = () => new Date(Date.now() + 3_600_000).toISOString();
@@ -82,6 +82,75 @@ describe('AccountPage', () => {
     await fill('wrong-password-1', 'brand-new-password', 'brand-new-password');
 
     expect(await screen.findByRole('alert')).toHaveTextContent('La password attuale non è corretta.');
+    expect(getAccessToken()).toBe('old-token');
+  });
+});
+
+describe('validateUsernameChange', () => {
+  it.each([
+    ['ab', 'pw', 'Lo username deve avere da 3 a 100 caratteri.'],
+    ['zak naceur', 'pw', 'Usa solo lettere, numeri e i caratteri . _ - @ (senza spazi).'],
+    ['zaknaceur', 'pw', 'Il nuovo username è uguale a quello attuale.'],
+    ['zak.naceur', '', 'Inserisci la password attuale per confermare.'],
+    ['  zak.naceur@example.com ', 'pw', '']
+  ])('(%j, %j) -> %s', (next, password, expected) => {
+    expect(validateUsernameChange('zaknaceur', next, password)).toBe(expected);
+  });
+});
+
+describe('AccountPage username', () => {
+  it('shows the current username', async () => {
+    mockApi({ status: 200, body: {} });
+    render(<AccountPage />);
+
+    expect(await screen.findByTestId('current-username')).toHaveTextContent('zaknaceur');
+  });
+
+  it('changes the username, keeps the fresh session and shows the new name', async () => {
+    saveSession({ accessToken: 'old-token', expiresAt: expiresAt() });
+    const fetchMock = mockApi({ status: 200, body: { accessToken: 'renamed-token', expiresAt: expiresAt() } });
+    render(<AccountPage />);
+    await screen.findByTestId('current-username');
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('Nuovo username'), ' abderrazak.naceur ');
+    await user.type(screen.getByLabelText('Password attuale (per confermare)'), 'my-password-1');
+    await user.click(screen.getByRole('button', { name: 'Aggiorna username' }));
+
+    await waitFor(() => expect(screen.getByTestId('current-username')).toHaveTextContent('abderrazak.naceur'));
+    const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/auth/change-username'))!;
+    expect(JSON.parse((call[1] as RequestInit).body as string)).toEqual({ currentPassword: 'my-password-1', newUsername: 'abderrazak.naceur' });
+    expect(getAccessToken()).toBe('renamed-token');
+    expect(screen.getByLabelText('Nuovo username')).toHaveValue('');
+  });
+
+  it('refuses an invalid username without calling the API', async () => {
+    const fetchMock = mockApi({ status: 200, body: {} });
+    render(<AccountPage />);
+    await screen.findByTestId('current-username');
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('Nuovo username'), 'zak naceur');
+    await user.type(screen.getByLabelText('Password attuale (per confermare)'), 'x');
+    await user.click(screen.getByRole('button', { name: 'Aggiorna username' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('senza spazi');
+    expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/auth/change-username'))).toBe(false);
+  });
+
+  it('shows the server message when the password is wrong, keeping the old name', async () => {
+    saveSession({ accessToken: 'old-token', expiresAt: expiresAt() });
+    mockApi({ status: 400, body: { errors: { CurrentPassword: ['La password attuale non è corretta.'] } } });
+    render(<AccountPage />);
+    await screen.findByTestId('current-username');
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('Nuovo username'), 'nuovo.nome');
+    await user.type(screen.getByLabelText('Password attuale (per confermare)'), 'wrong');
+    await user.click(screen.getByRole('button', { name: 'Aggiorna username' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('La password attuale non è corretta.');
+    expect(screen.getByTestId('current-username')).toHaveTextContent('zaknaceur');
     expect(getAccessToken()).toBe('old-token');
   });
 });

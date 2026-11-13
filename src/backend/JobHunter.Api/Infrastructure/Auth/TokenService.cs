@@ -9,13 +9,14 @@ namespace JobHunter.Api.Infrastructure.Auth;
 public sealed record IssuedToken(string AccessToken, DateTimeOffset ExpiresAt);
 
 /// <summary>
-/// A short, non-reversible fingerprint of a password hash. Every token carries the fingerprint of the password it was
-/// issued for, so changing the password invalidates all older tokens at once, with no clock involved.
+/// A short, non-reversible fingerprint of the credentials (username and password hash). Every token carries the
+/// fingerprint of the credentials it was issued for, so changing the password or the username invalidates all older
+/// tokens at once, with no clock involved.
 /// </summary>
 public static class PasswordFingerprint
 {
-    public static string Of(string passwordHash) =>
-        Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(passwordHash)))[..16];
+    public static string Of(string username, string passwordHash) =>
+        Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(username + "\n" + passwordHash)))[..16];
 }
 
 /// <summary>Issues and describes the HS256 JWT used by the admin area.</summary>
@@ -54,7 +55,7 @@ public sealed class TokenService(IOptions<JwtOptions> options)
             IssuedAt = issuedAt.UtcDateTime,
             NotBefore = issuedAt.UtcDateTime,
             Expires = expiresAt.UtcDateTime,
-            Subject = new ClaimsIdentity([new Claim(ClaimTypes.Name, username), new Claim(PasswordClaim, PasswordFingerprint.Of(passwordHash))]),
+            Subject = new ClaimsIdentity([new Claim(ClaimTypes.Name, username), new Claim(PasswordClaim, PasswordFingerprint.Of(username, passwordHash))]),
             SigningCredentials = new SigningCredentials(CreateKey(_options), SecurityAlgorithms.HmacSha256)
         };
 

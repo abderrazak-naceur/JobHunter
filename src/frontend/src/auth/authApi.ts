@@ -33,6 +33,15 @@ export async function getCurrentUsername(): Promise<string> {
  * Changes the admin password. Every older token stops working, so the fresh token
  * returned by the server replaces the current session.
  */
+export async function changeUsername(currentPassword: string, newUsername: string): Promise<void> {
+  const body = await apiRequest<Session>('/api/v1/auth/change-username', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newUsername })
+  });
+  // Like a password change: older tokens stop working, the fresh one keeps this session signed in.
+  saveSession({ accessToken: body.accessToken, expiresAt: body.expiresAt });
+}
+
 export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
   const body = await apiRequest<Session>('/api/v1/auth/change-password', {
     method: 'POST',

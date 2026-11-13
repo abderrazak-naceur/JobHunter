@@ -1,17 +1,20 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using JobHunter.Api.Contracts;
 using JobHunter.Api.Infrastructure.Auth;
 using Microsoft.Extensions.Options;
 
 namespace JobHunter.Api.Endpoints;
 
-public static class AuthEndpoints
+public static partial class AuthEndpoints
 {
     public const string LoginRateLimitPolicy = "login";
     public const int MinPasswordLength = 12;
     public const int MaxPasswordLength = 256;
+    public const int MinUsernameLength = 3;
+    public const int MaxUsernameLength = 100;
 
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -90,6 +93,45 @@ public static class AuthEndpoints
         .RequireAuthorization()
         .RequireRateLimiting(LoginRateLimitPolicy);
 
+        // Same rules as the password change: the current password is required (400 if wrong), the login rate limit
+        // applies, every other session is closed and the response carries a fresh token.
+        group.MapPost("/change-username", async (
+            ChangeUsernameRequest request,
+            AdminAccountStore accounts,
+            TokenService tokens,
+            CancellationToken cancellationToken) =>
+        {
+            var admin = await accounts.GetAsync(cancellationToken);
+            var errors = new Dictionary<string, string[]>();
+
+            if (string.IsNullOrEmpty(request.CurrentPassword))
+                errors[nameof(request.CurrentPassword)] = ["Inserisci la password attuale."];
+            else if (!PasswordHasher.Verify(request.CurrentPassword, admin.PasswordHash))
+                errors[nameof(request.CurrentPassword)] = ["La password attuale non è corretta."];
+
+            var newUsername = request.NewUsername?.Trim() ?? "";
+            if (newUsername.Length < MinUsernameLength || newUsername.Length > MaxUsernameLength)
+                errors[nameof(request.NewUsername)] = [$"Lo username deve avere da {MinUsernameLength} a {MaxUsernameLength} caratteri."];
+            else if (!UsernameCharacters().IsMatch(newUsername))
+                errors[nameof(request.NewUsername)] = ["Usa solo lettere, numeri e i caratteri . _ - @ (senza spazi)."];
+            else if (newUsername == admin.Username)
+                errors[nameof(request.NewUsername)] = ["Il nuovo username è uguale a quello attuale."];
+            else if (string.Equals(newUsername, request.CurrentPassword, StringComparison.OrdinalIgnoreCase))
+                errors[nameof(request.NewUsername)] = ["Lo username non può coincidere con la password."];
+
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+
+            await accounts.SetUsernameAsync(newUsername, admin.PasswordHash, cancellationToken);
+
+            var token = tokens.CreateToken(newUsername, admin.PasswordHash);
+            return Results.Ok(new LoginResponse(token.AccessToken, token.ExpiresAt));
+        })
+        .RequireAuthorization()
+        .RequireRateLimiting(LoginRateLimitPolicy);
+
         return endpoints;
     }
+
+    [GeneratedRegex(@"^[\p{L}\p{N}._@-]+$", RegexOptions.None, 1000)]
+    private static partial Regex UsernameCharacters();
 }
