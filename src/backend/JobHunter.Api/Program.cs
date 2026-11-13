@@ -95,6 +95,13 @@ var swaggerEnabled = builder.Configuration.GetValue("Swagger:Enabled", builder.E
 
 var app = builder.Build();
 
+// Apply committed EF Core migrations before serving traffic. Render deploys a single API instance.
+await using (var migrationScope = app.Services.CreateAsyncScope())
+{
+    var db = migrationScope.ServiceProvider.GetRequiredService<JobHunterDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 if (swaggerEnabled)
 {
     app.MapOpenApi().AllowAnonymous();
