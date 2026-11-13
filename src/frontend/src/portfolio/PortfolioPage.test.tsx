@@ -79,6 +79,12 @@ describe('PortfolioPage', () => {
     expect(screen.getByRole('link', { name: /Scarica il CV/ })).toHaveAttribute('href', '/cv.pdf');
   });
 
+  it('prefers the uploaded PDF URL and resolves it against the API host', () => {
+    render(<PortfolioPage content={{ ...full, cvDownloadUrl: '/api/v1/portfolio/cv?v=7' }} />);
+
+    expect(screen.getByRole('link', { name: /Scarica il CV/ })).toHaveAttribute('href', expect.stringMatching(/\\/api\\/v1\\/portfolio\\/cv\\?v=7$/));
+  });
+
   it('hides empty sections and missing contact actions', () => {
     render(<PortfolioPage content={{ ...full, email: undefined, cvUrl: undefined, experiences: [], projects: [], links: [] }} />);
 
