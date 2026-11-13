@@ -8,7 +8,6 @@ vi.mock('../services/portfolioApi', () => ({ fetchPortfolio: vi.fn(), savePortfo
 // Embla measures real layout and uses IntersectionObserver, which jsdom does not provide.
 vi.mock('embla-carousel-react', () => ({ default: () => [vi.fn(), undefined] }));
 
-
 const fetchMock = vi.mocked(fetchPortfolio);
 
 describe('PortfolioRoute', () => {
@@ -17,11 +16,12 @@ describe('PortfolioRoute', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('shows a neutral loading message, not placeholder data, while waiting', () => {
+  it('shows the portfolio skeleton, not placeholder data, while waiting for the API', () => {
     fetchMock.mockReturnValue(new Promise(() => {}));
     render(<PortfolioRoute />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('Caricamento');
+    expect(screen.getByRole('status', { name: 'Preparazione del portfolio' })).toBeInTheDocument();
+    expect(screen.queryByText('Caricamento...')).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
   });
 
