@@ -42,6 +42,7 @@ public class JobHunterApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Admin:HashIterations", "1000"); // keeps passwords changed during tests fast
         builder.UseSetting("Jwt:SigningKey", SigningKey);
         builder.UseSetting("RateLimiting:LoginPermitLimit", LoginPermitLimit.ToString());
+        builder.UseSetting("RateLimiting:ImportPermitLimit", "1000");
         builder.UseSetting("Swagger:Enabled", SwaggerEnabled ? "true" : "false");
 
         builder.ConfigureServices(services =>

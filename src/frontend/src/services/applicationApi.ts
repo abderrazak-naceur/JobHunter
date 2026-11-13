@@ -80,6 +80,22 @@ export function toInput(application: Application): ApplicationInput {
   };
 }
 
+/** A draft read from a job posting; nothing is saved until the owner confirms the dialog. */
+export type ImportedPosting = {
+  company: string;
+  role: string;
+  location: string;
+  salaryRange: string;
+  source: string;
+  url: string;
+  notes: string;
+  /** Fields that were filled: company, role, location, salaryRange. */
+  found: string[];
+  /** The site cannot be read automatically (LinkedIn...): the owner should paste the text. */
+  needsText: boolean;
+  message: string | null;
+};
+
 export const applicationApi = {
   list({ search = '', status = '', page = 1, pageSize = 10 }: ApplicationQuery = {}) {
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
@@ -101,6 +117,9 @@ export const applicationApi = {
   },
   summary() {
     return apiRequest<ApplicationSummary>(`${base}/summary`);
+  },
+  importPosting(input: { url?: string; text?: string }) {
+    return apiRequest<ImportedPosting>(`${base}/import`, { method: 'POST', body: JSON.stringify(input) });
   },
   analytics() {
     return apiRequest<ApplicationAnalytics>(`${base}/analytics`);

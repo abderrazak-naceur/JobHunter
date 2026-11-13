@@ -43,4 +43,8 @@ public sealed class LoginRateLimitOptions
     /// <summary>Maximum login attempts per client IP per minute.</summary>
     [Range(1, 100000)]
     public int LoginPermitLimit { get; set; } = 5;
+
+    /// <summary>Maximum job postings read from a link or text per client IP per minute.</summary>
+    [Range(1, 100000)]
+    public int ImportPermitLimit { get; set; } = 20;
 }

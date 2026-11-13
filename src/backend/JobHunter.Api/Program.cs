@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using JobHunter.Api.Endpoints;
 using JobHunter.Api.Infrastructure;
 using JobHunter.Api.Infrastructure.Auth;
+using JobHunter.Api.Infrastructure.JobPostings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
@@ -34,6 +35,7 @@ builder.Services.AddOptions<JwtOptions>().BindConfiguration(JwtOptions.SectionNa
 builder.Services.AddOptions<LoginRateLimitOptions>().BindConfiguration(LoginRateLimitOptions.SectionName).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<AdminAccountStore>();
+builder.Services.AddSingleton<IJobPageFetcher, JobPageFetcher>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
@@ -63,6 +65,14 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             });
+    });
+    // Reading a job posting makes the server open a web page: limited per client like the login.
+    options.AddPolicy(JobPostingImportEndpoints.RateLimitPolicy, httpContext =>
+    {
+        var limit = httpContext.RequestServices.GetRequiredService<IOptions<LoginRateLimitOptions>>().Value.ImportPermitLimit;
+        return RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 });
     });
 });
 
@@ -114,6 +124,7 @@ app.MapPortfolioEndpoints(); // GET is public, PUT requires the admin token
 // Everything below requires the admin token.
 app.MapCompanyEndpoints();
 app.MapApplicationEndpoints();
+app.MapJobPostingImportEndpoints();
 app.MapContactEndpoints();
 app.MapExportEndpoints();
 

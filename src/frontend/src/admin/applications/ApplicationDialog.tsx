@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import {
   APPLICATION_STATUSES, applicationApi, toInput,
-  emptyOffer, type Application, type ApplicationDetail, type ApplicationInput, type ApplicationStatus
+  emptyOffer, type Application, type ApplicationDetail, type ApplicationInput, type ApplicationStatus, type ImportedPosting
 } from '@/services/applicationApi';
+import PostingImport from './PostingImport';
 import { parseAmount } from './offers';
 import { formatDate, statusLabel, statusMeta, todayIso } from './statusMeta';
 
@@ -101,6 +102,20 @@ export default function ApplicationDialog({ application, open, onOpenChange, onS
 
   const set = (patch: Partial<FormState>) => setForm(current => ({ ...current, ...patch }));
 
+  /** Fills what the posting said; fields it did not mention keep what the owner already typed. */
+  function applyPosting(posting: ImportedPosting) {
+    setForm(current => ({
+      ...current,
+      company: posting.company || current.company,
+      role: posting.role || current.role,
+      location: posting.location || current.location,
+      salaryRange: posting.salaryRange || current.salaryRange,
+      url: posting.url || current.url,
+      source: current.source || posting.source,
+      notes: current.notes || posting.notes
+    }));
+  }
+
   function changeStatus(status: string) {
     // Moving to "Applied" is the natural moment to record the date, unless one was already entered.
     set({ status, ...(status === 'Applied' && !form.appliedOn ? { appliedOn: todayIso() } : {}) });
@@ -128,6 +143,8 @@ export default function ApplicationDialog({ application, open, onOpenChange, onS
           <DialogTitle>{application ? 'Modifica candidatura' : 'Nuova candidatura'}</DialogTitle>
           <DialogDescription>Annotazioni private: non compaiono sul sito pubblico.</DialogDescription>
         </DialogHeader>
+
+        {!application && <PostingImport onImported={applyPosting} />}
 
         <form onSubmit={submit} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
