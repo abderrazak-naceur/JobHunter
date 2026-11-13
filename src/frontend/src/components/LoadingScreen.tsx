@@ -9,9 +9,8 @@ type LoadingScreenProps = {
 };
 
 /**
- * A focused, animated loading indicator shared by the public portfolio and
- * admin area. The profile photo is loaded from the same public portfolio data
- * used by the homepage, while the spinner itself is available immediately.
+ * A compact, animated loading pictogram shared by the public portfolio and
+ * admin area. The owner's published photo sits in the middle of the spinner.
  */
 export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenProps) {
   const isAdmin = variant === 'admin';
@@ -27,7 +26,7 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
         if (active) setPhotoUrl(content.photoUrl ?? null);
       })
       .catch(() => {
-        // The loader remains usable even when the API or profile image is unavailable.
+        // The animated icon remains usable when the API or profile photo is unavailable.
       });
 
     return () => {
@@ -55,7 +54,7 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
           overflow: hidden;
           color: #172033;
           background:
-            radial-gradient(ellipse at 50% 44%, rgba(219, 234, 254, .34), transparent 42%),
+            radial-gradient(ellipse at 50% 44%, rgba(226, 232, 240, .58), transparent 43%),
             #ffffff;
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
@@ -69,20 +68,25 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
         .jh-loader__symbol {
           position: relative;
           display: grid;
-          width: 82px;
-          height: 82px;
+          width: 92px;
+          height: 92px;
           place-items: center;
-          margin-bottom: 28px;
+          margin-bottom: 25px;
         }
-        .jh-loader__ring {
+        .jh-loader__spinner {
           position: absolute;
           inset: 0;
-          border: 3px solid #e8eef8;
-          border-top-color: #2563eb;
-          border-right-color: #7dd3fc;
-          border-radius: 50%;
-          animation: jh-loader-spin .9s cubic-bezier(.55, .15, .45, .85) infinite;
+          animation: jh-loader-spin 1.05s steps(12, end) infinite;
           will-change: transform;
+        }
+        .jh-loader__spinner span {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 4px;
+          height: 11px;
+          border-radius: 999px;
+          background: #9ca3af;
         }
         .jh-loader__avatar {
           display: grid;
@@ -92,8 +96,8 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
           overflow: hidden;
           border: 2px solid #ffffff;
           border-radius: 50%;
-          background: linear-gradient(145deg, #ffffff, #eff6ff);
-          box-shadow: 0 6px 22px rgba(37, 99, 235, .12);
+          background: #f3f4f6;
+          box-shadow: 0 3px 14px rgba(15, 23, 42, .12);
         }
         .jh-loader__avatar img {
           display: block;
@@ -105,68 +109,44 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
         .jh-loader__avatar-fallback {
           width: 27px;
           height: 27px;
-          color: #64748b;
+          color: #9ca3af;
         }
         .jh-loader__title {
           margin: 0;
-          color: #172033;
+          color: #202938;
           font-size: 15px;
           font-weight: 650;
           letter-spacing: -.02em;
         }
         .jh-loader__subtitle {
           margin: 8px 0 0;
-          color: #8793a7;
+          color: #8b95a5;
           font-size: 12px;
           font-weight: 450;
           line-height: 1.6;
         }
-        .jh-loader__progress {
-          position: relative;
-          width: 154px;
-          height: 3px;
-          margin-top: 25px;
-          overflow: hidden;
-          border-radius: 999px;
-          background: #eaf0f8;
-        }
-        .jh-loader__progress::after {
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          left: -38%;
-          width: 38%;
-          border-radius: inherit;
-          background: linear-gradient(90deg, #60a5fa, #2563eb);
-          content: "";
-          animation: jh-loader-progress 1.45s ease-in-out infinite;
-          will-change: transform;
-        }
         @keyframes jh-loader-spin {
           to { transform: rotate(360deg); }
         }
-        @keyframes jh-loader-progress {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(365%); }
-        }
         @media (prefers-reduced-motion: reduce) {
-          .jh-loader__ring, .jh-loader__progress::after {
-            animation: none;
-          }
-          .jh-loader__ring {
-            border-top-color: #2563eb;
-            transform: rotate(35deg);
-          }
-          .jh-loader__progress::after {
-            left: 0;
-            width: 38%;
-          }
+          .jh-loader__spinner { animation: none; }
         }
       `}</style>
 
       <div className="jh-loader" aria-hidden="true">
         <div className="jh-loader__symbol">
-          <span className="jh-loader__ring" data-testid="loading-spinner" />
+          <div className="jh-loader__spinner" data-testid="loading-spinner">
+            {Array.from({ length: 12 }, (_, index) => (
+              <span
+                key={index}
+                style={{
+                  transform: `translate(-50%, -50%) rotate(${index * 30}deg) translateY(-36px)`,
+                  opacity: 1 - index * 0.055,
+                  backgroundColor: index < 2 ? '#6b7280' : '#aeb6c2'
+                }}
+              />
+            ))}
+          </div>
           <span className="jh-loader__avatar">
             {showPhoto ? (
               <img
@@ -187,7 +167,6 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
         <p className="jh-loader__subtitle">
           {isAdmin ? 'Sto aprendo la tua area riservata…' : 'Sto preparando il tuo portfolio…'}
         </p>
-        <span className="jh-loader__progress" data-testid="loading-progress" />
       </div>
     </div>
   );
