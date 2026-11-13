@@ -1,7 +1,3 @@
-import { useEffect, useState } from 'react';
-import { resolveAssetUrl } from '../services/apiConfig';
-import { fetchPortfolio } from '../services/portfolioApi';
-
 type LoadingVariant = 'portfolio' | 'admin';
 
 type LoadingScreenProps = {
@@ -9,32 +5,13 @@ type LoadingScreenProps = {
 };
 
 /**
- * A compact, animated loading pictogram shared by the public portfolio and
- * admin area. The owner's published photo sits in the middle of the spinner.
+ * Branded loading screen shared by the public portfolio and admin area.
+ * The ZAK mark is rendered as inline SVG, so it is available immediately
+ * without waiting for the portfolio API or a remote image.
  */
 export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenProps) {
   const isAdmin = variant === 'admin';
   const label = isAdmin ? 'Preparazione dell’area amministrativa' : 'Preparazione del portfolio';
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [photoFailed, setPhotoFailed] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    fetchPortfolio()
-      .then(content => {
-        if (active) setPhotoUrl(content.photoUrl ?? null);
-      })
-      .catch(() => {
-        // The animated icon remains usable when the API or profile photo is unavailable.
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const showPhoto = Boolean(photoUrl) && !photoFailed;
 
   return (
     <div
@@ -50,123 +27,170 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
           display: grid;
           min-height: 100svh;
           place-items: center;
-          padding: 24px;
+          padding: 28px 20px;
           overflow: hidden;
-          color: #172033;
+          color: #142033;
           background:
-            radial-gradient(ellipse at 50% 44%, rgba(226, 232, 240, .58), transparent 43%),
+            radial-gradient(ellipse at 50% 43%, rgba(235, 241, 249, .52), transparent 43%),
             #ffffff;
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
         .jh-loader {
           display: flex;
-          width: min(100%, 320px);
+          width: min(100%, 540px);
           flex-direction: column;
           align-items: center;
           text-align: center;
         }
         .jh-loader__symbol {
-          position: relative;
-          display: grid;
-          width: 92px;
-          height: 92px;
-          place-items: center;
-          margin-bottom: 25px;
+          display: block;
+          width: 196px;
+          height: 196px;
+          margin: 0 0 27px;
+          overflow: visible;
         }
-        .jh-loader__spinner {
-          position: absolute;
-          inset: 0;
-          animation: jh-loader-spin 1.05s steps(12, end) infinite;
+        .jh-loader__track {
+          fill: none;
+          stroke: #e7edf3;
+          stroke-width: 8;
+        }
+        .jh-loader__orbit {
+          transform-origin: 100px 100px;
+          animation: jh-loader-spin 1.65s linear infinite;
           will-change: transform;
         }
-        .jh-loader__spinner span {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 4px;
-          height: 11px;
-          border-radius: 999px;
-          background: #9ca3af;
+        .jh-loader__orbit-arc {
+          fill: none;
+          stroke: url(#jh-loader-blue);
+          stroke-width: 8;
+          stroke-linecap: round;
+          stroke-dasharray: 145 540;
         }
-        .jh-loader__avatar {
-          display: grid;
-          width: 58px;
-          height: 58px;
-          place-items: center;
-          overflow: hidden;
-          border: 2px solid #ffffff;
-          border-radius: 50%;
-          background: #f3f4f6;
-          box-shadow: 0 3px 14px rgba(15, 23, 42, .12);
+        .jh-loader__orbit-dot {
+          fill: #ffffff;
+          stroke: #dbeafe;
+          stroke-width: 1.5;
         }
-        .jh-loader__avatar img {
-          display: block;
-          width: 100%;
-          height: 100%;
-          border-radius: inherit;
-          object-fit: cover;
+        .jh-loader__swoosh {
+          fill: none;
+          stroke: url(#jh-loader-swoosh);
+          stroke-width: 5.5;
+          stroke-linecap: round;
         }
-        .jh-loader__avatar-fallback {
-          width: 27px;
-          height: 27px;
-          color: #9ca3af;
+        .jh-loader__wordmark {
+          fill: #142033;
+          font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+          font-size: 43px;
+          font-weight: 850;
+          letter-spacing: -3.2px;
         }
         .jh-loader__title {
           margin: 0;
-          color: #202938;
-          font-size: 15px;
-          font-weight: 650;
-          letter-spacing: -.02em;
+          color: #142033;
+          font-size: clamp(21px, 2.8vw, 28px);
+          font-weight: 700;
+          letter-spacing: -.035em;
+          line-height: 1.25;
         }
         .jh-loader__subtitle {
-          margin: 8px 0 0;
-          color: #8b95a5;
-          font-size: 12px;
+          margin: 10px 0 0;
+          color: #7d8999;
+          font-size: 16px;
           font-weight: 450;
-          line-height: 1.6;
+          line-height: 1.55;
+        }
+        .jh-loader__dots {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 13px;
+          margin-top: 27px;
+        }
+        .jh-loader__dots span {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #d5dde7;
+          animation: jh-loader-pulse 1.1s ease-in-out infinite;
+        }
+        .jh-loader__dots span:nth-child(2) {
+          background: #1677f8;
+          animation-delay: .16s;
+        }
+        .jh-loader__dots span:nth-child(3) {
+          animation-delay: .32s;
         }
         @keyframes jh-loader-spin {
           to { transform: rotate(360deg); }
         }
+        @keyframes jh-loader-pulse {
+          0%, 60%, 100% { opacity: .48; transform: scale(.82); }
+          30% { opacity: 1; transform: scale(1.08); }
+        }
+        @media (max-width: 480px) {
+          .jh-loader__symbol {
+            width: 168px;
+            height: 168px;
+            margin-bottom: 24px;
+          }
+          .jh-loader__subtitle {
+            max-width: 290px;
+            font-size: 14px;
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
-          .jh-loader__spinner { animation: none; }
+          .jh-loader__orbit,
+          .jh-loader__dots span {
+            animation: none;
+          }
         }
       `}</style>
 
       <div className="jh-loader" aria-hidden="true">
-        <div className="jh-loader__symbol">
-          <div className="jh-loader__spinner" data-testid="loading-spinner">
-            {Array.from({ length: 12 }, (_, index) => (
-              <span
-                key={index}
-                style={{
-                  transform: `translate(-50%, -50%) rotate(${index * 30}deg) translateY(-36px)`,
-                  opacity: 1 - index * 0.055,
-                  backgroundColor: index < 2 ? '#6b7280' : '#aeb6c2'
-                }}
-              />
-            ))}
-          </div>
-          <span className="jh-loader__avatar">
-            {showPhoto ? (
-              <img
-                src={resolveAssetUrl(photoUrl!)}
-                alt=""
-                data-testid="loading-profile-photo"
-                onError={() => setPhotoFailed(true)}
-              />
-            ) : (
-              <svg className="jh-loader__avatar-fallback" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.7" />
-                <path d="M4 20c.8-3.7 3.8-5.7 8-5.7s7.2 2 8 5.7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-              </svg>
-            )}
-          </span>
-        </div>
-        <p className="jh-loader__title">Un momento</p>
+        <svg
+          className="jh-loader__symbol"
+          data-testid="loading-spinner"
+          viewBox="0 0 200 200"
+          role="img"
+          aria-label="Logo ZAK animato"
+        >
+          <defs>
+            <linearGradient id="jh-loader-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8cbcff" />
+              <stop offset="55%" stopColor="#1677f8" />
+              <stop offset="100%" stopColor="#0d5ed7" />
+            </linearGradient>
+            <linearGradient id="jh-loader-swoosh" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#1677f8" />
+              <stop offset="58%" stopColor="#8b9aab" />
+              <stop offset="100%" stopColor="#1677f8" />
+            </linearGradient>
+          </defs>
+
+          <circle className="jh-loader__track" cx="100" cy="100" r="86" />
+          <g className="jh-loader__orbit">
+            <circle className="jh-loader__orbit-arc" cx="100" cy="100" r="86" />
+            <circle className="jh-loader__orbit-dot" cx="100" cy="14" r="4.2" />
+          </g>
+
+          <path
+            className="jh-loader__swoosh"
+            d="M49 119 C63 145 119 145 151 91 C168 62 148 54 126 65"
+          />
+          <text className="jh-loader__wordmark" x="100" y="113" textAnchor="middle">
+            ZAK
+          </text>
+        </svg>
+
+        <p className="jh-loader__title">Preparazione in corso…</p>
         <p className="jh-loader__subtitle">
-          {isAdmin ? 'Sto aprendo la tua area riservata…' : 'Sto preparando il tuo portfolio…'}
+          {isAdmin ? 'Sto preparando la tua area riservata' : 'Sto caricando il tuo portfolio'}
         </p>
+        <div className="jh-loader__dots" data-testid="loading-dots">
+          <span />
+          <span />
+          <span />
+        </div>
       </div>
     </div>
   );
