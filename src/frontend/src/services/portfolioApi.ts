@@ -4,6 +4,7 @@ import { apiBaseUrl, unreachableApiMessage } from './apiConfig';
 
 export const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+export const MAX_CV_BYTES = 10 * 1024 * 1024;
 
 function authHeaders(): Record<string, string> {
   const token = getAccessToken();
@@ -68,4 +69,24 @@ export async function uploadPhoto(file: File): Promise<string> {
 /** Admin only: removes the uploaded photo. */
 export async function deletePhoto(): Promise<void> {
   await adminFetch('/api/v1/portfolio/photo', { method: 'DELETE' });
+}
+
+/** Admin only: uploads or replaces the CV PDF and publishes it immediately. */
+export async function uploadCv(file: File): Promise<string> {
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    throw new Error('Usa un documento PDF.');
+  }
+  if (file.size > MAX_CV_BYTES) throw new Error('Il CV supera i 10 MB.');
+
+  const response = await adminFetch('/api/v1/portfolio/cv', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/pdf' },
+    body: file
+  });
+  return ((await response.json()) as { cvDownloadUrl: string }).cvDownloadUrl;
+}
+
+/** Admin only: removes the uploaded CV. A manual CV link, if set, remains available. */
+export async function deleteCv(): Promise<void> {
+  await adminFetch('/api/v1/portfolio/cv', { method: 'DELETE' });
 }
