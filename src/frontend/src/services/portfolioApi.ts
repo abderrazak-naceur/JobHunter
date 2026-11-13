@@ -6,6 +6,12 @@ export const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export const MAX_CV_BYTES = 10 * 1024 * 1024;
 
+let portfolioRequest: Promise<PortfolioContent> | null = null;
+
+function invalidatePortfolioCache(): void {
+  portfolioRequest = null;
+}
+
 function authHeaders(): Record<string, string> {
   const token = getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -36,11 +42,21 @@ async function adminFetch(path: string, init: RequestInit): Promise<Response> {
   return response;
 }
 
-/** Public: no login needed. */
-export async function fetchPortfolio(signal?: AbortSignal): Promise<PortfolioContent> {
-  const response = await fetch(`${apiBaseUrl}/api/v1/portfolio`, { signal });
-  if (!response.ok) throw new Error(`Errore API: HTTP ${response.status}`);
-  return (await response.json()) as PortfolioContent;
+/** Public: no login needed. Shares one in-flight request between the loader and the page. */
+export function fetchPortfolio(signal?: AbortSignal): Promise<PortfolioContent> {
+  if (!portfolioRequest) {
+    portfolioRequest = fetch(`${apiBaseUrl}/api/v1/portfolio`, { signal })
+      .then(response => {
+        if (!response.ok) throw new Error(`Errore API: HTTP ${response.status}`);
+        return response.json() as Promise<PortfolioContent>;
+      })
+      .catch(error => {
+        portfolioRequest = null;
+        throw error;
+      });
+  }
+
+  return portfolioRequest;
 }
 
 /** Admin only: replaces the published content. */
@@ -50,7 +66,9 @@ export async function savePortfolio(content: PortfolioContent): Promise<Portfoli
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(content)
   });
-  return (await response.json()) as PortfolioContent;
+  const saved = (await response.json()) as PortfolioContent;
+  invalidatePortfolioCache();
+  return saved;
 }
 
 /** Admin only: uploads the profile photo and returns its (API relative) address. It is published immediately. */
@@ -63,12 +81,15 @@ export async function uploadPhoto(file: File): Promise<string> {
     headers: { 'Content-Type': file.type },
     body: file
   });
-  return ((await response.json()) as { photoUrl: string }).photoUrl;
+  const result = ((await response.json()) as { photoUrl: string }).photoUrl;
+  invalidatePortfolioCache();
+  return result;
 }
 
 /** Admin only: removes the uploaded photo. */
 export async function deletePhoto(): Promise<void> {
   await adminFetch('/api/v1/portfolio/photo', { method: 'DELETE' });
+  invalidatePortfolioCache();
 }
 
 /** Admin only: uploads or replaces the CV PDF and publishes it immediately. */
@@ -83,10 +104,13 @@ export async function uploadCv(file: File): Promise<string> {
     headers: { 'Content-Type': 'application/pdf' },
     body: file
   });
-  return ((await response.json()) as { cvDownloadUrl: string }).cvDownloadUrl;
+  const result = ((await response.json()) as { cvDownloadUrl: string }).cvDownloadUrl;
+  invalidatePortfolioCache();
+  return result;
 }
 
-/** Admin only: removes the uploaded CV. A manual CV link, if set, remains available. */
+/** Admin only: removes the CV. A manual CV URL, if set, remains available. */
 export async function deleteCv(): Promise<void> {
   await adminFetch('/api/v1/portfolio/cv', { method: 'DELETE' });
+  invalidatePortfolioCache();
 }
