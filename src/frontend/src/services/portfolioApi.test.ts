@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { saveSession, getAccessToken, SESSION_ENDED_EVENT } from '../auth/session';
 import { resolveAssetUrl } from './apiConfig';
-import { deletePhoto, MAX_PHOTO_BYTES, uploadPhoto } from './portfolioApi';
+import { deleteCv, deletePhoto, MAX_CV_BYTES, MAX_PHOTO_BYTES, uploadCv, uploadPhoto } from './portfolioApi';
 
 function signIn() {
   saveSession({ accessToken: 'jwt-1', expiresAt: new Date(Date.now() + 3_600_000).toISOString() });
@@ -90,6 +90,58 @@ describe('deletePhoto', () => {
 
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toMatch(/\/api\/v1\/portfolio\/photo$/);
+    expect(init.method).toBe('DELETE');
+    expect(init.headers.Authorization).toBe('Bearer jwt-1');
+  });
+});
+
+
+describe('uploadCv', () => {
+  const pdf = () => new File(['%PDF-1.7\\nvalid pdf body'], 'curriculum.pdf', { type: 'application/pdf' });
+
+  it('sends the PDF as the raw body with the bearer token', async () => {
+    signIn();
+    const fetchMock = mockFetch({ json: async () => ({ cvDownloadUrl: '/api/v1/portfolio/cv?v=9' }) });
+    const file = pdf();
+
+    const address = await uploadCv(file);
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\\/api\\/v1\\/portfolio\\/cv$/);
+    expect(init.method).toBe('PUT');
+    expect(init.body).toBe(file);
+    expect(init.headers['Content-Type']).toBe('application/pdf');
+    expect(init.headers.Authorization).toBe('Bearer jwt-1');
+    expect(address).toBe('/api/v1/portfolio/cv?v=9');
+  });
+
+  it('refuses files that are not PDFs without calling the API', async () => {
+    const fetchMock = mockFetch({});
+    await expect(uploadCv(new File(['text'], 'notes.txt', { type: 'text/plain' }))).rejects.toThrow('PDF');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('refuses files over 10 MB without calling the API', async () => {
+    const fetchMock = mockFetch({});
+    const big = new File([new Uint8Array(MAX_CV_BYTES + 1)], 'big.pdf', { type: 'application/pdf' });
+    await expect(uploadCv(big)).rejects.toThrow('10 MB');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('shows the validation message sent by the server', async () => {
+    signIn();
+    mockFetch({ ok: false, status: 415, json: async () => ({ title: 'Formato non supportato. Carica un documento PDF valido.' }) });
+    await expect(uploadCv(pdf())).rejects.toThrow('documento PDF');
+  });
+});
+
+describe('deleteCv', () => {
+  it('sends DELETE with the bearer token', async () => {
+    signIn();
+    const fetchMock = mockFetch({ status: 204 });
+    await deleteCv();
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\\/api\\/v1\\/portfolio\\/cv$/);
     expect(init.method).toBe('DELETE');
     expect(init.headers.Authorization).toBe('Bearer jwt-1');
   });
