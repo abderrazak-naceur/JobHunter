@@ -107,7 +107,7 @@ describe('uploadCv', () => {
     const address = await uploadCv(file);
 
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toMatch(/\\/api\\/v1\\/portfolio\\/cv$/);
+    expect(url).toMatch(/\/api\/v1\/portfolio\/cv$/);
     expect(init.method).toBe('PUT');
     expect(init.body).toBe(file);
     expect(init.headers['Content-Type']).toBe('application/pdf');
@@ -141,7 +141,7 @@ describe('deleteCv', () => {
     const fetchMock = mockFetch({ status: 204 });
     await deleteCv();
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toMatch(/\\/api\\/v1\\/portfolio\\/cv$/);
+    expect(url).toMatch(/\/api\/v1\/portfolio\/cv$/);
     expect(init.method).toBe('DELETE');
     expect(init.headers.Authorization).toBe('Bearer jwt-1');
   });
