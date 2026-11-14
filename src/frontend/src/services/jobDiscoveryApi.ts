@@ -19,7 +19,7 @@ export type SearchProfileInput = Omit<SearchProfile, 'id' | 'createdAt' | 'updat
 export type JobSource = {
   id: string;
   companyName: string;
-  provider: 'lever' | 'lever-eu' | 'greenhouse';
+  provider: 'lever' | 'lever-eu' | 'greenhouse' | 'arbeitnow' | 'jobicy' | 'adzuna' | 'jooble';
   boardIdentifier: string;
   careersUrl: string;
   isEnabled: boolean;

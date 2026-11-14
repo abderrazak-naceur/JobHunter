@@ -4,12 +4,14 @@ using JobHunter.Api.Contracts;
 using JobHunter.Api.Domain;
 using JobHunter.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace JobHunter.Api.Infrastructure.JobDiscovery;
 
 public sealed class JobDiscoveryService(
     JobHunterDbContext db,
     IJobBoardClient boardClient,
+    IConfiguration configuration,
     ILogger<JobDiscoveryService> logger)
 {
     public async Task<JobSearchRunResponse> SearchAsync(CancellationToken cancellationToken)
@@ -18,20 +20,36 @@ public sealed class JobDiscoveryService(
         db.JobSearchRuns.Add(run);
         await db.SaveChangesAsync(cancellationToken);
 
-        var sources = await db.JobSources.Where(x => x.IsEnabled).OrderBy(x => x.CompanyName).ToListAsync(cancellationToken);
+        var activeProfiles = await db.SearchProfiles.AsNoTracking()
+            .Where(x => x.IsActive).ToListAsync(cancellationToken);
+        var profile = activeProfiles.OrderByDescending(x => x.UpdatedAt).FirstOrDefault();
+
+        await EnsureAutomaticSourcesAsync(cancellationToken);
+        var sources = await db.JobSources.Where(x => x.IsEnabled)
+            .OrderBy(x => x.CompanyName).ToListAsync(cancellationToken);
+
         foreach (var source in sources)
         {
+            if (source.Provider == "jobicy" &&
+                source.LastCheckedAt is DateTimeOffset lastCheckedAt &&
+                lastCheckedAt > DateTimeOffset.UtcNow.AddHours(-1))
+            {
+                // Jobicy's fair-use guidance asks integrations not to poll more than once per hour.
+                continue;
+            }
+
             source.LastCheckedAt = DateTimeOffset.UtcNow;
             try
             {
-                var postings = await boardClient.FetchAsync(source, cancellationToken);
+                var postings = await boardClient.FetchAsync(source, profile, cancellationToken);
                 var existing = await db.JobListings
                     .Where(x => x.JobSourceId == source.Id)
                     .ToDictionaryAsync(x => x.ExternalId, cancellationToken);
 
                 foreach (var posting in postings)
                 {
-                    if (string.IsNullOrWhiteSpace(posting.ExternalId) || string.IsNullOrWhiteSpace(posting.Title) ||
+                    if (string.IsNullOrWhiteSpace(posting.ExternalId) ||
+                        string.IsNullOrWhiteSpace(posting.Title) ||
                         string.IsNullOrWhiteSpace(posting.SourceUrl)) continue;
 
                     run.FoundCount++;
@@ -53,13 +71,15 @@ public sealed class JobDiscoveryService(
                     }
 
                     listing.Title = Limit(posting.Title, 180);
-                    listing.CompanyName = Limit(source.CompanyName, 180);
+                    listing.CompanyName = Limit(
+                        string.IsNullOrWhiteSpace(posting.CompanyName) ? source.CompanyName : posting.CompanyName, 180);
                     listing.Location = Limit(posting.Location, 180);
                     listing.WorkMode = Limit(posting.WorkMode, 30);
                     listing.SalaryText = Limit(posting.SalaryText, 180);
                     listing.Description = posting.Description;
                     listing.SourceUrl = Limit(posting.SourceUrl, 1000);
-                    listing.ApplyUrl = Limit(string.IsNullOrWhiteSpace(posting.ApplyUrl) ? posting.SourceUrl : posting.ApplyUrl, 1000);
+                    listing.ApplyUrl = Limit(
+                        string.IsNullOrWhiteSpace(posting.ApplyUrl) ? posting.SourceUrl : posting.ApplyUrl, 1000);
                     listing.PublishedAt = posting.PublishedAt;
                     listing.SourceUpdatedAt = posting.SourceUpdatedAt;
                     listing.LastSeenAt = DateTimeOffset.UtcNow;
@@ -78,17 +98,65 @@ public sealed class JobDiscoveryService(
                     ? "La fonte non ha risposto correttamente."
                     : "Impossibile leggere gli annunci da questa fonte.";
                 run.ErrorCount++;
-                logger.LogWarning(exception, "Job discovery source {SourceId} failed ({Provider}).", source.Id, source.Provider);
+                logger.LogWarning("Job discovery source {SourceId} failed ({Provider}); exception type {ExceptionType}.",
+                    source.Id, source.Provider, exception.GetType().Name);
             }
         }
 
         run.CompletedAt = DateTimeOffset.UtcNow;
-        run.Status = sources.Count == 0 ? "NoSources" : run.ErrorCount == sources.Count ? "Failed" : run.ErrorCount > 0 ? "Partial" : "Completed";
+        run.Status = sources.Count == 0 ? "NoSources" :
+            run.ErrorCount == sources.Count ? "Failed" :
+            run.ErrorCount > 0 ? "Partial" : "Completed";
         run.Summary = sources.Count == 0
-            ? "Nessuna fonte abilitata. Aggiungi almeno una board Lever o Greenhouse."
+            ? "Nessuna fonte di ricerca disponibile."
             : $"{sources.Count} fonti controllate; {run.NewCount} nuove offerte, {run.UpdatedCount} aggiornate, {run.ErrorCount} errori.";
         await db.SaveChangesAsync(cancellationToken);
         return ToResponse(run);
+    }
+
+    private async Task EnsureAutomaticSourcesAsync(CancellationToken cancellationToken)
+    {
+        await AddAutomaticSourceIfMissingAsync(
+            "Arbeitnow Europa", "arbeitnow", "europe", "https://www.arbeitnow.com", cancellationToken);
+        await AddAutomaticSourceIfMissingAsync(
+            "Jobicy Europa", "jobicy", "europe", "https://jobicy.com", cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(configuration["JobDiscovery:Adzuna:AppId"]) &&
+            !string.IsNullOrWhiteSpace(configuration["JobDiscovery:Adzuna:AppKey"]))
+        {
+            await AddAutomaticSourceIfMissingAsync(
+                "Adzuna Italia", "adzuna", "it", "https://www.adzuna.it", cancellationToken);
+        }
+
+        if (!string.IsNullOrWhiteSpace(configuration["JobDiscovery:Jooble:ApiKey"]))
+        {
+            await AddAutomaticSourceIfMissingAsync(
+                "Jooble Italia", "jooble", "it", "https://it.jooble.org", cancellationToken);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task AddAutomaticSourceIfMissingAsync(
+        string companyName,
+        string provider,
+        string boardIdentifier,
+        string careersUrl,
+        CancellationToken cancellationToken)
+    {
+        var exists = await db.JobSources.AnyAsync(
+            x => x.Provider == provider && x.BoardIdentifier == boardIdentifier,
+            cancellationToken);
+        if (exists) return;
+
+        db.JobSources.Add(new JobSource
+        {
+            CompanyName = companyName,
+            Provider = provider,
+            BoardIdentifier = boardIdentifier,
+            CareersUrl = careersUrl,
+            IsEnabled = true
+        });
     }
 
     public async Task<PagedJobListingsResponse> GetJobsAsync(
@@ -120,8 +188,6 @@ public sealed class JobDiscoveryService(
             query = query.Where(x => x.PublishedAt < until);
         }
 
-        // SQLite (the API test provider) cannot translate DateTimeOffset ordering.
-        // Profiles are few, so order the active ones after loading them.
         var activeProfiles = await db.SearchProfiles.AsNoTracking()
             .Where(x => x.IsActive).ToListAsync(cancellationToken);
         var profile = activeProfiles.OrderByDescending(x => x.UpdatedAt).FirstOrDefault();
@@ -139,7 +205,8 @@ public sealed class JobDiscoveryService(
                 x.PublishedAt, x.SourceUpdatedAt, x.FirstSeenAt, x.LastSeenAt, score, matched);
         })
         .Where(x => x.MatchScore >= threshold)
-        .Where(x => profile is null || !profile.MinimumAnnualSalary.HasValue || ParseSalary(x.SalaryText) is not decimal salary ||
+        .Where(x => profile is null || !profile.MinimumAnnualSalary.HasValue ||
+                    ParseSalary(x.SalaryText) is not decimal salary ||
                     salary >= profile.MinimumAnnualSalary.Value)
         .Where(x => profile is null || profile.WorkMode == "Any" || string.IsNullOrWhiteSpace(x.WorkMode) ||
                     (profile.WorkMode == "RemoteOrHybrid"
@@ -152,7 +219,8 @@ public sealed class JobDiscoveryService(
 
         var currentPage = Math.Max(1, page);
         var size = Math.Clamp(pageSize, 1, 100);
-        return new PagedJobListingsResponse(items.Skip((currentPage - 1) * size).Take(size).ToList(), currentPage, size, items.Count);
+        return new PagedJobListingsResponse(
+            items.Skip((currentPage - 1) * size).Take(size).ToList(), currentPage, size, items.Count);
     }
 
     private static int MatchScore(JobListing listing, JobSearchProfile? profile, out IReadOnlyList<string> matched)
@@ -181,7 +249,9 @@ public sealed class JobDiscoveryService(
         var match = Regex.Match(value, @"\d{1,3}(?:[.,\s]\d{3})+|\d{4,7}", RegexOptions.CultureInvariant);
         if (!match.Success) return null;
         var digits = new string(match.Value.Where(char.IsDigit).ToArray());
-        return decimal.TryParse(digits, NumberStyles.Number, CultureInfo.InvariantCulture, out var result) ? result : null;
+        return decimal.TryParse(digits, NumberStyles.Number, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     private static List<string> Split(string value) => value
