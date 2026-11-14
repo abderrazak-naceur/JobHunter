@@ -7,8 +7,9 @@ Job Discovery is a private Admin workspace that searches public job feeds and co
 When the user selects **Cerca ora**, the API creates and queries the automatic sources that are available:
 
 - **Arbeitnow Europe** — public job-board API, no API key required. The feed is updated hourly and includes jobs from multiple European ATS sources. One page is requested per manual search; the API's original job URL and source attribution are preserved.
-- **Adzuna Italy** — official job-search API. Enable it by setting both \`JobDiscovery__Adzuna__AppId\` and \`JobDiscovery__Adzuna__AppKey\` in the API environment. The country code is \`it\`; queries use the saved role keywords and location.
-- **Jooble Italy** — official REST API. Obtain a country-specific key from [it.jooble.org/api/about](https://it.jooble.org/api/about), then set \`JobDiscovery__Jooble__ApiKey\` in the API environment. Each country domain has its own key.
+- **Jobicy Europe** — public remote-jobs API, no API key required. It returns up to 100 engineering vacancies eligible in Europe. The canonical Jobicy listing URL is used for both source and application buttons on the free API tier; the source is credited in the results. The connector does not poll more than once per hour.
+- **Adzuna Italy** — official job-search API. Enable it by setting both `JobDiscovery__Adzuna__AppId` and `JobDiscovery__Adzuna__AppKey` in the API environment. The country code is `it`; queries use the saved role keywords and location.
+- **Jooble Italy** — official REST API. Obtain a country-specific key from [it.jooble.org/api/about](https://it.jooble.org/api/about), then set `JobDiscovery__Jooble__ApiKey` in the API environment. Each country domain has its own key.
 
 API credentials are read only by the backend and are never returned to the browser or written to PostgreSQL. If Adzuna or Jooble credentials are absent, those providers are simply not added to the automatic search.
 
@@ -16,9 +17,9 @@ API credentials are read only by the backend and are never returned to the brows
 
 The first increment also supports public company-board endpoints for:
 
-- **Lever (global)** — \`GET https://api.lever.co/v0/postings/{site}?mode=json\`
-- **Lever EU** — \`GET https://api.eu.lever.co/v0/postings/{site}?mode=json\`
-- **Greenhouse** — \`GET https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs?content=true\`
+- **Lever (global)** — `GET https://api.lever.co/v0/postings/{site}?mode=json`
+- **Lever EU** — `GET https://api.eu.lever.co/v0/postings/{site}?mode=json`
+- **Greenhouse** — `GET https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs?content=true`
 
 These are optional company-specific sources. The user can add a source from **Aggiungi fonte** by entering the employer name and public board identifier. They are not required for the automatic search.
 
@@ -39,7 +40,7 @@ The profile can be edited from the Job Discovery page. Salary and work-mode filt
 - Publication dates are stored only when the provider exposes a reliable date.
 - Source update time and first-seen/last-seen timestamps are kept separately.
 - Every listing keeps its provider, source URL and application URL.
-- Adzuna, Jooble and Arbeitnow remain identified as the original source; Adzuna results are labelled "Jobs by Adzuna".
+- Adzuna, Jooble, Arbeitnow and Jobicy remain identified as the original source. Adzuna results are labelled "Jobs by Adzuna"; Jobicy listings keep their canonical Jobicy URL. The free Jobicy endpoint links to the Jobicy listing; direct ATS links require its optional paid API tier.
 
 ## User flow
 
