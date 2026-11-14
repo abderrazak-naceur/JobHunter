@@ -3,6 +3,7 @@ using JobHunter.Api.Endpoints;
 using JobHunter.Api.Infrastructure;
 using JobHunter.Api.Infrastructure.Auth;
 using JobHunter.Api.Infrastructure.JobPostings;
+using JobHunter.Api.Infrastructure.JobDiscovery;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
@@ -36,6 +37,8 @@ builder.Services.AddOptions<LoginRateLimitOptions>().BindConfiguration(LoginRate
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<AdminAccountStore>();
 builder.Services.AddSingleton<IJobPageFetcher, JobPageFetcher>();
+builder.Services.AddHttpClient<IJobBoardClient, JobBoardClient>(client => client.Timeout = TimeSpan.FromSeconds(20));
+builder.Services.AddScoped<JobDiscoveryService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
@@ -74,6 +77,15 @@ builder.Services.AddRateLimiter(options =>
             httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 });
     });
+    options.AddPolicy(JobDiscoveryEndpoints.SearchRateLimitPolicy, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 
 // --- CORS: allowed browser origins come from configuration (Cors:AllowedOrigins:0, :1, ...) -----
@@ -133,6 +145,7 @@ app.MapPortfolioEndpoints(); // GET is public, PUT requires the admin token
 
 // Everything below requires the admin token.
 app.MapCompanyEndpoints();
+app.MapJobDiscoveryEndpoints();
 app.MapApplicationEndpoints();
 app.MapJobPostingImportEndpoints();
 app.MapContactEndpoints();

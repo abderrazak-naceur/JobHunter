@@ -12,6 +12,10 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
     public DbSet<AdminAccount> AdminAccounts => Set<AdminAccount>();
     public DbSet<ApplicationEvent> ApplicationEvents => Set<ApplicationEvent>();
     public DbSet<Contact> Contacts => Set<Contact>();
+    public DbSet<JobSearchProfile> SearchProfiles => Set<JobSearchProfile>();
+    public DbSet<JobSource> JobSources => Set<JobSource>();
+    public DbSet<JobListing> JobListings => Set<JobListing>();
+    public DbSet<JobSearchRun> JobSearchRuns => Set<JobSearchRun>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -75,6 +79,51 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
         applicationEvent.Property(x => x.FromStatus).HasMaxLength(20);
         applicationEvent.Property(x => x.ToStatus).HasMaxLength(20).IsRequired();
         applicationEvent.HasIndex(x => x.ApplicationId);
+
+        var searchProfile = modelBuilder.Entity<JobSearchProfile>();
+        searchProfile.ToTable("JobSearchProfiles");
+        searchProfile.HasKey(x => x.Id);
+        searchProfile.Property(x => x.Name).HasMaxLength(120).IsRequired();
+        searchProfile.Property(x => x.RoleKeywords).HasMaxLength(1000).IsRequired();
+        searchProfile.Property(x => x.SkillKeywords).HasMaxLength(1000).IsRequired();
+        searchProfile.Property(x => x.Location).HasMaxLength(180).IsRequired();
+        searchProfile.Property(x => x.MinimumAnnualSalary).HasPrecision(12, 2);
+        searchProfile.Property(x => x.WorkMode).HasMaxLength(20).IsRequired();
+        searchProfile.HasIndex(x => x.IsActive);
+
+        var jobSource = modelBuilder.Entity<JobSource>();
+        jobSource.ToTable("JobSources");
+        jobSource.HasKey(x => x.Id);
+        jobSource.Property(x => x.CompanyName).HasMaxLength(180).IsRequired();
+        jobSource.Property(x => x.Provider).HasMaxLength(20).IsRequired();
+        jobSource.Property(x => x.BoardIdentifier).HasMaxLength(120).IsRequired();
+        jobSource.Property(x => x.CareersUrl).HasMaxLength(1000).IsRequired();
+        jobSource.Property(x => x.LastError).HasMaxLength(1000).IsRequired();
+        jobSource.HasIndex(x => new { x.Provider, x.BoardIdentifier }).IsUnique();
+
+        var jobListing = modelBuilder.Entity<JobListing>();
+        jobListing.ToTable("JobListings");
+        jobListing.HasKey(x => x.Id);
+        jobListing.Property(x => x.ExternalId).HasMaxLength(100).IsRequired();
+        jobListing.Property(x => x.Title).HasMaxLength(180).IsRequired();
+        jobListing.Property(x => x.CompanyName).HasMaxLength(180).IsRequired();
+        jobListing.Property(x => x.Location).HasMaxLength(180).IsRequired();
+        jobListing.Property(x => x.WorkMode).HasMaxLength(30).IsRequired();
+        jobListing.Property(x => x.SalaryText).HasMaxLength(180).IsRequired();
+        jobListing.Property(x => x.Description).IsRequired();
+        jobListing.Property(x => x.SourceUrl).HasMaxLength(1000).IsRequired();
+        jobListing.Property(x => x.ApplyUrl).HasMaxLength(1000).IsRequired();
+        jobListing.HasIndex(x => new { x.JobSourceId, x.ExternalId }).IsUnique();
+        jobListing.HasIndex(x => x.PublishedAt);
+        jobListing.HasIndex(x => x.LastSeenAt);
+        jobListing.HasOne<JobSource>().WithMany().HasForeignKey(x => x.JobSourceId).OnDelete(DeleteBehavior.Cascade);
+
+        var searchRun = modelBuilder.Entity<JobSearchRun>();
+        searchRun.ToTable("JobSearchRuns");
+        searchRun.HasKey(x => x.Id);
+        searchRun.Property(x => x.Status).HasMaxLength(20).IsRequired();
+        searchRun.Property(x => x.Summary).HasMaxLength(4000).IsRequired();
+        searchRun.HasIndex(x => x.StartedAt);
 
         var contact = modelBuilder.Entity<Contact>();
         contact.ToTable("Contacts");
