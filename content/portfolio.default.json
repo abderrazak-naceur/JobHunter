@@ -1,0 +1,164 @@
+{
+  "name": "Abderrazak Naceur",
+  "role": "Consultant Full Stack Developer",
+  "tagline": "Costruisco applicazioni web enterprise con C#, .NET e React.",
+  "summary": "Consulente full stack con oltre 10 anni di esperienza, incentrato su C#, .NET, React, Next.js e Angular. Ho lavorato per grandi clienti nei settori bancario, assicurativo, telecomunicazioni, energia e automotive, dall’analisi dei requisiti allo sviluppo e al rilascio. Sono certificato Microsoft (AZ-900 e AI-900) e sto completando la laurea magistrale in Informatica all’Università di Milano-Bicocca. Parlo italiano, inglese, francese e arabo.",
+  "location": "Milano, Italia",
+  "workMode": "Remote / Hybrid",
+  "email": "zaknaceur2018@gmail.com",
+  "cvUrl": null,
+  "photoUrl": null,
+  "links": [
+    { "label": "GitHub", "url": "https://github.com/abderrazak-naceur" }
+  ],
+  "stats": [
+    { "value": "10+", "label": "Anni di esperienza" },
+    { "value": "8+", "label": "Grandi clienti" },
+    { "value": "2", "label": "Certificazioni Microsoft" },
+    { "value": "4", "label": "Lingue parlate" }
+  ],
+  "education": [
+    {
+      "institution": "Università di Milano-Bicocca",
+      "degree": "Laurea magistrale in Informatica",
+      "period": "In corso",
+      "description": ""
+    }
+  ],
+  "certifications": [
+    { "name": "Microsoft Azure Fundamentals (AZ-900)", "issuer": "Microsoft", "year": "", "url": null },
+    { "name": "Microsoft Azure AI Fundamentals (AI-900)", "issuer": "Microsoft", "year": "", "url": null }
+  ],
+  "languages": [
+    { "name": "Italiano", "level": "Fluente" },
+    { "name": "Inglese", "level": "Professionale" },
+    { "name": "Francese", "level": "Professionale" },
+    { "name": "Arabo", "level": "Madrelingua" }
+  ],
+  "skillGroups": [
+    {
+      "title": "Backend",
+      "skills": ["C#", ".NET Framework", ".NET Core", "ASP.NET MVC", "Web API / REST", "WCF / SOAP", "Entity Framework", "VB.NET"]
+    },
+    {
+      "title": "Frontend",
+      "skills": ["React.js", "Angular", "Next.js", "TypeScript", "JavaScript (ES6+)", "Material UI", "Bootstrap", "HTML5 / CSS3", "jQuery", "Zustand", "Formik"]
+    },
+    {
+      "title": "Dati",
+      "skills": ["SQL Server", "Oracle", "MongoDB", "Cosmos DB"]
+    },
+    {
+      "title": "Cloud e DevOps",
+      "skills": ["Microsoft Azure", "AWS", "Azure DevOps", "Git", "Jenkins", "CI/CD", "Microservizi"]
+    },
+    {
+      "title": "Metodo e qualità",
+      "skills": ["Agile / Scrum", "xUnit", "MSTest", "Accessibilità WCAG 2.1", "Jira", "Bitbucket", "Confluence", "Postman"]
+    }
+  ],
+  "experiences": [
+    {
+      "company": "SEFIN SPA (BMW Financial Services)",
+      "role": "Consultant Full-Stack Developer",
+      "period": "08/2025 – oggi",
+      "description": "Sistema Paperless BMW: piattaforma enterprise full stack per la gestione digitale dei contratti finanziari (leasing e finanziamento) della rete dealer BMW Italia. Stack: C#, .NET Framework 4.8, ASP.NET MVC, Razor, jQuery, Bootstrap, WCF, Entity Framework 6, SQL Server, xUnit, Azure DevOps.",
+      "highlights": [
+        "Modulo GCAP per la verifica automatica dei documenti, con integrazione di servizi OCR/IDP, Open Banking e identità digitale SPID",
+        "API REST (ASP.NET MVC) e servizi WCF/SOAP per l’integrazione con i sistemi esterni BMW",
+        "Servizio di notifiche multicanale (email e SMS) con orchestrazione asincrona e Feature Flag",
+        "Interfacce dinamiche con flussi multi-step, modali e validazione lato client",
+        "Accessibilità WCAG 2.1 livello AA: navigazione da tastiera, gestione del focus, attributi ARIA",
+        "Firma elettronica e gestione del recesso contrattuale con notifiche automatiche"
+      ]
+    },
+    {
+      "company": "SEFIN SPA (Banca d’Italia)",
+      "role": "Consultant Full-Stack Developer",
+      "period": "04/2024 – 07/2025",
+      "description": "Sviluppo di interfacce utente complesse in React.js per applicazioni web della Banca d’Italia. Stack: React.js, TypeScript, Material UI, Formik, Zustand, Git, CI/CD, Postman.",
+      "highlights": [
+        "Componenti UI modulari e riutilizzabili con Material UI, responsive e cross-browser",
+        "Gestione dello stato globale con Zustand per migliorare prestazioni e flusso dei dati",
+        "Form dinamici e complessi con Formik e validazione avanzata dei dati",
+        "Mock API per sviluppare il front-end in parallelo al back-end non ancora disponibile",
+        "Integrazione di API RESTful in collaborazione con il team back-end"
+      ]
+    },
+    {
+      "company": "Betacom | Reply (BMW Group)",
+      "role": "Consultant Full-Stack Developer",
+      "period": "03/2022 – 04/2024",
+      "description": "Remote Diagnosis System di BMW (ISTA e ISTA+), il software per riparazione, assistenza, diagnosi, codifica e programmazione dei veicoli BMW. Sede di Milano e Monaco di Baviera. Stack: C#, .NET e .NET Core, REST, Entity Framework 6, Angular 12, WPF, microservizi, Jenkins, Atlassian (Bitbucket, Jira, Confluence).",
+      "highlights": [
+        "Nuove funzionalità per ogni release di ISTA e ISTA+",
+        "Gestione di bug e ticket per vari progetti BMW con metodologia Agile"
+      ]
+    },
+    {
+      "company": "Avanade (Poste Italiane – Posedonia)",
+      "role": "Senior Front-end/Back-end Developer",
+      "period": "06/2021 – 03/2022",
+      "description": "Sviluppo full stack per Poste Italiane nel progetto Posedonia: front-end, back-end e integrazione di servizi e API. Stack: VB.NET, ASP.NET MVC, Web API, C#, SQL Server 2015, React 17, Angular 8, .NET Core 2, Git, SVN.",
+      "highlights": [
+        "Sviluppo e test di soluzioni back-end in C#, .NET e VB.NET"
+      ]
+    },
+    {
+      "company": "Avanade (ENEL)",
+      "role": "Senior Front-end/Back-end Developer",
+      "period": "01/2021 – 06/2021",
+      "description": "Aggiornamento delle applicazioni .NET del cliente ai requisiti di cyber security, con upgrade del framework da 3.5 a 4.x e retrocompatibilità del codice. Stack: VB.NET, ASP.NET MVC, REST e SOAP, SQL Server 2015, C#, Entity Framework 6, ChartJS, JavaScript, Azure DevOps, SVN.",
+      "highlights": [
+        "Sviluppo front-end con ChartJS e JavaScript",
+        "Web service SOAP e REST in ambiente Windows e IIS"
+      ]
+    },
+    {
+      "company": "Avanade (Linear Assicurazioni)",
+      "role": "Senior Front-end/Back-end Developer",
+      "period": "11/2019 – 01/2021",
+      "description": "Progetto LinearNext: sviluppo e test di soluzioni back-end in C#, .NET e VB.NET. Stack: VB.NET, ASP.NET MVC, REST API, SQL Server 2015, Entity Framework 6, Agile Scrum, TFS, SVN.",
+      "highlights": []
+    },
+    {
+      "company": "Avanade (Poste Italiane – PosteVita Assicurazione)",
+      "role": "Senior Front-end/Back-end Developer",
+      "period": "11/2019 – 05/2020",
+      "description": "Progetto PostaVita: sviluppo e test di soluzioni back-end in C#. Stack: VB.NET, ASP.NET, C#, REST e SOAP, Entity Framework 6, SQL Server 2015, MSTest, TFS, SVN, Agile Scrum.",
+      "highlights": []
+    },
+    {
+      "company": "Avanade (ENI – POC)",
+      "role": "Front-end/Back-end Developer",
+      "period": "09/2019 – 10/2019",
+      "description": "Applicazione web di e-commerce con Angular 8 e Angular Material sulla piattaforma Apttus B2B. Stack: HTML5, CSS3, Bootstrap 4, Angular 8.",
+      "highlights": []
+    },
+    {
+      "company": "Avanade (Vodafone – TOBI)",
+      "role": "Front-end/Back-end Developer",
+      "period": "02/2019 – 08/2019",
+      "description": "Progettazione e configurazione di applicazioni per i processi aziendali: front-end in React JS e soluzioni .NET/C# nel Web Squad. Stack: ASP.NET MVC, C#, REST API, SQL Server, React 16.3, Angular 8, TypeScript, Azure DevOps, Azure Web Apps, Cosmos DB, Git, TFS.",
+      "highlights": []
+    },
+    {
+      "company": "Avanade (Unicredit)",
+      "role": "Analyst Developer",
+      "period": "10/2017 – 10/2018",
+      "description": "Attività di discovery per l’identificazione di processi automatizzabili con Nice Automation. Stack: Nice Automation, C#, .NET, Agile.",
+      "highlights": [
+        "Raccolta dei requisiti funzionali e definizione del business case",
+        "Analisi e sviluppo dei processi da automatizzare"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Portfolio e Job Tracker",
+      "description": "Questo sito: una pagina pubblica per presentarmi e un’area privata per cercare lavoro e tenere traccia delle candidature.",
+      "technologies": ["ASP.NET Core", "React", "TypeScript", "PostgreSQL", "Tailwind CSS"],
+      "url": "https://github.com/abderrazak-naceur/JobHunter"
+    }
+  ]
+}

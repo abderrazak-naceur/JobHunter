@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (.NET 10)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      API_PROJECT: src/backend/JobHunter.Api/JobHunter.Api.csproj
+      TEST_PROJECT: src/backend/JobHunter.Api.Tests/JobHunter.Api.Tests.csproj
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet restore $TEST_PROJECT
+      - name: Check formatting
+        run: |
+          dotnet format $API_PROJECT --verify-no-changes --no-restore
+          dotnet format $TEST_PROJECT --verify-no-changes --no-restore
+      - name: Build
+        run: dotnet build $TEST_PROJECT --configuration Release --no-restore
+      - name: Test
+        run: dotnet test $TEST_PROJECT --configuration Release --no-build --verbosity normal
+      - name: Scan NuGet packages for known vulnerabilities
+        run: |
+          dotnet list $TEST_PROJECT package --vulnerable --include-transitive 2>&1 | tee vulnerabilities.txt
+          if grep -q "has the following vulnerable packages" vulnerabilities.txt; then
+            echo "::error::Vulnerable NuGet packages found."
+            exit 1
+          fi
+      - name: Check for missing EF Core migrations
+        env:
+          ConnectionStrings__DefaultConnection: Host=localhost;Database=ci_drift_check;Username=ci;Password=ci
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.0
+          dotnet ef migrations has-pending-model-changes --project $API_PROJECT --configuration Release --no-build
+
+  frontend:
+    name: Frontend (React + TypeScript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: src/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Block committed credentials in tracked config files
+        run: |
+          # Real values belong in user-secrets or environment variables, never in the repository.
+          if git grep -nIE '(Password|Pwd)=[^;"[:space:]]+' -- 'src/backend/**/appsettings*.json' ; then
+            echo "::error::A password is written in an appsettings file. Use user-secrets or environment variables."
+            exit 1
+          fi
+          if git ls-files | grep -E '(^|/)\.env($|\.local$|\.production$)|secrets\.json$'; then
+            echo "::error::A local secrets file is tracked by git."
+            exit 1
+          fi
+      - name: Scan the new commits with gitleaks
+        run: |
+          # Only the commits being added are scanned: older history was reviewed separately.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RANGE="origin/${{ github.base_ref }}..HEAD"
+          else
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then RANGE="HEAD~1..HEAD"; else RANGE="$BEFORE..${{ github.sha }}"; fi
+          fi
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.21.2 detect --source /repo --log-opts="$RANGE" --redact --verbose
