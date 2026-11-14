@@ -52,17 +52,20 @@ public sealed class JobDiscoveryService(
                         string.IsNullOrWhiteSpace(posting.Title) ||
                         string.IsNullOrWhiteSpace(posting.SourceUrl)) continue;
 
+                    var externalId = Limit(posting.ExternalId.Trim(), 500);
+                    if (externalId.Length == 0) continue;
+
                     run.FoundCount++;
-                    if (!existing.TryGetValue(posting.ExternalId, out var listing))
+                    if (!existing.TryGetValue(externalId, out var listing))
                     {
                         listing = new JobListing
                         {
                             JobSourceId = source.Id,
-                            ExternalId = posting.ExternalId,
+                            ExternalId = externalId,
                             FirstSeenAt = DateTimeOffset.UtcNow
                         };
                         db.JobListings.Add(listing);
-                        existing.Add(posting.ExternalId, listing);
+                        existing.Add(externalId, listing);
                         run.NewCount++;
                     }
                     else

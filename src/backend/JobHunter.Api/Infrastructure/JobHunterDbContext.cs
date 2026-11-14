@@ -104,7 +104,7 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
         var jobListing = modelBuilder.Entity<JobListing>();
         jobListing.ToTable("JobListings");
         jobListing.HasKey(x => x.Id);
-        jobListing.Property(x => x.ExternalId).HasMaxLength(100).IsRequired();
+        jobListing.Property(x => x.ExternalId).HasMaxLength(500).IsRequired();
         jobListing.Property(x => x.Title).HasMaxLength(180).IsRequired();
         jobListing.Property(x => x.CompanyName).HasMaxLength(180).IsRequired();
         jobListing.Property(x => x.Location).HasMaxLength(180).IsRequired();
