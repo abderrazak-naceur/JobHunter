@@ -120,8 +120,15 @@ public sealed class JobBoardClient(HttpClient httpClient, IConfiguration? config
 
             var description = PlainText(Text(item, "jobDescription"));
             var salaryPeriod = Text(item, "salaryPeriod");
-            var salary = string.Equals(salaryPeriod, "yearly", StringComparison.OrdinalIgnoreCase)
-                ? SalaryRange(DecimalText(item, "salaryMin"), DecimalText(item, "salaryMax")) + " annui"
+            var salaryMinimum = DecimalText(item, "salaryMin");
+            var salaryMaximum = DecimalText(item, "salaryMax");
+            var salaryRange = salaryMinimum.Length > 0 && salaryMaximum.Length > 0
+                ? salaryMinimum + " - " + salaryMaximum
+                : salaryMinimum + salaryMaximum;
+            var salaryCurrency = Text(item, "salaryCurrency");
+            var salary = string.Equals(salaryPeriod, "yearly", StringComparison.OrdinalIgnoreCase) &&
+                         salaryRange.Length > 0
+                ? string.Join(" ", new[] { salaryRange, salaryCurrency, "annui" }.Where(value => value.Length > 0))
                 : string.Empty;
             DateTimeOffset? published = DateTimeOffset.TryParse(
                 Text(item, "pubDate"), CultureInfo.InvariantCulture,
