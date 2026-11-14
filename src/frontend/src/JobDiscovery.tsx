@@ -39,6 +39,7 @@ function dateTimeLabel(value: string | null): string {
 function providerLabel(provider: string): string {
   switch (provider.toLowerCase()) {
     case 'arbeitnow': return 'Arbeitnow';
+    case 'jobicy': return 'Jobicy';
     case 'adzuna': return 'Jobs by Adzuna';
     case 'jooble': return 'Jooble Italia';
     case 'lever-eu': return 'Lever EU';
@@ -49,7 +50,7 @@ function providerLabel(provider: string): string {
 }
 
 function isAutomaticSource(source: JobSource): boolean {
-  return ['arbeitnow', 'adzuna', 'jooble'].includes(source.provider.toLowerCase());
+  return ['arbeitnow', 'jobicy', 'adzuna', 'jooble'].includes(source.provider.toLowerCase());
 }
 
 export default function JobDiscovery() {
