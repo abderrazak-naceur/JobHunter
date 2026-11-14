@@ -30,6 +30,14 @@ public sealed class JobDiscoveryService(
 
         foreach (var source in sources)
         {
+            if (source.Provider == "jobicy" &&
+                source.LastCheckedAt is DateTimeOffset lastCheckedAt &&
+                lastCheckedAt > DateTimeOffset.UtcNow.AddHours(-1))
+            {
+                // Jobicy's fair-use guidance asks integrations not to poll more than once per hour.
+                continue;
+            }
+
             source.LastCheckedAt = DateTimeOffset.UtcNow;
             try
             {
@@ -110,6 +118,8 @@ public sealed class JobDiscoveryService(
     {
         await AddAutomaticSourceIfMissingAsync(
             "Arbeitnow Europa", "arbeitnow", "europe", "https://www.arbeitnow.com", cancellationToken);
+        await AddAutomaticSourceIfMissingAsync(
+            "Jobicy Europa", "jobicy", "europe", "https://jobicy.com", cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(configuration["JobDiscovery:Adzuna:AppId"]) &&
             !string.IsNullOrWhiteSpace(configuration["JobDiscovery:Adzuna:AppKey"]))
