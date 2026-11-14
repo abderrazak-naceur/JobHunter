@@ -312,7 +312,7 @@ namespace JobHunter.Api.Migrations
                     b.Property<string>("ApplyUrl").IsRequired().HasMaxLength(1000).HasColumnType("character varying(1000)");
                     b.Property<string>("CompanyName").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
                     b.Property<string>("Description").IsRequired().HasColumnType("text");
-                    b.Property<string>("ExternalId").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<string>("ExternalId").IsRequired().HasMaxLength(500).HasColumnType("character varying(500)");
                     b.Property<DateTimeOffset>("FirstSeenAt").HasColumnType("timestamp with time zone");
                     b.Property<Guid>("JobSourceId").HasColumnType("uuid");
                     b.Property<DateTimeOffset>("LastSeenAt").HasColumnType("timestamp with time zone");
