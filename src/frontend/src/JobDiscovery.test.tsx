@@ -101,13 +101,31 @@ describe('JobDiscovery', () => {
     render(<JobDiscovery />);
 
     expect(await screen.findByRole('heading', { name: 'Senior .NET Developer' })).toBeInTheDocument();
-    const applyLink = screen.getByRole('link', { name: /Apri annuncio originale/ });
+    const applyLink = screen.getByRole('link', { name: /Candidati sul sito/ });
     expect(applyLink).toHaveAttribute('href', listing.applyUrl);
     expect(applyLink).toHaveAttribute('target', '_blank');
     expect(screen.getByText(/Pubblicata:/)).toBeInTheDocument();
     expect(screen.getByText(/Aggiornata:/)).toBeInTheDocument();
     expect(screen.getByText(/Rilevata da JobHunter:/)).toBeInTheDocument();
     expect(screen.getByText('92% compatibilità')).toBeInTheDocument();
+  });
+
+  it('allows starting an automatic search even when no company board is configured', async () => {
+    const user = userEvent.setup();
+    discovery.sources.mockResolvedValue([]);
+    discovery.search.mockResolvedValue({
+      ...run,
+      summary: '1 fonte automatica controllata; 3 offerte raccolte.'
+    });
+    render(<JobDiscovery />);
+
+    const searchButton = await screen.findByRole('button', { name: /Cerca ora/ });
+    expect(searchButton).toBeEnabled();
+
+    await user.click(searchButton);
+
+    await waitFor(() => expect(discovery.search).toHaveBeenCalledTimes(1));
+    expect(await screen.findByRole('status')).toHaveTextContent('1 fonte automatica controllata');
   });
 
   it('allows selecting Lever EU when configuring a source', async () => {
@@ -123,7 +141,7 @@ describe('JobDiscovery', () => {
     const user = userEvent.setup();
     render(<JobDiscovery />);
 
-    await user.click(await screen.findByRole('button', { name: /Aggiungi a Candidature/ }));
+    await user.click(await screen.findByRole('button', { name: /Salva in Candidature/ }));
 
     await waitFor(() => expect(applications.create).toHaveBeenCalledWith(expect.objectContaining({
       company: 'Example Tech',
