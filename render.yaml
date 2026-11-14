@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: portafoglio-api
+    name: portafoglio-api-blu5
     runtime: docker
     region: virginia
     plan: free
@@ -24,9 +24,11 @@ services:
         value: "480"
       - key: Cors__AllowedOrigins__0
         value: https://portafoglio-web-blu5.onrender.com
+      - key: Cors__AllowedOrigins__1
+        value: https://zaknaceur.it
 
   - type: web
-    name: portafoglio-web
+    name: portafoglio-web-blu5
     runtime: static
     buildCommand: cd src/frontend && npm ci && npm run build
     staticPublishPath: ./src/frontend/dist
