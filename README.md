@@ -178,7 +178,7 @@ git config --global http.sslBackend schannel
 
 ## Job Discovery scope
 
-Job Discovery is available in the private Admin area. The Cerca ora action searches the automatic Arbeitnow Europe feed; Adzuna Italy and Jooble Italy are enabled when their backend API keys are configured. Optional Lever (global/EU) and Greenhouse company boards are also supported. Results are normalized, ranked against the saved profile, and link to the original application page. Scheduled scans, notifications, cross-provider duplicate grouping and automatic discovery of individual company boards remain follow-up work.
+Job Discovery is available in the private Admin area. The Cerca ora action searches the automatic Arbeitnow Europe and Jobicy Europe feeds; Adzuna Italy and Jooble Italy are enabled when their backend API keys are configured. Optional Lever (global/EU) and Greenhouse company boards are also supported. Results are normalized, ranked against the saved profile, and link to the original application page. Scheduled scans, notifications, cross-provider duplicate grouping and automatic discovery of individual company boards remain follow-up work.
 
 Setup and limitations: [docs/JOB-DISCOVERY-SETUP.md](docs/JOB-DISCOVERY-SETUP.md).
 
