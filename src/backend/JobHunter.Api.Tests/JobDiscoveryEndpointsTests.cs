@@ -31,7 +31,7 @@ public sealed class JobDiscoveryEndpointsTests : IClassFixture<JobHunterApiFacto
         Assert.Equal(HttpStatusCode.Created, createdSecond.StatusCode);
         Assert.NotNull(profiles);
         Assert.Equal(2, profiles.Length);
-        Assert.Single(profiles.Where(x => x.IsActive));
+        Assert.Single(profiles, x => x.IsActive);
         Assert.Contains(profiles, x => x.Name == "Profilo due" && x.IsActive);
     }
 
