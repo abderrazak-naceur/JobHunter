@@ -40,7 +40,7 @@ public sealed class JobBoardClient(HttpClient httpClient) : IJobBoardClient
         var endpoint = provider switch
         {
             "lever" => $"https://api.lever.co/v0/postings/{Uri.EscapeDataString(source.BoardIdentifier)}?mode=json",
-        "lever-eu" => $"https://api.eu.lever.co/v0/postings/{Uri.EscapeDataString(source.BoardIdentifier)}?mode=json",
+            "lever-eu" => $"https://api.eu.lever.co/v0/postings/{Uri.EscapeDataString(source.BoardIdentifier)}?mode=json",
             "greenhouse" => $"https://boards-api.greenhouse.io/v1/boards/{Uri.EscapeDataString(source.BoardIdentifier)}/jobs?content=true",
             _ => throw new InvalidOperationException("Provider non supportato.")
         };
