@@ -36,6 +36,22 @@ function dateTimeLabel(value: string | null): string {
   return value ? new Date(value).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' }) : 'Mai';
 }
 
+function providerLabel(provider: string): string {
+  switch (provider.toLowerCase()) {
+    case 'arbeitnow': return 'Arbeitnow';
+    case 'adzuna': return 'Jobs by Adzuna';
+    case 'jooble': return 'Jooble Italia';
+    case 'lever-eu': return 'Lever EU';
+    case 'lever': return 'Lever';
+    case 'greenhouse': return 'Greenhouse';
+    default: return provider;
+  }
+}
+
+function isAutomaticSource(source: JobSource): boolean {
+  return ['arbeitnow', 'adzuna', 'jooble'].includes(source.provider.toLowerCase());
+}
+
 export default function JobDiscovery() {
   const [profile, setProfile] = useState<SearchProfile | null>(null);
   const [profileDraft, setProfileDraft] = useState<SearchProfileInput>(defaultProfile);
@@ -209,9 +225,9 @@ export default function JobDiscovery() {
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-primary">Ricerca multi-fonte</p>
           <h1 className="text-3xl font-extrabold tracking-tight">Job Discovery</h1>
-          <p className="mt-1 max-w-2xl text-muted-foreground">Trova le offerte pubblicate dalle aziende che segui, confrontale con il tuo profilo e apri l'annuncio originale per candidarti.</p>
+          <p className="mt-1 max-w-2xl text-muted-foreground">Cerca automaticamente offerte da aggregatori e board aziendali pubbliche, confrontale con il tuo profilo e candidati sul portale originale.</p>
         </div>
-        <Button onClick={() => void runSearch()} disabled={searching || sources.filter(x => x.isEnabled).length === 0}>
+        <Button onClick={() => void runSearch()} disabled={searching}>
           {searching ? <RefreshCw className="animate-spin" /> : <Search />} {searching ? 'Ricerca in corso...' : 'Cerca ora'}
         </Button>
       </div>
@@ -222,7 +238,7 @@ export default function JobDiscovery() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Card><CardHeader className="pb-2"><CardDescription>Offerte raccolte</CardDescription><CardTitle className="text-3xl">{totalJobs}</CardTitle></CardHeader><CardContent className="text-xs text-muted-foreground">Risultati nell'archivio</CardContent></Card>
         <Card><CardHeader className="pb-2"><CardDescription>Pubblicate oggi</CardDescription><CardTitle className="text-3xl">{publishedToday}</CardTitle></CardHeader><CardContent className="text-xs text-muted-foreground">In base alla data dichiarata dalla fonte</CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardDescription>Fonti attive</CardDescription><CardTitle className="text-3xl">{sources.filter(x => x.isEnabled).length}</CardTitle></CardHeader><CardContent className="text-xs text-muted-foreground">Board ATS configurate</CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardDescription>Fonti attive</CardDescription><CardTitle className="text-3xl">{sources.filter(x => x.isEnabled).length}</CardTitle></CardHeader><CardContent className="text-xs text-muted-foreground">Fonti automatiche e board aziendali</CardContent></Card>
         <Card><CardHeader className="pb-2"><CardDescription>Ultima ricerca</CardDescription><CardTitle className="text-base">{lastRun ? dateTimeLabel(lastRun.completedAt) : 'Mai'}</CardTitle></CardHeader><CardContent className="text-xs text-muted-foreground">{lastRun?.summary ?? 'Non è ancora stata eseguita una ricerca'}</CardContent></Card>
       </div>
 
@@ -272,12 +288,12 @@ export default function JobDiscovery() {
               <div className="md:col-span-2 flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setShowSourceForm(false)}>Annulla</Button><Button type="submit" disabled={saving}>{saving ? 'Salvataggio...' : 'Aggiungi fonte'}</Button></div>
             </form>
           )}
-          {sources.length === 0 ? <p className="text-sm text-muted-foreground">Nessuna fonte configurata. Aggiungi una board pubblica Lever, Lever EU o Greenhouse per iniziare.</p> : (
+          {sources.length === 0 ? <p className="text-sm text-muted-foreground">Le fonti automatiche vengono interrogate con Cerca ora. Puoi aggiungere una board Lever o Greenhouse solo per aziende specifiche.</p> : (
             <div className="divide-y">
               {sources.map(source => (
                 <div key={source.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                  <div className="min-w-0"><p className="font-medium">{source.companyName} <Badge variant="outline" className="ml-2">{source.provider}</Badge></p><p className="text-xs text-muted-foreground">Board: {source.boardIdentifier} · Ultimo controllo: {dateTimeLabel(source.lastCheckedAt)}</p>{source.lastError && <p className="text-xs text-destructive">{source.lastError}</p>}</div>
-                  <div className="flex items-center gap-2"><Badge variant={source.isEnabled ? 'secondary' : 'outline'}>{source.isEnabled ? 'Attiva' : 'Disattivata'}</Badge><Button variant="ghost" size="icon" aria-label={'Rimuovi ' + source.companyName} onClick={() => void removeSource(source)}><Trash2 /></Button></div>
+                  <div className="min-w-0"><p className="font-medium">{source.companyName} <Badge variant="outline" className="ml-2">{isAutomaticSource(source) ? 'Automatica · ' : ''}{providerLabel(source.provider)}</Badge></p><p className="text-xs text-muted-foreground">{isAutomaticSource(source) ? 'Ricerca automatica' : 'Board: ' + source.boardIdentifier} · Ultimo controllo: {dateTimeLabel(source.lastCheckedAt)}</p>{source.lastError && <p className="text-xs text-destructive">{source.lastError}</p>}</div>
+                  <div className="flex items-center gap-2"><Badge variant={source.isEnabled ? 'secondary' : 'outline'}>{source.isEnabled ? 'Attiva' : 'Disattivata'}</Badge>{!isAutomaticSource(source) && <Button variant="ghost" size="icon" aria-label={'Rimuovi ' + source.companyName} onClick={() => void removeSource(source)}><Trash2 /></Button>}</div>
                 </div>
               ))}
             </div>
@@ -325,13 +341,13 @@ function JobCard({ job, isSaved, onSave }: { job: JobListing; isSaved: boolean; 
         <span className="inline-flex items-center gap-1"><CalendarDays className="h-3.5 w-3.5" /> Pubblicata: {dateLabel(job.publishedAt)}</span>
         {job.sourceUpdatedAt && <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> Aggiornata: {dateLabel(job.sourceUpdatedAt)}</span>}
         <span>Rilevata da JobHunter: {dateLabel(job.firstSeenAt)}</span>
-        <span>Fonte: {job.provider}</span>
+        <span>Fonte: {providerLabel(job.provider)}</span>
       </div>
       {job.matchedKeywords.length > 0 && <div className="mt-3 flex flex-wrap gap-1">{job.matchedKeywords.slice(0, 6).map(keyword => <Badge key={keyword} variant="outline" className="font-normal">{keyword}</Badge>)}</div>}
       {job.description && <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{job.description}</p>}
       <div className="mt-4 flex flex-wrap gap-2">
-        <Button asChild size="sm"><a href={job.applyUrl || job.sourceUrl} target="_blank" rel="noopener noreferrer"><ExternalLink /> Apri annuncio originale</a></Button>
-        <Button size="sm" variant="outline" disabled={isSaved} onClick={onSave}>{isSaved ? <><CheckCircle2 /> Salvata</> : <><Plus /> Aggiungi a Candidature</>}</Button>
+        <Button asChild size="sm"><a href={job.applyUrl || job.sourceUrl} target="_blank" rel="noopener noreferrer"><ExternalLink /> Candidati sul sito</a></Button>
+        <Button size="sm" variant="outline" disabled={isSaved} onClick={onSave}>{isSaved ? <><CheckCircle2 /> Salvata</> : <><Plus /> Salva in Candidature</>}</Button>
       </div>
     </article>
   );
