@@ -122,9 +122,6 @@ public sealed class JobBoardClient(HttpClient httpClient, IConfiguration? config
             "where=" + Uri.EscapeDataString(location),
             "content-type=application/json"
         };
-        if (profile?.MinimumAnnualSalary is > 0)
-            query.Add("salary_min=" + profile.MinimumAnnualSalary.Value.ToString(CultureInfo.InvariantCulture));
-
         using var document = await GetJsonAsync(
             $"https://api.adzuna.com/v1/api/jobs/{countryCode}/search/1?{string.Join("&", query)}",
             cancellationToken);
@@ -178,9 +175,6 @@ public sealed class JobBoardClient(HttpClient httpClient, IConfiguration? config
             ["page"] = "1",
             ["ResultOnPage"] = 50
         };
-        if (profile?.MinimumAnnualSalary is > 0)
-            payload["salary"] = decimal.ToInt32(decimal.Min(profile.MinimumAnnualSalary.Value, int.MaxValue));
-
         using var document = await PostJsonAsync(
             $"https://it.jooble.org/api/{Uri.EscapeDataString(apiKey)}",
             payload,
@@ -355,7 +349,7 @@ public sealed class JobBoardClient(HttpClient httpClient, IConfiguration? config
     }
 
     private static string PlainText(string value) =>
-        WebUtility.HtmlDecode(Regex.Replace(value, "<[^>]+>", " ")).Trim();
+        Regex.Replace(WebUtility.HtmlDecode(value), "<[^>]+>", " ").Trim();
 
     private static string NormalizeWorkMode(string value) => value.Trim().ToLowerInvariant() switch
     {
