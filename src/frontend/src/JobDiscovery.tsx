@@ -274,7 +274,7 @@ export default function JobDiscovery() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <div><CardTitle>Fonti di ricerca</CardTitle><CardDescription>Collega le board pubbliche delle aziende. Ogni fonte viene interrogata separatamente.</CardDescription></div>
+          <div><CardTitle>Fonti di ricerca</CardTitle><CardDescription>Le fonti automatiche vengono cercate con un clic; puoi aggiungere anche board pubbliche di singole aziende.</CardDescription></div>
           <Button size="sm" variant="outline" onClick={() => setShowSourceForm(value => !value)}><Plus /> Aggiungi fonte</Button>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -311,7 +311,7 @@ export default function JobDiscovery() {
             <Button type="submit" variant="outline">Applica filtri</Button>
           </form>
           {loading ? <p role="status" className="text-sm text-muted-foreground">Caricamento offerte...</p> :
-            jobs.length === 0 ? <div className="rounded-lg border border-dashed p-8 text-center"><BriefcaseBusiness className="mx-auto h-8 w-8 text-muted-foreground" /><p className="mt-3 font-medium">Nessuna offerta nell'archivio</p><p className="mt-1 text-sm text-muted-foreground">Configura almeno una fonte e premi Cerca ora.</p></div> :
+            jobs.length === 0 ? <div className="rounded-lg border border-dashed p-8 text-center"><BriefcaseBusiness className="mx-auto h-8 w-8 text-muted-foreground" /><p className="mt-3 font-medium">Nessuna offerta nell'archivio</p><p className="mt-1 text-sm text-muted-foreground">Premi Cerca ora per aggiornare le offerte. Puoi anche ampliare i ruoli o abbassare la compatibilità minima nel profilo.</p></div> :
             <div className="space-y-3">{jobs.map(job => <JobCard key={job.id} job={job} isSaved={savedIds.includes(job.id)} onSave={() => void saveJob(job)} />)}</div>
           }
         </CardContent>
