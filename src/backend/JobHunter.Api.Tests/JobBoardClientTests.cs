@@ -162,7 +162,8 @@ public sealed class JobBoardClientTests
 
         Assert.Contains("api.adzuna.com/v1/api/jobs/it/search/1", handler.RequestUri?.ToString());
         Assert.Contains("where=Milano", handler.RequestUri?.ToString());
-        Assert.Contains("what=Senior%20.NET%20Developer", handler.RequestUri?.ToString());
+        var query = WebUtility.UrlDecode(handler.RequestUri?.Query ?? string.Empty);
+        Assert.Contains("what=Senior .NET Developer", query);
     }
 
     [Fact]
