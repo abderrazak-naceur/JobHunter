@@ -104,6 +104,42 @@ public sealed class JobBoardClientTests
     }
 
     [Fact]
+    public async Task Jobicy_MapsRemoteEuropeanJobsAndKeepsTheCanonicalListingUrl()
+    {
+        const string json = """
+            {
+              "jobs":[{
+                "id":123,
+                "url":"https://jobicy.com/jobs/senior-dotnet-engineer",
+                "jobTitle":"Senior .NET Engineer",
+                "companyName":"Example Remote",
+                "jobGeo":"Europe",
+                "jobDescription":"<p>C# and .NET services</p>",
+                "pubDate":"2026-11-13T10:00:00Z",
+                "salaryMin":60000,
+                "salaryMax":80000,
+                "salaryCurrency":"EUR",
+                "salaryPeriod":"yearly"
+              }]
+            }
+            """;
+        var client = Create(json);
+        var results = await client.FetchAsync(
+            new JobSource { Provider = "jobicy", BoardIdentifier = "europe" },
+            null, CancellationToken.None);
+
+        var posting = Assert.Single(results);
+        Assert.Equal("Senior .NET Engineer", posting.Title);
+        Assert.Equal("Example Remote", posting.CompanyName);
+        Assert.Equal("Remote", posting.WorkMode);
+        Assert.Equal("https://jobicy.com/jobs/senior-dotnet-engineer", posting.SourceUrl);
+        Assert.Equal(posting.SourceUrl, posting.ApplyUrl);
+        Assert.Contains("EUR", posting.SalaryText);
+        Assert.Contains("annui", posting.SalaryText);
+        Assert.NotNull(posting.PublishedAt);
+    }
+
+    [Fact]
     public async Task Adzuna_UsesTheSavedSearchProfileAndItalianEndpoint()
     {
         var handler = new RecordingHandler();
