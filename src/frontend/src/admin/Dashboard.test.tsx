@@ -67,8 +67,9 @@ describe('Dashboard', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /Candidature/ }));
     await userEvent.click(screen.getByRole('button', { name: /Modifica il portfolio/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Job Discovery/ }));
     await userEvent.click(screen.getByRole('button', { name: /Company Radar/ }));
 
-    expect(navigate.mock.calls.map(call => call[0])).toEqual(['applications', 'portfolio', 'companies']);
+    expect(navigate.mock.calls.map(call => call[0])).toEqual(['applications', 'portfolio', 'discovery', 'companies']);
   });
 });

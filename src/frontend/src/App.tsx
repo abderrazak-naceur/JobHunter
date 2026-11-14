@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BriefcaseBusiness, ExternalLink, KeyRound, LayoutDashboard, LogOut, Palette, Target, Users, type LucideIcon } from 'lucide-react';
+import { BriefcaseBusiness, ExternalLink, KeyRound, LayoutDashboard, LogOut, Palette, Search, Target, Users, type LucideIcon } from 'lucide-react';
 import { Toaster } from 'sonner';
 import AccountPage from './admin/account/AccountPage';
 import DataExport from './admin/account/DataExport';
@@ -8,6 +8,7 @@ import Dashboard, { type AdminTab } from './admin/Dashboard';
 import PortfolioAdmin from './admin/portfolio/PortfolioAdmin';
 import ContactsPage from './admin/contacts/ContactsPage';
 import CompanyRadar from './CompanyRadar';
+import JobDiscovery from './JobDiscovery';
 import { signOut } from './auth/session';
 import './styles.css';
 
@@ -16,6 +17,7 @@ const nav: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: 'applications', label: 'Candidature', icon: BriefcaseBusiness },
   { id: 'portfolio', label: 'Portfolio', icon: Palette },
   { id: 'contacts', label: 'Contatti', icon: Users },
+  { id: 'discovery', label: 'Job Discovery', icon: Search },
   { id: 'companies', label: 'Company Radar', icon: Target },
   { id: 'account', label: 'Sicurezza', icon: KeyRound }
 ];
@@ -70,6 +72,7 @@ export default function App() {
           {tab === 'applications' && <ApplicationsPage />}
           {tab === 'portfolio' && <PortfolioAdmin />}
           {tab === 'contacts' && <ContactsPage />}
+          {tab === 'discovery' && <JobDiscovery />}
           {tab === 'companies' && <CompanyRadar />}
           {tab === 'account' && (
             <div className="space-y-6">

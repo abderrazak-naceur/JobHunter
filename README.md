@@ -176,6 +176,12 @@ $env:NODE_OPTIONS = "--use-system-ca"   # Node.js 22.15+, current session only
 git config --global http.sslBackend schannel
 ```
 
+## Job Discovery scope
+
+Job Discovery is available in the private Admin area. It currently collects postings from configured public Lever (global and EU) and Greenhouse company boards, ranks them against a saved profile, preserves source/application links and distinguishes source publication, source update and first-seen timestamps. Scheduled scans, notifications, global aggregators and additional ATS connectors are follow-up work.
+
+Setup and limitations: [docs/JOB-DISCOVERY-SETUP.md](docs/JOB-DISCOVERY-SETUP.md).
+
 ## Company Radar scope
 
 Company Radar now reads and writes company records through the .NET API and PostgreSQL. It supports create, list/search, edit, follow/unfollow and delete. Career-page crawling, ATS integrations, scheduled scans and notifications are not implemented yet.

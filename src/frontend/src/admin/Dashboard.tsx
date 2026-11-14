@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BriefcaseBusiness, Palette, Target } from 'lucide-react';
+import { BriefcaseBusiness, Palette, Search, Target } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +7,7 @@ import { APPLICATION_STATUSES, applicationApi, type ApplicationSummary } from '@
 import AnalyticsPanel from './AnalyticsPanel';
 import { formatDate, isOverdue, statusMeta } from './applications/statusMeta';
 
-export type AdminTab = 'overview' | 'applications' | 'portfolio' | 'contacts' | 'companies' | 'account';
+export type AdminTab = 'overview' | 'applications' | 'portfolio' | 'contacts' | 'discovery' | 'companies' | 'account';
 
 /** Where the job search stands, and what to do next. */
 export default function Dashboard({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
@@ -118,6 +118,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: AdminTab) 
         <CardContent className="flex flex-wrap gap-3">
           <Button onClick={() => onNavigate('applications')}><BriefcaseBusiness /> Candidature</Button>
           <Button variant="outline" onClick={() => onNavigate('portfolio')}><Palette /> Modifica il portfolio</Button>
+          <Button variant="outline" onClick={() => onNavigate('discovery')}><Search /> Job Discovery</Button>
           <Button variant="outline" onClick={() => onNavigate('companies')}><Target /> Company Radar</Button>
         </CardContent>
       </Card>

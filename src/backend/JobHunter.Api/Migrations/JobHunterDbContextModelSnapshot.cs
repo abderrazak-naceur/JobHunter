@@ -306,6 +306,82 @@ namespace JobHunter.Api.Migrations
                     b.ToTable("JobApplications", (string)null);
                 });
 
+            modelBuilder.Entity("JobHunter.Api.Domain.JobListing", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<string>("ApplyUrl").IsRequired().HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<string>("CompanyName").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<string>("Description").IsRequired().HasColumnType("text");
+                    b.Property<string>("ExternalId").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<DateTimeOffset>("FirstSeenAt").HasColumnType("timestamp with time zone");
+                    b.Property<Guid>("JobSourceId").HasColumnType("uuid");
+                    b.Property<DateTimeOffset>("LastSeenAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("Location").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<DateTimeOffset?>("PublishedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("SalaryText").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<string>("SourceUrl").IsRequired().HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<DateTimeOffset?>("SourceUpdatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("Title").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<string>("WorkMode").IsRequired().HasMaxLength(30).HasColumnType("character varying(30)");
+                    b.HasKey("Id");
+                    b.HasIndex("JobSourceId", "ExternalId").IsUnique();
+                    b.HasIndex("PublishedAt");
+                    b.HasIndex("LastSeenAt");
+                    b.ToTable("JobListings", (string)null);
+                });
+
+            modelBuilder.Entity("JobHunter.Api.Domain.JobSearchProfile", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<bool>("IsActive").HasColumnType("boolean");
+                    b.Property<string>("Location").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<decimal?>("MinimumAnnualSalary").HasPrecision(12, 2).HasColumnType("numeric(12,2)");
+                    b.Property<int>("MinimumMatchScore").HasColumnType("integer");
+                    b.Property<string>("Name").IsRequired().HasMaxLength(120).HasColumnType("character varying(120)");
+                    b.Property<string>("RoleKeywords").IsRequired().HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<string>("SkillKeywords").IsRequired().HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<DateTimeOffset>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("WorkMode").IsRequired().HasMaxLength(20).HasColumnType("character varying(20)");
+                    b.HasKey("Id");
+                    b.HasIndex("IsActive");
+                    b.ToTable("JobSearchProfiles", (string)null);
+                });
+
+            modelBuilder.Entity("JobHunter.Api.Domain.JobSearchRun", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<DateTimeOffset?>("CompletedAt").HasColumnType("timestamp with time zone");
+                    b.Property<int>("ErrorCount").HasColumnType("integer");
+                    b.Property<int>("FoundCount").HasColumnType("integer");
+                    b.Property<int>("NewCount").HasColumnType("integer");
+                    b.Property<DateTimeOffset>("StartedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("Status").IsRequired().HasMaxLength(20).HasColumnType("character varying(20)");
+                    b.Property<string>("Summary").IsRequired().HasMaxLength(4000).HasColumnType("character varying(4000)");
+                    b.Property<int>("UpdatedCount").HasColumnType("integer");
+                    b.HasKey("Id");
+                    b.HasIndex("StartedAt");
+                    b.ToTable("JobSearchRuns", (string)null);
+                });
+
+            modelBuilder.Entity("JobHunter.Api.Domain.JobSource", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<string>("BoardIdentifier").IsRequired().HasMaxLength(120).HasColumnType("character varying(120)");
+                    b.Property<string>("CareersUrl").IsRequired().HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<string>("CompanyName").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<bool>("IsEnabled").HasColumnType("boolean");
+                    b.Property<DateTimeOffset?>("LastCheckedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("LastError").IsRequired().HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<DateTimeOffset?>("LastSuccessfulAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("Provider").IsRequired().HasMaxLength(20).HasColumnType("character varying(20)");
+                    b.Property<DateTimeOffset>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("Provider", "BoardIdentifier").IsUnique();
+                    b.ToTable("JobSources", (string)null);
+                });
+
             modelBuilder.Entity("JobHunter.Api.Domain.PortfolioAsset", b =>
                 {
                     b.Property<string>("Kind")
@@ -344,6 +420,15 @@ namespace JobHunter.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PortfolioProfiles", (string)null);
+                });
+
+            modelBuilder.Entity("JobHunter.Api.Domain.JobListing", b =>
+                {
+                    b.HasOne("JobHunter.Api.Domain.JobSource", null)
+                        .WithMany()
+                        .HasForeignKey("JobSourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("JobHunter.Api.Domain.ApplicationEvent", b =>
