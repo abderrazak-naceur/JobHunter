@@ -90,8 +90,8 @@ public sealed class JobDiscoveryService(
                     ? "La fonte non ha risposto correttamente."
                     : "Impossibile leggere gli annunci da questa fonte.";
                 run.ErrorCount++;
-                logger.LogWarning(exception, "Job discovery source {SourceId} failed ({Provider}).",
-                    source.Id, source.Provider);
+                logger.LogWarning("Job discovery source {SourceId} failed ({Provider}); exception type {ExceptionType}.",
+                    source.Id, source.Provider, exception.GetType().Name);
             }
         }
 
