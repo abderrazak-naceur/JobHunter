@@ -173,7 +173,7 @@ public sealed class JobBoardClientTests
             RequestUri = request.RequestUri;
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent("{""data"":[],""results"":[],""jobs"":[]}", Encoding.UTF8, "application/json")
+                Content = new StringContent("""{"data":[],"results":[],"jobs":[]}""", Encoding.UTF8, "application/json")
             });
         }
     }
