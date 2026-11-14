@@ -120,8 +120,11 @@ public sealed class JobDiscoveryService(
             query = query.Where(x => x.PublishedAt < until);
         }
 
-        var profile = await db.SearchProfiles.AsNoTracking()
-            .Where(x => x.IsActive).OrderByDescending(x => x.UpdatedAt).FirstOrDefaultAsync(cancellationToken);
+        // SQLite (the API test provider) cannot translate DateTimeOffset ordering.
+        // Profiles are few, so order the active ones after loading them.
+        var activeProfiles = await db.SearchProfiles.AsNoTracking()
+            .Where(x => x.IsActive).ToListAsync(cancellationToken);
+        var profile = activeProfiles.OrderByDescending(x => x.UpdatedAt).FirstOrDefault();
         var sources = await db.JobSources.AsNoTracking().ToDictionaryAsync(x => x.Id, cancellationToken);
         var entities = await query.ToListAsync(cancellationToken);
         var threshold = minimumMatchScore >= 0 ? Math.Clamp(minimumMatchScore, 0, 100) : profile?.MinimumMatchScore ?? 0;

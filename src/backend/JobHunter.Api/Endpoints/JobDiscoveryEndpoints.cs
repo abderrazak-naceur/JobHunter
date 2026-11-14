@@ -17,7 +17,10 @@ public static class JobDiscoveryEndpoints
         var group = endpoints.MapGroup("/api/v1/job-discovery").WithTags("Job Discovery").RequireAuthorization();
 
         group.MapGet("/profiles", async (JobHunterDbContext db, CancellationToken ct) =>
-            Results.Ok((await db.SearchProfiles.AsNoTracking().OrderByDescending(x => x.UpdatedAt).ToListAsync(ct)).Select(ToResponse)));
+        {
+            var profiles = await db.SearchProfiles.AsNoTracking().ToListAsync(ct);
+            return Results.Ok(profiles.OrderByDescending(x => x.UpdatedAt).Select(ToResponse));
+        });
 
         group.MapPost("/profiles", async (SearchProfileRequest request, JobHunterDbContext db, CancellationToken ct) =>
         {
@@ -107,9 +110,12 @@ public static class JobDiscoveryEndpoints
         {
             var currentPage = Math.Max(1, page ?? 1);
             var size = Math.Clamp(pageSize ?? 20, 1, 100);
-            var query = db.JobSearchRuns.AsNoTracking().OrderByDescending(x => x.StartedAt);
-            var total = await query.CountAsync(ct);
-            var runs = await query.Skip((currentPage - 1) * size).Take(size).ToListAsync(ct);
+            // DateTimeOffset ordering is not supported by the SQLite provider used in endpoint tests.
+            // Search history is small for this single-user workspace, so sort after materialization.
+            var allRuns = await db.JobSearchRuns.AsNoTracking().ToListAsync(ct);
+            var query = allRuns.OrderByDescending(x => x.StartedAt);
+            var total = allRuns.Count;
+            var runs = query.Skip((currentPage - 1) * size).Take(size).ToList();
             return Results.Ok(new PagedJobSearchRunsResponse(runs.Select(x =>
                 new JobSearchRunResponse(x.Id, x.StartedAt, x.CompletedAt, x.Status, x.FoundCount,
                     x.NewCount, x.UpdatedCount, x.ErrorCount, x.Summary)).ToList(), currentPage, size, total));
