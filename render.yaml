@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: portafoglio-api-blu5
+    name: portafoglio-api
     runtime: docker
     region: virginia
     plan: free
@@ -28,7 +28,7 @@ services:
         value: https://zaknaceur.it
 
   - type: web
-    name: portafoglio-web-blu5
+    name: portafoglio-web
     runtime: static
     buildCommand: cd src/frontend && npm ci && npm run build
     staticPublishPath: ./src/frontend/dist
