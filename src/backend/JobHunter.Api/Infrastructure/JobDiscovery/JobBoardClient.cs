@@ -48,6 +48,9 @@ public sealed class JobBoardClient(HttpClient httpClient, IConfiguration? config
         if (provider == "arbeitnow")
             return await FetchArbeitnowAsync(cancellationToken);
 
+        if (provider == "jobicy")
+            return await FetchJobicyAsync(cancellationToken);
+
         if (provider == "adzuna")
             return await FetchAdzunaAsync(profile, source.BoardIdentifier, cancellationToken);
 
@@ -94,6 +97,40 @@ public sealed class JobBoardClient(HttpClient httpClient, IConfiguration? config
                 id, title, Text(item, "company_name"), Text(item, "location"), workMode,
                 ExtractSalary(description), Limit(description, MaximumDescriptionLength),
                 url, url, UnixDate(item, "created_at"), null));
+        }
+        return results;
+    }
+
+    private async Task<IReadOnlyList<JobPostingRecord>> FetchJobicyAsync(CancellationToken cancellationToken)
+    {
+        // Public remote-job feed; keep the canonical Jobicy URL because free access does not expose direct ATS links.
+        using var document = await GetJsonAsync(
+            "https://jobicy.com/api/v2/remote-jobs?count=100&geo=europe&industry=engineering",
+            cancellationToken);
+        if (!document.RootElement.TryGetProperty("jobs", out var jobs) || jobs.ValueKind != JsonValueKind.Array)
+            return [];
+
+        var results = new List<JobPostingRecord>();
+        foreach (var item in jobs.EnumerateArray())
+        {
+            var id = Text(item, "id");
+            var title = Text(item, "jobTitle");
+            var url = SafeHttpUrl(Text(item, "url"));
+            if (id.Length == 0 || title.Length == 0 || url.Length == 0) continue;
+
+            var description = PlainText(Text(item, "jobDescription"));
+            var salaryPeriod = Text(item, "salaryPeriod");
+            var salary = string.Equals(salaryPeriod, "yearly", StringComparison.OrdinalIgnoreCase)
+                ? SalaryRange(DecimalText(item, "salaryMin"), DecimalText(item, "salaryMax")) + " annui"
+                : string.Empty;
+            DateTimeOffset? published = DateTimeOffset.TryParse(
+                Text(item, "pubDate"), CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var pubDate)
+                ? pubDate : null;
+
+            results.Add(new JobPostingRecord(
+                id, title, Text(item, "companyName"), Text(item, "jobGeo"), "Remote", salary,
+                Limit(description, MaximumDescriptionLength), url, url, published, null));
         }
         return results;
     }
