@@ -16,7 +16,16 @@ public sealed record BlogSettingsDto(
     string PrimaryColor,
     string AccentColor,
     string BackgroundColor,
-    string Template);
+    string Template,
+    string TextColor = "#172554",
+    string MutedTextColor = "#64748b",
+    string SurfaceColor = "#ffffff",
+    string HeaderBackgroundColor = "#050d22",
+    string HeroBackgroundColor = "#050d22",
+    string CardBackgroundColor = "#ffffff",
+    string FooterBackgroundColor = "#050d22",
+    string BorderColor = "#dbeafe",
+    string ButtonTextColor = "#ffffff");
 
 public static partial class BlogSettingsEndpoints
 {
@@ -32,7 +41,16 @@ public static partial class BlogSettingsEndpoints
         "#2563eb",
         "#8b5cf6",
         "#eef1ff",
-        "premium-tech");
+        "premium-tech",
+        "#172554",
+        "#64748b",
+        "#ffffff",
+        "#050d22",
+        "#050d22",
+        "#ffffff",
+        "#050d22",
+        "#dbeafe",
+        "#ffffff");
 
     public static IEndpointRouteBuilder MapBlogSettingsEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -75,7 +93,16 @@ public static partial class BlogSettingsEndpoints
             {
                 (nameof(request.PrimaryColor), request.PrimaryColor),
                 (nameof(request.AccentColor), request.AccentColor),
-                (nameof(request.BackgroundColor), request.BackgroundColor)
+                (nameof(request.BackgroundColor), request.BackgroundColor),
+                (nameof(request.TextColor), request.TextColor),
+                (nameof(request.MutedTextColor), request.MutedTextColor),
+                (nameof(request.SurfaceColor), request.SurfaceColor),
+                (nameof(request.HeaderBackgroundColor), request.HeaderBackgroundColor),
+                (nameof(request.HeroBackgroundColor), request.HeroBackgroundColor),
+                (nameof(request.CardBackgroundColor), request.CardBackgroundColor),
+                (nameof(request.FooterBackgroundColor), request.FooterBackgroundColor),
+                (nameof(request.BorderColor), request.BorderColor),
+                (nameof(request.ButtonTextColor), request.ButtonTextColor)
             })
             {
                 if (!ColorRegex().IsMatch(value ?? ""))

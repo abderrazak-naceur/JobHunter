@@ -24,13 +24,19 @@ export type BlogSettings = {
   siteName: string; authorName: string; tagline: string; logoUrl: string;
   heroTitle: string; heroDescription: string; primaryColor: string;
   accentColor: string; backgroundColor: string;
+  textColor: string; mutedTextColor: string; surfaceColor: string;
+  headerBackgroundColor: string; heroBackgroundColor: string; cardBackgroundColor: string;
+  footerBackgroundColor: string; borderColor: string; buttonTextColor: string;
   template: 'premium-tech' | 'editorial-light' | 'developer-dark' | 'personal-journal';
 };
 export const defaultBlogSettings: BlogSettings = {
   siteName: 'ZAK NACEUR', authorName: 'Zak Naceur', tagline: 'Developer · Tech Blog',
   logoUrl: '', heroTitle: 'Appunti dal mondo tech.',
   heroDescription: 'Approfondimenti su .NET, architetture software, AI, DevOps e sviluppo di prodotti digitali, con esempi pratici ed esperienze reali.',
-  primaryColor: '#2563eb', accentColor: '#8b5cf6', backgroundColor: '#eef1ff', template: 'premium-tech'
+  primaryColor: '#2563eb', accentColor: '#8b5cf6', backgroundColor: '#eef1ff',
+  textColor: '#172554', mutedTextColor: '#64748b', surfaceColor: '#ffffff',
+  headerBackgroundColor: '#050d22', heroBackgroundColor: '#050d22', cardBackgroundColor: '#ffffff',
+  footerBackgroundColor: '#050d22', borderColor: '#dbeafe', buttonTextColor: '#ffffff', template: 'premium-tech'
 };
 
 async function request<T>(path: string, init: RequestInit = {}, admin = false): Promise<T> {
@@ -60,7 +66,7 @@ async function request<T>(path: string, init: RequestInit = {}, admin = false): 
 }
 
 export const blogApi = {
-  settings: () => request<BlogSettings>('/api/v1/blog/settings'),
+  settings: async () => ({ ...defaultBlogSettings, ...await request<BlogSettings>('/api/v1/blog/settings') }),
   saveSettings: (settings: BlogSettings) => request<BlogSettings>('/api/v1/admin/blog/settings', { method: 'PUT', body: JSON.stringify(settings) }, true),
   list: (page = 1, pageSize = 9) => request<BlogPage>(`/api/v1/blog?page=${page}&pageSize=${pageSize}`),
   get: (slug: string) => request<BlogPost>(`/api/v1/blog/${encodeURIComponent(slug)}`),
