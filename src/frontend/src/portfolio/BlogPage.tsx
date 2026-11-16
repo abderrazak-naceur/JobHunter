@@ -251,6 +251,8 @@ function ArticleContents({ markdown }: { markdown: string }) {
 export function BlogArticlePage({ slug }: { slug: string }) {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [error, setError] = useState('');
+  const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
+  useEffect(() => { blogApi.settings().then(value => setSettings(value)).catch(() => undefined); }, []);
   useEffect(() => {
     let active = true;
     blogApi.get(slug).then(result => { if (active) setPost(result); })
