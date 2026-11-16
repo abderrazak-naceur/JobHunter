@@ -38,6 +38,7 @@ builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<AdminAccountStore>();
 builder.Services.AddSingleton<IJobPageFetcher, JobPageFetcher>();
 builder.Services.AddHttpClient<IJobBoardClient, JobBoardClient>(client => client.Timeout = TimeSpan.FromSeconds(20));
+builder.Services.AddHttpClient("AiWriter", client => client.Timeout = TimeSpan.FromSeconds(45));
 builder.Services.AddScoped<JobDiscoveryService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
@@ -142,6 +143,7 @@ app.MapGet("/", () => Results.Ok(new { name = "Portfolio API", version = "0.3.0"
 app.MapHealthEndpoints(); // /health (process is up) and /health/ready (database reachable)
 app.MapAuthEndpoints();
 app.MapPortfolioEndpoints(); // GET is public, PUT requires the admin token
+app.MapAiWriterEndpoints(); // admin-only AI-assisted content drafting
 
 // Everything below requires the admin token.
 app.MapCompanyEndpoints();
