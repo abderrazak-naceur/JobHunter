@@ -273,3 +273,12 @@ body { margin: 0; background: var(--color-lav-100); }
 [data-blog-template] [data-blog-region="article"] blockquote { border-color: var(--blog-accent) !important; }
 [data-blog-template] [data-blog-region="header"] a:hover,
 [data-blog-template] [data-blog-region="footer"] a:hover { color: var(--blog-accent) !important; }
+
+[data-blog-template] [data-blog-region="hero"] h1,
+[data-blog-template] [data-blog-region="hero"] h2,
+[data-blog-template] [data-blog-region="hero"] h3 { color: var(--blog-button-text) !important; }
+[data-blog-template] [data-blog-region="header"] a,
+[data-blog-template] [data-blog-region="header"] p,
+[data-blog-template] [data-blog-region="footer"] a,
+[data-blog-template] [data-blog-region="footer"] p,
+[data-blog-template] [data-blog-region="footer"] li { color: var(--blog-button-text) !important; }
