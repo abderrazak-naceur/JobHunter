@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BlogIndexPage } from './BlogPage';
-import { defaultBlogSettings } from '../services/blogApi';
 
 vi.mock('../services/blogApi', async () => {
   const actual = await vi.importActual<typeof import('../services/blogApi')>('../services/blogApi');
