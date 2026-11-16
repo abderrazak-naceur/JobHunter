@@ -194,7 +194,7 @@ function slugifyHeading(value: string) {
 }
 
 function renderInline(value: string): ReactNode[] {
-  const pattern = /(!\\[([^\\]]*)\\]\\((https?:\\/\\/[^)\\s]+)\\))|(\\[([^\\]]+)\\]\\((https?:\\/\\/[^)\\s]+)\\))|(\\*\\*([^*]+)\\*\\*)|(\\*([^*]+)\\*)|(`([^`]+)`)/g;
+  const pattern = /(!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\))|(\[([^\]]+)\]\((https?:\/\/[^)\s]+)\))|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(\`([^\`]+)\`)/g;
   const nodes: ReactNode[] = [];
   let cursor = 0;
   for (const match of value.matchAll(pattern)) {
@@ -235,8 +235,8 @@ function MarkdownBody({ markdown }: { markdown: string }) {
       const level = heading[1].length;
       const id = slugifyHeading(heading[2]);
       const cls = level === 1 ? 'mt-12 text-3xl font-black tracking-tight text-[#101b46] sm:text-4xl' : level === 2 ? 'mt-10 text-2xl font-extrabold tracking-tight text-[#101b46]' : 'mt-8 text-xl font-extrabold text-[#101b46]';
-      blocks.push(level === 1 ? <h2 id={id} key={index} className={cls}>{heading[2]}</h2> : level === 2 ? <h2 id={id} key={index} className={cls}>{renderInline(heading[2])}</h2> : <h3 id={id} key={index} className={cls}>{renderInline(heading[2])}</h3>);
-    } else if (/^>\s?/.test(line)) blocks.push(<blockquote key={index} className="my-7 rounded-r-2xl border-l-4 border-violet-500 bg-violet-50 px-6 py-4 text-lg italic leading-8 text-[#25235d]">{line.replace(/^>\s?/, '')}</blockquote>);
+      blocks.push(level === 1 ? <h2 id={id} key={index} className={cls}>{renderInline(heading[2])}</h2> : level === 2 ? <h2 id={id} key={index} className={cls}>{renderInline(heading[2])}</h2> : <h3 id={id} key={index} className={cls}>{renderInline(heading[2])}</h3>);
+    } else if (/^>\s?/.test(line)) blocks.push(<blockquote key={index} className="my-7 rounded-r-2xl border-l-4 border-violet-500 bg-violet-50 px-6 py-4 text-lg italic leading-8 text-[#25235d]">{renderInline(line.replace(/^>\s?/, ''))}</blockquote>);
     else blocks.push(<p key={index} className="my-5 text-base leading-8 text-slate-700 sm:text-lg">{renderInline(line)}</p>);
   });
   flushList('list-final');
