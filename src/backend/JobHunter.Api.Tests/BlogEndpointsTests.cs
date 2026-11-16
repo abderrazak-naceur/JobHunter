@@ -4,6 +4,8 @@ using JobHunter.Api.Endpoints;
 
 namespace JobHunter.Api.Tests;
 
+public sealed record BlogPageResponse(IReadOnlyList<BlogPostResponse> Items, int Page, int PageSize, int Total);
+
 public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
 {
     private readonly HttpClient _anonymous;
@@ -79,5 +81,4 @@ public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
         Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
     }
 
-    private sealed record BlogPageResponse(IReadOnlyList<BlogPostResponse> Items, int Page, int PageSize, int Total);
 }
