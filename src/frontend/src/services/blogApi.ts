@@ -63,7 +63,7 @@ async function request<T>(path: string, init: RequestInit = {}, admin = false): 
 }
 
 export const blogApi = {
-  settings: () => request<BlogSettings>('/api/v1/blog/settings'),
+  settings: async () => ({ ...defaultBlogSettings, ...await request<BlogSettings>('/api/v1/blog/settings') }),
   saveSettings: (settings: BlogSettings) => request<BlogSettings>('/api/v1/admin/blog/settings', { method: 'PUT', body: JSON.stringify(settings) }, true),
   list: (page = 1, pageSize = 9) => request<BlogPage>(`/api/v1/blog?page=${page}&pageSize=${pageSize}`),
   get: (slug: string) => request<BlogPost>(`/api/v1/blog/${encodeURIComponent(slug)}`),
