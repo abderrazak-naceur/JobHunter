@@ -251,3 +251,25 @@ body { margin: 0; background: var(--color-lav-100); }
 @media (min-width: 761px) and (max-width: 1100px) {
   .blog-post-grid { grid-template-columns: repeat(min(2, var(--blog-grid-columns, 3)), minmax(0, 1fr)); }
 }
+
+
+/* User palette always wins over preset styling, including the darker and editorial templates. */
+[data-blog-template] [data-blog-region="header"] { background: var(--blog-header) !important; color: var(--blog-button-text) !important; border-color: var(--blog-border) !important; }
+[data-blog-template] [data-blog-region="hero"] { background-color: var(--blog-hero) !important; color: var(--blog-button-text) !important; border-color: var(--blog-border) !important; }
+[data-blog-template] [data-blog-region="footer"] { background: var(--blog-footer) !important; color: var(--blog-button-text) !important; border-color: var(--blog-border) !important; }
+[data-blog-template] [data-blog-region="card"] { background: var(--blog-card) !important; border-color: var(--blog-border) !important; }
+[data-blog-template] [data-blog-region="article"] { background: var(--blog-surface) !important; border-color: var(--blog-border) !important; color: var(--blog-text) !important; }
+[data-blog-template] [data-blog-region="article"] h1,
+[data-blog-template] [data-blog-region="article"] h2,
+[data-blog-template] [data-blog-region="article"] h3,
+[data-blog-template] [data-blog-region="card"] h3 { color: var(--blog-text) !important; }
+[data-blog-template] [data-blog-region="article"] p,
+[data-blog-template] [data-blog-region="card"] p { color: var(--blog-muted) !important; }
+[data-blog-template] [data-blog-region="header"] p,
+[data-blog-template] [data-blog-region="footer"] p,
+[data-blog-template] [data-blog-region="footer"] li,
+[data-blog-template] [data-blog-region="hero"] p { color: var(--blog-button-text) !important; opacity: .84; }
+[data-blog-template] [data-blog-region="article"] a { color: var(--blog-primary) !important; }
+[data-blog-template] [data-blog-region="article"] blockquote { border-color: var(--blog-accent) !important; }
+[data-blog-template] [data-blog-region="header"] a:hover,
+[data-blog-template] [data-blog-region="footer"] a:hover { color: var(--blog-accent) !important; }
