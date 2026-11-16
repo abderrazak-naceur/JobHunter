@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { blogApi, defaultBlogSettings, type BlogPost, type BlogPostInput, type BlogStatus, type BlogSettings } from '@/services/blogApi';
 import { generateAiDraft } from '@/services/portfolioApi';
+import BlogVisualBuilder from './BlogVisualBuilder';
 
 const emptyPost: BlogPostInput = {
   title: '', slug: '', excerpt: '', contentMarkdown: '', category: 'Sviluppo software',
@@ -136,7 +137,7 @@ export default function BlogAdmin() {
           </CardContent>
         </Card>
       </> : <Card><CardHeader><CardTitle>Identità e aspetto</CardTitle><CardDescription>Modifica nome, autore, testi, logo, colori e template. Le modifiche vengono salvate nel database.</CardDescription></CardHeader><CardContent>
-        {settingsLoading ? <p role="status">Caricamento impostazioni…</p> : <form onSubmit={saveSettings} className="grid gap-5 md:grid-cols-2">
+        {settingsLoading ? <p role="status">Caricamento impostazioni…</p> : <form onSubmit={saveSettings} className="grid gap-5 md:grid-cols-2">\n          <BlogVisualBuilder settings={settings} onChange={setSettings} />
           <label className={field}>Nome del blog<Input required maxLength={120} value={settings.siteName} onChange={e => setSettings(s => ({ ...s, siteName: e.target.value }))} /></label>
           <label className={field}>Nome autore<Input required maxLength={120} value={settings.authorName} onChange={e => setSettings(s => ({ ...s, authorName: e.target.value }))} /></label>
           <label className={field}>Sottotitolo / ruolo<Input required maxLength={180} value={settings.tagline} onChange={e => setSettings(s => ({ ...s, tagline: e.target.value }))} /></label>
@@ -144,7 +145,7 @@ export default function BlogAdmin() {
           <label className={field}>Titolo principale<Input required maxLength={180} value={settings.heroTitle} onChange={e => setSettings(s => ({ ...s, heroTitle: e.target.value }))} /></label>
           <label className={field}>Descrizione principale<Input required maxLength={600} value={settings.heroDescription} onChange={e => setSettings(s => ({ ...s, heroDescription: e.target.value }))} /></label>
           {colorFields.map(({ key, label }) => <label key={key} className={field}>{label}<div className="flex items-center gap-3"><Input type="color" className="h-10 w-16 shrink-0 p-1" value={settings[key] as string} onChange={e => setSettings(s => ({ ...s, [key]: e.target.value }))} /><Input value={settings[key] as string} maxLength={7} onChange={e => setSettings(s => ({ ...s, [key]: e.target.value }))} aria-label={label + ' codice HEX'} /></div></label>)}
-          <label className={field}>Template grafico<select className={inputClass} value={settings.template} onChange={e => setSettings(s => ({ ...s, template: e.target.value as BlogSettings['template'] }))}><option value="premium-tech">Premium Tech (attuale)</option><option value="editorial-light">Editorial Light</option><option value="developer-dark">Developer Dark</option><option value="personal-journal">Personal Journal</option></select></label>
+          <label className={field}>Template grafico<select className={inputClass} value={settings.template} onChange={e => setSettings(s => ({ ...s, template: e.target.value as BlogSettings['template'] }))}><option value="premium-tech">Premium Tech</option><option value="editorial-light">Editorial Light</option><option value="developer-dark">Developer Dark</option><option value="personal-journal">Personal Journal</option><option value="minimal">Minimal</option><option value="magazine">Digital Magazine</option><option value="terminal">Code / Terminal</option><option value="creative">Creative Studio</option></select></label>
           <div className="md:col-span-2 overflow-hidden rounded-2xl border" style={{ borderColor: settings.borderColor, background: settings.backgroundColor, color: settings.textColor }}>
             <div className="flex items-center gap-3 p-4" style={{ background: settings.headerBackgroundColor, color: settings.buttonTextColor }}><div className="grid size-10 place-items-center rounded-full font-black" style={{ background: `linear-gradient(135deg,${settings.primaryColor},${settings.accentColor})` }}>{settings.siteName.slice(0,2).toUpperCase()}</div><div><p className="font-bold">{settings.siteName || 'Nome del blog'}</p><p className="text-xs opacity-75">{settings.tagline}</p></div></div>
             <div className="p-5" style={{ background: settings.heroBackgroundColor, color: settings.buttonTextColor }}><p className="text-xs font-bold uppercase tracking-widest" style={{ color: settings.accentColor }}>ANTEPRIMA LIVE</p><h3 className="mt-2 text-2xl font-black">{settings.heroTitle}</h3><p className="mt-2 max-w-2xl text-sm opacity-80">{settings.heroDescription}</p></div>
