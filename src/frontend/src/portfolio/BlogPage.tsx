@@ -65,7 +65,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
   useEffect(() => { blogApi.get(slug).then(setPost).catch(e => setError(e instanceof Error ? e.message : 'Articolo non trovato.')); }, [slug]);
   useEffect(() => {
     if (!post) return;
-    document.title = post.seoTitle || post.title + ' — Zak Naceur';
+    document.title = (post.seoTitle || post.title) + ' — Zak Naceur';
     const description = post.seoDescription || post.excerpt;
     let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
