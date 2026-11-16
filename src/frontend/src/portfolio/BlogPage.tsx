@@ -110,7 +110,7 @@ function ArticleCard({ post, settings }: { post: BlogPost; settings: BlogSetting
   return (
     <article data-blog-region="card" className="group overflow-hidden rounded-[1.4rem] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,.07)] transition duration-300 hover:-translate-y-1.5 hover:border-blue-300 hover:shadow-[0_18px_40px_rgba(37,99,235,.16)]">
       <a href={`/blog/${post.slug}`} className={`block ${focusRing}`}>
-        <div className="relative h-44 overflow-hidden">{post.coverImageUrl ? <img src={post.coverImageUrl} alt="" loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <TechVisual label={post.category || 'TECH'} />}</div>
+        {settings.showArticleCover && <div className="relative h-44 overflow-hidden">{post.coverImageUrl ? <img src={post.coverImageUrl} alt="" loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <TechVisual label={post.category || 'TECH'} />}</div>}
         <div className="p-5">
           <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-blue-700">{post.category}</span>
           <h3 className="mt-3 line-clamp-2 text-lg font-extrabold leading-snug tracking-tight text-[#101b46] transition group-hover:text-blue-700">{post.title}</h3>
