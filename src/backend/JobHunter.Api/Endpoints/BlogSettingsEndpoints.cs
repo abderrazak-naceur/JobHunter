@@ -66,21 +66,21 @@ public static partial class BlogSettingsEndpoints
             errors[nameof(request.LogoUrl)] = ["Inserisci un URL HTTP o HTTPS valido."];
         if (errors.Count > 0) return Results.ValidationProblem(errors);
 
-        var clean = request with
-            {
-                SiteName = request.SiteName.Trim(),
-                AuthorName = request.AuthorName.Trim(),
-                Tagline = request.Tagline.Trim(),
-                LogoUrl = request.LogoUrl?.Trim() ?? "",
-                HeroTitle = request.HeroTitle.Trim(),
-                HeroDescription = request.HeroDescription.Trim()
-            };
+    var clean = request with
+        {
+            SiteName = request.SiteName.Trim(),
+            AuthorName = request.AuthorName.Trim(),
+            Tagline = request.Tagline.Trim(),
+            LogoUrl = request.LogoUrl?.Trim() ?? "",
+            HeroTitle = request.HeroTitle.Trim(),
+            HeroDescription = request.HeroDescription.Trim()
+        };
         var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == AssetKind, ct);
         if (asset is null)
-        {
-            asset = new PortfolioAsset { Kind = AssetKind };
-                db.PortfolioAssets.Add(asset);
-            }
+    {
+        asset = new PortfolioAsset { Kind = AssetKind };
+            db.PortfolioAssets.Add(asset);
+        }
             asset.ContentType = "application/json";
             asset.Data = JsonSerializer.SerializeToUtf8Bytes(clean, JsonOptions);
             asset.UpdatedAt = DateTimeOffset.UtcNow;
