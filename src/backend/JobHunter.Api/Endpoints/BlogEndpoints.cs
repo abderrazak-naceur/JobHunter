@@ -62,6 +62,7 @@ public static partial class BlogEndpoints
             var errors = Validate(request);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
             var slug = NormalizeSlug(request.Slug);
+            if (slug.Length == 0) return Results.ValidationProblem(new Dictionary<string, string[]> { ["slug"] = ["Lo slug deve contenere lettere o numeri."] });
             if (await db.BlogPosts.AnyAsync(x => x.Slug == slug, ct))
                 return Results.Conflict(new { title = "Questo slug è già utilizzato." });
             var post = new BlogPost();
@@ -78,6 +79,7 @@ public static partial class BlogEndpoints
             var post = await db.BlogPosts.FirstOrDefaultAsync(x => x.Id == id, ct);
             if (post is null) return Results.NotFound();
             var slug = NormalizeSlug(request.Slug);
+            if (slug.Length == 0) return Results.ValidationProblem(new Dictionary<string, string[]> { ["slug"] = ["Lo slug deve contenere lettere o numeri."] });
             if (await db.BlogPosts.AnyAsync(x => x.Id != id && x.Slug == slug, ct))
                 return Results.Conflict(new { title = "Questo slug è già utilizzato." });
             Apply(post, request, slug);
