@@ -209,3 +209,19 @@ The backend uses an OpenAI-compatible Chat Completions endpoint. Configure these
 For example, use `dotnet user-secrets set "AI:ApiKey" "YOUR_KEY"` from `src/backend/JobHunter.Api`. For Render, add `AI__ApiKey`, `AI__Model` and optionally `AI__Endpoint` to the API service environment. Never put provider keys in Vite variables or commit them. The feature is hidden behind admin authentication and limited to five generations per minute per client. Without a key, the endpoint returns a clear configuration message and the rest of the app continues to work.
 
 The generated text uses the saved public portfolio as context and instructs the model not to invent career facts. Always review factual details before publishing.
+
+
+## Blog CMS
+
+The public blog is available at `/blog` and published articles at `/blog/{slug}`.
+The authenticated admin area includes Blog management with draft, published and archived states,
+Markdown source editing, categories, tags, cover image URLs and SEO metadata.
+
+The API stores articles in PostgreSQL (`BlogPosts`). The committed EF Core migration
+`20261116000000_AddBlogCms` is applied by the normal startup migration process.
+Public endpoints expose published articles only; all create, update, delete and admin-list
+operations require the admin JWT.
+
+AI article drafting reuses the AI Writer provider configuration. Configure `AI__ApiKey`,
+`AI__Model` and optionally `AI__Endpoint` on the backend. AI output remains an editable
+draft and is never published automatically.
