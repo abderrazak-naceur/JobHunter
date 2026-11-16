@@ -143,3 +143,111 @@ body { margin: 0; background: var(--color-lav-100); }
 [data-blog-template] [data-blog-region="article"] { color: var(--blog-text, #172554); }
 [data-blog-template] [data-blog-region="article"] a { color: var(--blog-primary, #2563eb); }
 [data-blog-template] [data-blog-region="article"] blockquote { border-color: var(--blog-accent, #8b5cf6); }
+
+
+/* Full blog visual builder: typography, geometry, templates and layout controls. */
+[data-blog-template] {
+  --blog-radius: 1.5rem;
+  --blog-shadow: 0 12px 32px rgb(15 23 42 / 9%);
+  font-family: var(--blog-font, Inter, ui-sans-serif, system-ui, sans-serif);
+}
+[data-blog-template] h1,
+[data-blog-template] h2,
+[data-blog-template] h3,
+[data-blog-template] h4 { font-family: var(--blog-heading-font, inherit); }
+.blog-content-wrap { max-width: var(--blog-content-width, 112rem) !important; }
+.blog-post-grid { grid-template-columns: repeat(var(--blog-grid-columns, 3), minmax(0, 1fr)); }
+[data-blog-template] [data-blog-region="card"],
+[data-blog-template] [data-blog-region="article"],
+[data-blog-template] aside > section { border-radius: var(--blog-radius); box-shadow: var(--blog-shadow); }
+[data-blog-template][data-radius="none"] { --blog-radius: 0; }
+[data-blog-template][data-radius="small"] { --blog-radius: .5rem; }
+[data-blog-template][data-radius="medium"] { --blog-radius: 1rem; }
+[data-blog-template][data-radius="large"] { --blog-radius: 1.6rem; }
+[data-blog-template][data-radius="pill"] { --blog-radius: 2.5rem; }
+[data-blog-template][data-shadow="none"] { --blog-shadow: none; }
+[data-blog-template][data-shadow="soft"] { --blog-shadow: 0 10px 28px rgb(15 23 42 / 8%); }
+[data-blog-template][data-shadow="strong"] { --blog-shadow: 0 20px 55px rgb(15 23 42 / 20%); }
+[data-blog-template][data-card-style="square"] { --blog-radius: 0; }
+[data-blog-template][data-card-style="flat"] [data-blog-region="card"] { box-shadow: none; border-width: 0; }
+[data-blog-template][data-card-style="bordered"] [data-blog-region="card"] { box-shadow: none; border-width: 2px; }
+[data-blog-template][data-card-style="glass"] [data-blog-region="card"] { background: color-mix(in srgb, var(--blog-card) 82%, transparent) !important; backdrop-filter: blur(18px); }
+[data-blog-template][data-button-style="square"] button,
+[data-blog-template][data-button-style="square"] a[class*="rounded-full"],
+[data-blog-template][data-button-style="square"] a[class*="rounded-xl"] { border-radius: .25rem !important; }
+[data-blog-template][data-button-style="rounded"] button,
+[data-blog-template][data-button-style="rounded"] a[class*="rounded-full"] { border-radius: .75rem !important; }
+[data-blog-template][data-button-style="pill"] button,
+[data-blog-template][data-button-style="pill"] a[class*="rounded-xl"] { border-radius: 999px; }
+[data-blog-template] [data-header-style="solid"] { position: relative; background: var(--blog-header) !important; backdrop-filter: none; }
+[data-blog-template] [data-header-style="minimal"] { box-shadow: none; border-bottom-width: 0; }
+[data-blog-template] [data-header-style="centered"] > div { justify-content: center; flex-wrap: wrap; }
+[data-blog-template] [data-hero-style="centered"] > div { display: block; text-align: center; }
+[data-blog-template] [data-hero-style="centered"] > div > div:first-child { margin-inline: auto; }
+[data-blog-template] [data-hero-style="centered"] h1,
+[data-blog-template] [data-hero-style="centered"] p { margin-inline: auto; }
+[data-blog-template] [data-hero-style="compact"] > div { padding-block: 2rem; }
+[data-blog-template] [data-hero-style="cover"] { background-size: cover; background-position: center; }
+[data-blog-template][data-article-layout="centered"] article { max-width: 58rem; margin-inline: auto; }
+[data-blog-template][data-article-layout="wide"] article { max-width: 100%; }
+[data-blog-template][data-article-layout="magazine"] article { border-radius: 0; box-shadow: none; }
+
+/* Eight complete visual presets. All presets remain compatible with the Admin color controls. */
+[data-blog-template="editorial-light"] { --blog-radius: .6rem; --blog-shadow: 0 5px 20px rgb(30 30 30 / 5%); }
+[data-blog-template="editorial-light"] [data-blog-region="header"],
+[data-blog-template="editorial-light"] [data-blog-region="footer"] { background: #f7f5f0 !important; color: #292721 !important; }
+[data-blog-template="editorial-light"] [data-blog-region="hero"] { background: #e9e5dc !important; color: #292721 !important; }
+[data-blog-template="editorial-light"] [data-blog-region="hero"] h1,
+[data-blog-template="editorial-light"] [data-blog-region="hero"] p { color: #292721 !important; }
+[data-blog-template="editorial-light"] h1,
+[data-blog-template="editorial-light"] h2,
+[data-blog-template="editorial-light"] h3 { font-family: Georgia, serif; }
+[data-blog-template="developer-dark"] { background: #090d18 !important; color: #e5e7eb; }
+[data-blog-template="developer-dark"] [data-blog-region="header"],
+[data-blog-template="developer-dark"] [data-blog-region="hero"],
+[data-blog-template="developer-dark"] [data-blog-region="footer"] { background: #050810 !important; }
+[data-blog-template="developer-dark"] [data-blog-region="card"],
+[data-blog-template="developer-dark"] [data-blog-region="article"],
+[data-blog-template="developer-dark"] aside > section { background: #111827 !important; color: #e5e7eb !important; border-color: #334155 !important; }
+[data-blog-template="developer-dark"] [data-blog-region="card"] h3,
+[data-blog-template="developer-dark"] [data-blog-region="article"] h1,
+[data-blog-template="developer-dark"] [data-blog-region="article"] h2,
+[data-blog-template="developer-dark"] [data-blog-region="article"] h3 { color: #f8fafc !important; }
+[data-blog-template="developer-dark"] [data-blog-region="article"] p,
+[data-blog-template="developer-dark"] [data-blog-region="card"] p { color: #cbd5e1 !important; }
+[data-blog-template="personal-journal"] { background: #f6f0e6 !important; }
+[data-blog-template="personal-journal"] [data-blog-region="header"],
+[data-blog-template="personal-journal"] [data-blog-region="footer"] { background: #3e332b !important; }
+[data-blog-template="personal-journal"] [data-blog-region="hero"] { background: #e8dccb !important; color: #3e332b !important; }
+[data-blog-template="personal-journal"] [data-blog-region="hero"] h1,
+[data-blog-template="personal-journal"] [data-blog-region="hero"] p { color: #3e332b !important; }
+[data-blog-template="personal-journal"] h1,
+[data-blog-template="personal-journal"] h2,
+[data-blog-template="personal-journal"] h3 { font-family: Georgia, serif; }
+[data-blog-template="minimal"] { --blog-radius: .2rem; --blog-shadow: none; }
+[data-blog-template="minimal"] [data-blog-region="header"],
+[data-blog-template="minimal"] [data-blog-region="footer"],
+[data-blog-template="minimal"] [data-blog-region="hero"] { background: var(--blog-background, #fff) !important; color: var(--blog-text) !important; }
+[data-blog-template="minimal"] [data-blog-region="hero"] h1,
+[data-blog-template="minimal"] [data-blog-region="hero"] p { color: var(--blog-text) !important; }
+[data-blog-template="minimal"] [data-blog-region="card"],
+[data-blog-template="minimal"] [data-blog-region="article"] { box-shadow: none !important; border-radius: 0 !important; }
+[data-blog-template="magazine"] [data-blog-region="hero"] h1 { font-size: clamp(3rem, 7vw, 6rem); letter-spacing: -.06em; }
+[data-blog-template="magazine"] [data-blog-region="card"] { border-radius: .2rem; }
+[data-blog-template="terminal"] { font-family: "Courier New", monospace !important; background: #080d0b !important; color: #b8f7c4 !important; }
+[data-blog-template="terminal"] [data-blog-region="header"],
+[data-blog-template="terminal"] [data-blog-region="hero"],
+[data-blog-template="terminal"] [data-blog-region="footer"] { background: #050907 !important; color: #b8f7c4 !important; }
+[data-blog-template="terminal"] [data-blog-region="card"],
+[data-blog-template="terminal"] [data-blog-region="article"] { background: #0d1711 !important; color: #b8f7c4 !important; border-color: #285a37 !important; border-radius: .25rem; }
+[data-blog-template="terminal"] h1,
+[data-blog-template="terminal"] h2,
+[data-blog-template="terminal"] h3 { font-family: "Courier New", monospace !important; color: #b8f7c4 !important; }
+[data-blog-template="creative"] [data-blog-region="hero"] { background: linear-gradient(125deg, var(--blog-hero), var(--blog-primary), var(--blog-accent)) !important; }
+[data-blog-template="creative"] [data-blog-region="card"] { border-radius: 2rem; }
+@media (max-width: 760px) {
+  .blog-post-grid { grid-template-columns: 1fr; }
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  .blog-post-grid { grid-template-columns: repeat(min(2, var(--blog-grid-columns, 3)), minmax(0, 1fr)); }
+}
