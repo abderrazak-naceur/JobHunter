@@ -216,6 +216,8 @@ public static partial class BlogSettingsEndpoints
         return endpoints;
     }
 
-    private static bool IsOneOf(string value, params string[] allowed) => allowed.Contains(value, StringComparer.Ordinal);\n\n    [GeneratedRegex("^#[0-9a-fA-F]{6}$")]
+    private static bool IsOneOf(string value, params string[] allowed) => allowed.Contains(value, StringComparer.Ordinal);
+
+    [GeneratedRegex("^#[0-9a-fA-F]{6}$")]
     private static partial Regex ColorRegex();
 }
