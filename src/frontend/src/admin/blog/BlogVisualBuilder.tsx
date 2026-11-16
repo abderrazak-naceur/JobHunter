@@ -36,7 +36,7 @@ export default function BlogVisualBuilder({ settings, onChange }: Props) {
       <Field title="Sottotitolo brand"><Input value={settings.tagline} maxLength={180} onChange={e => set('tagline', e.target.value)} /></Field>
       <Field title="URL logo"><Input value={settings.logoUrl} placeholder="https://..." onChange={e => set('logoUrl', e.target.value)} /></Field>
       <Field title="Stile intestazione"><select className={selectClass} value={settings.headerStyle} onChange={e => set('headerStyle', e.target.value as BlogSettings['headerStyle'])}><option value="sticky">Sticky / trasparente</option><option value="solid">Compatta / solida</option><option value="centered">Logo centrato</option><option value="minimal">Minimal</option></select></Field>
-      <div className="md:col-span-2"><Field title="Menu personalizzato (JSON: [{\"label\":\"Home\",\"url\":\"/\"}])"><Textarea rows={4} value={settings.navigationJson} onChange={e => set('navigationJson', e.target.value)} className="font-mono text-xs" /></Field></div>
+      <div className="md:col-span-2"><Field title="Menu personalizzato (JSON con label e url)"><Textarea rows={4} value={settings.navigationJson} onChange={e => set('navigationJson', e.target.value)} className="font-mono text-xs" /></Field></div>
     </CardContent></Card>
     <Card><CardHeader><CardTitle>Hero e copertina</CardTitle><CardDescription>Personalizza titolo, testo, immagine e composizione della prima schermata.</CardDescription></CardHeader><CardContent className="grid gap-4 md:grid-cols-2">
       <Field title="Etichetta sopra il titolo"><Input value={settings.heroEyebrow} onChange={e => set('heroEyebrow', e.target.value)} /></Field>
