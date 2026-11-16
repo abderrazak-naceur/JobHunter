@@ -24,6 +24,9 @@ export type BlogSettings = {
   siteName: string; authorName: string; tagline: string; logoUrl: string;
   heroTitle: string; heroDescription: string; primaryColor: string;
   accentColor: string; backgroundColor: string;
+  textColor: string; mutedTextColor: string; surfaceColor: string;
+  headerBackgroundColor: string; heroBackgroundColor: string; cardBackgroundColor: string;
+  footerBackgroundColor: string; borderColor: string; buttonTextColor: string;
   template: 'premium-tech' | 'editorial-light' | 'developer-dark' | 'personal-journal';
 };
 export const defaultBlogSettings: BlogSettings = {
