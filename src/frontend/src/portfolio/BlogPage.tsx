@@ -17,7 +17,7 @@ function formatDate(value?: string | null) {
 }
 
 function readingTime(markdown: string) {
-  return Math.max(1, Math.ceil(markdown.trim().split(/\\s+/).length / 200));
+  return Math.max(1, Math.ceil(markdown.trim().split(/\s+/).length / 200));
 }
 
 function BrandMark() {
@@ -184,12 +184,12 @@ export function BlogIndexPage() {
 }
 
 function slugifyHeading(value: string) {
-  return value.toLocaleLowerCase('it').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return value.toLocaleLowerCase('it').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
 function MarkdownBody({ markdown }: { markdown: string }) {
   const blocks: ReactNode[] = [];
-  const lines = markdown.split(/\\r?\\n/);
+  const lines = markdown.split(/\r?\n/);
   let codeLines: string[] = [];
   let inCode = false;
   let listItems: string[] = [];
@@ -199,29 +199,29 @@ function MarkdownBody({ markdown }: { markdown: string }) {
   lines.forEach((line, index) => {
     if (line.trim().startsWith('```')) {
       flushList('list-' + index);
-      if (inCode) blocks.push(<pre key={'code-' + index} className="my-8 overflow-x-auto rounded-2xl border border-cyan-300/20 bg-[#071329] p-5 text-sm leading-7 text-cyan-50 shadow-[0_14px_35px_rgba(2,8,23,.2)]"><code>{codeLines.join('\\n')}</code></pre>);
+      if (inCode) blocks.push(<pre key={'code-' + index} className="my-8 overflow-x-auto rounded-2xl border border-cyan-300/20 bg-[#071329] p-5 text-sm leading-7 text-cyan-50 shadow-[0_14px_35px_rgba(2,8,23,.2)]"><code>{codeLines.join('\n')}</code></pre>);
       codeLines = []; inCode = !inCode; return;
     }
     if (inCode) { codeLines.push(line); return; }
-    if (/^[-*]\\s+/.test(line)) { listItems.push(line.replace(/^[-*]\\s+/, '')); return; }
+    if (/^[-*]\s+/.test(line)) { listItems.push(line.replace(/^[-*]\s+/, '')); return; }
     flushList('list-' + index);
     if (!line.trim()) return;
-    const heading = line.match(/^(#{1,3})\\s+(.+)$/);
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
     if (heading) {
       const level = heading[1].length;
       const id = slugifyHeading(heading[2]);
       const cls = level === 1 ? 'mt-12 text-3xl font-black tracking-tight text-[#101b46] sm:text-4xl' : level === 2 ? 'mt-10 text-2xl font-extrabold tracking-tight text-[#101b46]' : 'mt-8 text-xl font-extrabold text-[#101b46]';
       blocks.push(level === 1 ? <h2 id={id} key={index} className={cls}>{heading[2]}</h2> : level === 2 ? <h2 id={id} key={index} className={cls}>{heading[2]}</h2> : <h3 id={id} key={index} className={cls}>{heading[2]}</h3>);
-    } else if (/^>\\s?/.test(line)) blocks.push(<blockquote key={index} className="my-7 rounded-r-2xl border-l-4 border-violet-500 bg-violet-50 px-6 py-4 text-lg italic leading-8 text-[#25235d]">{line.replace(/^>\\s?/, '')}</blockquote>);
+    } else if (/^>\s?/.test(line)) blocks.push(<blockquote key={index} className="my-7 rounded-r-2xl border-l-4 border-violet-500 bg-violet-50 px-6 py-4 text-lg italic leading-8 text-[#25235d]">{line.replace(/^>\s?/, '')}</blockquote>);
     else blocks.push(<p key={index} className="my-5 text-base leading-8 text-slate-700 sm:text-lg">{line}</p>);
   });
   flushList('list-final');
-  if (inCode && codeLines.length) blocks.push(<pre key="code-final" className="my-8 overflow-x-auto rounded-2xl border border-cyan-300/20 bg-[#071329] p-5 text-sm leading-7 text-cyan-50"><code>{codeLines.join('\\n')}</code></pre>);
+  if (inCode && codeLines.length) blocks.push(<pre key="code-final" className="my-8 overflow-x-auto rounded-2xl border border-cyan-300/20 bg-[#071329] p-5 text-sm leading-7 text-cyan-50"><code>{codeLines.join('\n')}</code></pre>);
   return <div className="mt-8">{blocks}</div>;
 }
 
 function ArticleContents({ markdown }: { markdown: string }) {
-  const headings = markdown.split(/\\r?\\n/).map(line => line.match(/^##\\s+(.+)$/)).filter((match): match is RegExpMatchArray => Boolean(match)).map(match => match[1]);
+  const headings = markdown.split(/\r?\n/).map(line => line.match(/^##\s+(.+)$/)).filter((match): match is RegExpMatchArray => Boolean(match)).map(match => match[1]);
   if (!headings.length) return null;
   return <nav aria-label="Indice dell'articolo" className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm"><h2 className="font-extrabold text-[#101b46]">In questo articolo</h2><ol className="mt-4 space-y-3">{headings.map(heading => <li key={heading}><a href={`#${slugifyHeading(heading)}`} className="text-sm font-medium text-slate-600 transition hover:text-blue-700">{heading}</a></li>)}</ol></nav>;
 }
