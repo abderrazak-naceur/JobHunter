@@ -60,25 +60,25 @@ public static partial class BlogSettingsEndpoints
             foreach (var (key, value) in new[] { (nameof(request.PrimaryColor), request.PrimaryColor), (nameof(request.AccentColor), request.AccentColor), (nameof(request.BackgroundColor), request.BackgroundColor) })
                 if (!ColorRegex().IsMatch(value ?? "")) errors[key] = ["Inserisci un colore esadecimale nel formato #RRGGBB."];
             if (request.Template is not ("premium-tech" or "editorial-light" or "developer-dark" or "personal-journal"))
-                errors[nameof(request.Template)] = ["Template non valido."];
-            if (!string.IsNullOrWhiteSpace(request.LogoUrl) &&
-                (!Uri.TryCreate(request.LogoUrl, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")))
-                errors[nameof(request.LogoUrl)] = ["Inserisci un URL HTTP o HTTPS valido."];
-            if (errors.Count > 0) return Results.ValidationProblem(errors);
+            errors[nameof(request.Template)] = ["Template non valido."];
+        if (!string.IsNullOrWhiteSpace(request.LogoUrl) &&
+            (!Uri.TryCreate(request.LogoUrl, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")))
+            errors[nameof(request.LogoUrl)] = ["Inserisci un URL HTTP o HTTPS valido."];
+        if (errors.Count > 0) return Results.ValidationProblem(errors);
 
-            var clean = request with
-                {
-                    SiteName = request.SiteName.Trim(),
-                    AuthorName = request.AuthorName.Trim(),
-                    Tagline = request.Tagline.Trim(),
-                    LogoUrl = request.LogoUrl?.Trim() ?? "",
-                    HeroTitle = request.HeroTitle.Trim(),
-                    HeroDescription = request.HeroDescription.Trim()
-                };
-            var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == AssetKind, ct);
-            if (asset is null)
+        var clean = request with
             {
-                asset = new PortfolioAsset { Kind = AssetKind };
+                SiteName = request.SiteName.Trim(),
+                AuthorName = request.AuthorName.Trim(),
+                Tagline = request.Tagline.Trim(),
+                LogoUrl = request.LogoUrl?.Trim() ?? "",
+                HeroTitle = request.HeroTitle.Trim(),
+                HeroDescription = request.HeroDescription.Trim()
+            };
+        var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == AssetKind, ct);
+        if (asset is null)
+        {
+            asset = new PortfolioAsset { Kind = AssetKind };
                 db.PortfolioAssets.Add(asset);
             }
             asset.ContentType = "application/json";
