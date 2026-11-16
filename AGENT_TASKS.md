@@ -137,3 +137,6 @@ The product is split into a public single-page portfolio at `/` (no menu) used t
 ## Definition of done
 
 Build succeeds, relevant tests pass, API contracts are documented, configuration contains no secrets, and changes use feature branches and pull requests.
+
+
+- [x] TASK-052 — Blog CMS foundation: PostgreSQL article persistence, public published-article API, authenticated admin CRUD, draft/published/archived states, SEO fields, categories/tags, public /blog routes and AI-assisted article drafts. Remaining before release: validate the migration and all workflows in CI, render Markdown as formatted content, improve article social metadata and add pagination/image upload.
