@@ -75,7 +75,7 @@ namespace JobHunter.Api.Migrations
 
             modelBuilder.Entity("JobHunter.Api.Domain.BlogPost", b =>
                 {
-                    b.Property<Guid>("Id").HasColumnType("uuid");
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
                     b.Property<string>("Category").IsRequired().HasMaxLength(80).HasColumnType("character varying(80)");
                     b.Property<string>("ContentMarkdown").IsRequired().HasColumnType("text");
                     b.Property<string>("CoverImageUrl").HasMaxLength(1000).HasColumnType("character varying(1000)");
