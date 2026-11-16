@@ -1,3 +1,4 @@
+import './portfolio.css';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, CalendarDays, Tag } from 'lucide-react';
 import { blogApi, type BlogPost } from '../services/blogApi';
