@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { BriefcaseBusiness, ExternalLink, KeyRound, LayoutDashboard, LogOut, Palette, Search, Target, Users, type LucideIcon } from 'lucide-react';
+import { BookOpen, BriefcaseBusiness, ExternalLink, KeyRound, LayoutDashboard, LogOut, Palette, Search, Target, Users, type LucideIcon } from 'lucide-react';
 import { Toaster } from 'sonner';
 import AccountPage from './admin/account/AccountPage';
 import DataExport from './admin/account/DataExport';
 import ApplicationsPage from './admin/applications/ApplicationsPage';
 import Dashboard, { type AdminTab } from './admin/Dashboard';
 import PortfolioAdmin from './admin/portfolio/PortfolioAdmin';
+import BlogAdmin from './admin/blog/BlogAdmin';
 import ContactsPage from './admin/contacts/ContactsPage';
 import CompanyRadar from './CompanyRadar';
 import JobDiscovery from './JobDiscovery';
@@ -16,6 +17,7 @@ const nav: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Panoramica', icon: LayoutDashboard },
   { id: 'applications', label: 'Candidature', icon: BriefcaseBusiness },
   { id: 'portfolio', label: 'Portfolio', icon: Palette },
+  { id: 'blog', label: 'Blog', icon: BookOpen },
   { id: 'contacts', label: 'Contatti', icon: Users },
   { id: 'discovery', label: 'Job Discovery', icon: Search },
   { id: 'companies', label: 'Company Radar', icon: Target },
@@ -71,6 +73,7 @@ export default function App() {
           {tab === 'overview' && <Dashboard onNavigate={setTab} />}
           {tab === 'applications' && <ApplicationsPage />}
           {tab === 'portfolio' && <PortfolioAdmin />}
+          {tab === 'blog' && <BlogAdmin />}
           {tab === 'contacts' && <ContactsPage />}
           {tab === 'discovery' && <JobDiscovery />}
           {tab === 'companies' && <CompanyRadar />}
