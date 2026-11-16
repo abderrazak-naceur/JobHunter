@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace JobHunter.Api.Migrations;
 
-[DbContext(typeof(JobHunterDbContext))]
-[Migration("20261116000000_AddBlogCms")]
 public sealed partial class AddBlogCms : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
