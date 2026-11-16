@@ -5,9 +5,8 @@ type LoadingScreenProps = {
 };
 
 /**
- * Branded loading screen shared by the public portfolio and admin area.
- * The ZAK mark is rendered as inline SVG, so it is available immediately
- * without waiting for the portfolio API or a remote image.
+ * Branded, lightweight loading screen shared by the public portfolio and admin area.
+ * The mark is inline SVG, so the first paint never depends on an API or remote image.
  */
 export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenProps) {
   const isAdmin = variant === 'admin';
@@ -26,14 +25,16 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
         .jh-loading {
           display: grid;
           min-height: 100svh;
+          min-height: 100dvh;
           place-items: center;
           padding: 28px 20px;
           overflow: hidden;
           color: #142033;
           background:
-            radial-gradient(ellipse at 50% 43%, rgba(235, 241, 249, .52), transparent 43%),
-            #ffffff;
+            radial-gradient(ellipse at 50% 43%, rgba(219, 234, 254, .42), transparent 43%),
+            #fff;
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          animation: jh-loading-appear .45s ease-out both;
         }
         .jh-loader {
           display: flex;
@@ -41,40 +42,42 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
           flex-direction: column;
           align-items: center;
           text-align: center;
+          animation: jh-loader-rise .65s cubic-bezier(.2,.75,.25,1) both;
         }
         .jh-loader__symbol {
           display: block;
-          width: 196px;
-          height: 196px;
-          margin: 0 0 27px;
+          width: 184px;
+          height: 184px;
+          margin: 0 0 24px;
           overflow: visible;
+          filter: drop-shadow(0 12px 24px rgba(37, 99, 235, .08));
         }
         .jh-loader__track {
           fill: none;
-          stroke: #e7edf3;
-          stroke-width: 8;
+          stroke: #e8eef7;
+          stroke-width: 7;
         }
         .jh-loader__orbit {
           transform-origin: 100px 100px;
-          animation: jh-loader-spin 1.65s linear infinite;
+          animation: jh-loader-spin 1.8s cubic-bezier(.5,.05,.5,.95) infinite;
           will-change: transform;
         }
         .jh-loader__orbit-arc {
           fill: none;
           stroke: url(#jh-loader-blue);
-          stroke-width: 8;
+          stroke-width: 7;
           stroke-linecap: round;
-          stroke-dasharray: 145 540;
+          stroke-dasharray: 150 540;
         }
         .jh-loader__orbit-dot {
-          fill: #ffffff;
-          stroke: #dbeafe;
+          fill: #fff;
+          stroke: #bfdbfe;
           stroke-width: 1.5;
         }
         .jh-loader__swoosh {
           fill: none;
           stroke: url(#jh-loader-swoosh);
-          stroke-width: 5.5;
+          stroke-width: 5;
           stroke-linecap: round;
         }
         .jh-loader__wordmark {
@@ -84,63 +87,73 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
           font-weight: 850;
           letter-spacing: -3.2px;
         }
+        .jh-loader__brand {
+          margin: 0 0 13px;
+          color: #8a96a8;
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: .24em;
+        }
         .jh-loader__title {
           margin: 0;
           color: #142033;
-          font-size: clamp(21px, 2.8vw, 28px);
+          font-size: clamp(21px, 2.8vw, 27px);
           font-weight: 700;
-          letter-spacing: -.035em;
+          letter-spacing: -.04em;
           line-height: 1.25;
         }
         .jh-loader__subtitle {
-          margin: 10px 0 0;
+          margin: 9px 0 0;
           color: #7d8999;
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 450;
           line-height: 1.55;
         }
-        .jh-loader__dots {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 13px;
-          margin-top: 27px;
+        .jh-loader__progress {
+          width: 116px;
+          height: 3px;
+          margin-top: 28px;
+          overflow: hidden;
+          border-radius: 999px;
+          background: #eaf0f8;
         }
-        .jh-loader__dots span {
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background: #d5dde7;
-          animation: jh-loader-pulse 1.1s ease-in-out infinite;
+        .jh-loader__progress span {
+          display: block;
+          width: 42%;
+          height: 100%;
+          border-radius: inherit;
+          background: linear-gradient(90deg, #8cbcff, #1677f8);
+          animation: jh-loader-progress 1.55s ease-in-out infinite;
         }
-        .jh-loader__dots span:nth-child(2) {
-          background: #1677f8;
-          animation-delay: .16s;
+        @keyframes jh-loading-appear {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
-        .jh-loader__dots span:nth-child(3) {
-          animation-delay: .32s;
+        @keyframes jh-loader-rise {
+          from { opacity: 0; transform: translateY(10px) scale(.985); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes jh-loader-spin {
           to { transform: rotate(360deg); }
         }
-        @keyframes jh-loader-pulse {
-          0%, 60%, 100% { opacity: .48; transform: scale(.82); }
-          30% { opacity: 1; transform: scale(1.08); }
+        @keyframes jh-loader-progress {
+          0% { transform: translateX(-115%); }
+          55% { transform: translateX(135%); }
+          100% { transform: translateX(280%); }
         }
         @media (max-width: 480px) {
           .jh-loader__symbol {
-            width: 168px;
-            height: 168px;
-            margin-bottom: 24px;
+            width: 164px;
+            height: 164px;
+            margin-bottom: 21px;
           }
           .jh-loader__subtitle {
             max-width: 290px;
-            font-size: 14px;
+            font-size: 13px;
           }
         }
         @media (prefers-reduced-motion: reduce) {
-          .jh-loader__orbit,
-          .jh-loader__dots span {
+          .jh-loading, .jh-loader, .jh-loader__orbit, .jh-loader__progress span {
             animation: none;
           }
         }
@@ -182,13 +195,12 @@ export default function LoadingScreen({ variant = 'portfolio' }: LoadingScreenPr
           </text>
         </svg>
 
+        <p className="jh-loader__brand">ZAK NACEUR · PORTFOLIO</p>
         <p className="jh-loader__title">Preparazione in corso…</p>
         <p className="jh-loader__subtitle">
           {isAdmin ? 'Sto preparando la tua area riservata' : 'Sto caricando il tuo portfolio'}
         </p>
-        <div className="jh-loader__dots" data-testid="loading-dots">
-          <span />
-          <span />
+        <div className="jh-loader__progress" data-testid="loading-dots">
           <span />
         </div>
       </div>
