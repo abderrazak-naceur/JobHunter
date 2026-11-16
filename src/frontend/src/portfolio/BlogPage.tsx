@@ -22,7 +22,7 @@ function readingTime(markdown: string) {
 
 function BrandMark({ settings }: { settings: BlogSettings }) {
   if (settings.logoUrl) return <img src={settings.logoUrl} alt="" className="h-11 w-11 shrink-0 rounded-full border border-white/30 object-cover" />;
-  const initials = settings.siteName.split(/\\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'BLOG';
+  const initials = settings.siteName.split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'BLOG';
   return <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/40 text-xs font-black tracking-tight text-white shadow-lg" style={{ background: `linear-gradient(135deg,${settings.primaryColor},${settings.accentColor})` }}>{initials}</span>;
 }
 
