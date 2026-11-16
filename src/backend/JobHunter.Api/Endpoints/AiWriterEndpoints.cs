@@ -39,7 +39,7 @@ public static class AiWriterEndpoints
                     statusCode: StatusCodes.Status503ServiceUnavailable);
 
             var errors = new Dictionary<string, string[]>();
-            if (request.Channel is not ("linkedin" or "portfolio" or "bio"))
+            if (request.Channel is not ("linkedin" or "portfolio" or "bio" or "blog"))
                 errors["channel"] = ["Scegli un canale valido."];
             if (request.Tone is not ("professional" or "confident" or "friendly" or "technical"))
                 errors["tone"] = ["Scegli un tono valido."];
@@ -61,6 +61,7 @@ public static class AiWriterEndpoints
             {
                 "linkedin" => "un post LinkedIn",
                 "portfolio" => "un testo per il portfolio professionale",
+                "blog" => "un articolo per il blog professionale, con titolo, sottotitoli e paragrafi in Markdown",
                 _ => "una breve bio professionale"
             };
             var profileJson = request.Portfolio is null
