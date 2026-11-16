@@ -186,6 +186,13 @@ public static partial class BlogSettingsEndpoints
                 errors[nameof(request.LogoUrl)] = ["Inserisci un URL HTTP o HTTPS valido."];
             }
 
+            if (!string.IsNullOrWhiteSpace(request.HeroImageUrl) &&
+                (!Uri.TryCreate(request.HeroImageUrl, UriKind.Absolute, out var heroUri) ||
+                 heroUri.Scheme is not ("https" or "http")))
+            {
+                errors[nameof(request.HeroImageUrl)] = ["Inserisci un URL HTTP o HTTPS valido."];
+            }
+
             if (errors.Count > 0) return Results.ValidationProblem(errors);
 
             var clean = request with
