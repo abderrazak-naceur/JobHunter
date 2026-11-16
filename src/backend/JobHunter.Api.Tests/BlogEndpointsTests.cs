@@ -4,8 +4,6 @@ using JobHunter.Api.Endpoints;
 
 namespace JobHunter.Api.Tests;
 
-public sealed record BlogPageResponse(IReadOnlyList<BlogPostResponse> Items, int Page, int PageSize, int Total);
-
 public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
 {
     private readonly HttpClient _anonymous;
@@ -33,10 +31,11 @@ public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
     {
         var create = await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid());
         Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        var created = await create.Content.ReadFromJsonAsync<BlogPostResponse>();
+        Assert.NotNull(created);
 
-        var list = await _anonymous.GetFromJsonAsync<BlogPageResponse>("/api/v1/blog");
-        Assert.NotNull(list);
-        Assert.Empty(list.Items);
+        var response = await _anonymous.GetAsync($"/api/v1/blog/{created.Slug}");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
