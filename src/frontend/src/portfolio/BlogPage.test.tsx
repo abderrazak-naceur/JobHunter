@@ -1,10 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BlogIndexPage } from './BlogPage';
+import { defaultBlogSettings } from '../services/blogApi';
 
-vi.mock('../services/blogApi', () => ({
-  blogApi: { list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 9, total: 0 }) }
-}));
+vi.mock('../services/blogApi', async () => {
+  const actual = await vi.importActual<typeof import('../services/blogApi')>('../services/blogApi');
+  return {
+    ...actual,
+    blogApi: {
+      ...actual.blogApi,
+      list: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 9, total: 0 }),
+      settings: vi.fn().mockResolvedValue(actual.defaultBlogSettings)
+    }
+  };
+});
 
 describe('BlogIndexPage', () => {
   it('renders the Premium Tech blog shell and empty state', async () => {
