@@ -152,6 +152,7 @@ app.MapGet("/", () => Results.Ok(new { name = "Portfolio API", version = "0.3.0"
 app.MapHealthEndpoints(); // /health (process is up) and /health/ready (database reachable)
 app.MapAuthEndpoints();
 app.MapPortfolioEndpoints(); // GET is public, PUT requires the admin token
+app.MapBlogEndpoints(); // public published articles and protected admin CRUD
 app.MapAiWriterEndpoints(); // admin-only AI-assisted content drafting
 
 // Everything below requires the admin token.
