@@ -193,6 +193,24 @@ function slugifyHeading(value: string) {
   return value.toLocaleLowerCase('it').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+function renderInline(value: string): ReactNode[] {
+  const pattern = /(!\\[([^\\]]*)\\]\\((https?:\\/\\/[^)\\s]+)\\))|(\\[([^\\]]+)\\]\\((https?:\\/\\/[^)\\s]+)\\))|(\\*\\*([^*]+)\\*\\*)|(\\*([^*]+)\\*)|(`([^`]+)`)/g;
+  const nodes: ReactNode[] = [];
+  let cursor = 0;
+  for (const match of value.matchAll(pattern)) {
+    const index = match.index ?? 0;
+    if (index > cursor) nodes.push(value.slice(cursor, index));
+    if (match[1]) nodes.push(<img key={index} src={match[3]} alt={match[2]} loading="lazy" className="my-6 max-h-[34rem] w-full rounded-2xl object-contain" />);
+    else if (match[4]) nodes.push(<a key={index} href={match[6]} target="_blank" rel="noreferrer" className="font-semibold text-blue-700 underline underline-offset-4">{match[5]}</a>);
+    else if (match[7]) nodes.push(<strong key={index}>{match[8]}</strong>);
+    else if (match[9]) nodes.push(<em key={index}>{match[10]}</em>);
+    else if (match[11]) nodes.push(<code key={index} className="rounded bg-slate-100 px-1.5 py-0.5 text-[.9em] text-violet-800">{match[12]}</code>);
+    cursor = index + match[0].length;
+  }
+  if (cursor < value.length) nodes.push(value.slice(cursor));
+  return nodes;
+}
+
 function MarkdownBody({ markdown }: { markdown: string }) {
   const blocks: ReactNode[] = [];
   const lines = markdown.split(/\r?\n/);
@@ -200,7 +218,7 @@ function MarkdownBody({ markdown }: { markdown: string }) {
   let inCode = false;
   let listItems: string[] = [];
   const flushList = (key: string) => {
-    if (listItems.length) { blocks.push(<ul key={key} className="my-5 list-disc space-y-2 pl-6 text-base leading-8 text-slate-700">{listItems.map((item, index) => <li key={index}>{item}</li>)}</ul>); listItems = []; }
+    if (listItems.length) { blocks.push(<ul key={key} className="my-5 list-disc space-y-2 pl-6 text-base leading-8 text-slate-700">{listItems.map((item, index) => <li key={index}>{renderInline(item)}</li>)}</ul>); listItems = []; }
   };
   lines.forEach((line, index) => {
     if (line.trim().startsWith('```')) {
@@ -217,9 +235,9 @@ function MarkdownBody({ markdown }: { markdown: string }) {
       const level = heading[1].length;
       const id = slugifyHeading(heading[2]);
       const cls = level === 1 ? 'mt-12 text-3xl font-black tracking-tight text-[#101b46] sm:text-4xl' : level === 2 ? 'mt-10 text-2xl font-extrabold tracking-tight text-[#101b46]' : 'mt-8 text-xl font-extrabold text-[#101b46]';
-      blocks.push(level === 1 ? <h2 id={id} key={index} className={cls}>{heading[2]}</h2> : level === 2 ? <h2 id={id} key={index} className={cls}>{heading[2]}</h2> : <h3 id={id} key={index} className={cls}>{heading[2]}</h3>);
+      blocks.push(level === 1 ? <h2 id={id} key={index} className={cls}>{heading[2]}</h2> : level === 2 ? <h2 id={id} key={index} className={cls}>{renderInline(heading[2])}</h2> : <h3 id={id} key={index} className={cls}>{renderInline(heading[2])}</h3>);
     } else if (/^>\s?/.test(line)) blocks.push(<blockquote key={index} className="my-7 rounded-r-2xl border-l-4 border-violet-500 bg-violet-50 px-6 py-4 text-lg italic leading-8 text-[#25235d]">{line.replace(/^>\s?/, '')}</blockquote>);
-    else blocks.push(<p key={index} className="my-5 text-base leading-8 text-slate-700 sm:text-lg">{line}</p>);
+    else blocks.push(<p key={index} className="my-5 text-base leading-8 text-slate-700 sm:text-lg">{renderInline(line)}</p>);
   });
   flushList('list-final');
   if (inCode && codeLines.length) blocks.push(<pre key="code-final" className="my-8 overflow-x-auto rounded-2xl border border-cyan-300/20 bg-[#071329] p-5 text-sm leading-7 text-cyan-50"><code>{codeLines.join('\n')}</code></pre>);
