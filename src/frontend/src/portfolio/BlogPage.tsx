@@ -155,7 +155,7 @@ export function BlogIndexPage() {
     return matchesCategory && matchesSearch;
   }), [posts, search, selectedCategory]);
   const featured = filteredPosts[0];
-  const otherPosts = filteredPosts.slice(1);
+  const otherPosts = settings.showFeaturedArticle ? filteredPosts.slice(1) : filteredPosts;
 
   return (
     <div data-blog-template={settings.template} data-card-style={settings.cardStyle} data-button-style={settings.buttonStyle} data-radius={settings.borderRadius} data-shadow={settings.shadowStyle} data-article-layout={settings.articleLayout} className="min-h-screen font-sans text-slate-800 antialiased selection:text-white" style={{ backgroundColor: settings.backgroundColor, fontFamily: settings.fontFamily === 'system' ? 'system-ui' : settings.fontFamily, fontSize: settings.baseFontSize, "--blog-heading-font": settings.headingFontFamily === 'inherit' ? 'inherit' : settings.headingFontFamily, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor, "--blog-content-width": settings.contentWidth === 'narrow' ? '58rem' : settings.contentWidth === 'standard' ? '72rem' : settings.contentWidth === 'full' ? '100%' : '112rem', "--blog-grid-columns": settings.gridColumns } as React.CSSProperties}>
