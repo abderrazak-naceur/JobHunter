@@ -23,10 +23,16 @@ public static partial class BlogSettingsEndpoints
     private const string AssetKind = "blog-settings";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private static readonly BlogSettingsDto Defaults = new(
-        "ZAK NACEUR", "Zak Naceur", "Developer · Tech Blog",
-        "", "Appunti dal mondo tech.",
+        "ZAK NACEUR",
+        "Zak Naceur",
+        "Developer · Tech Blog",
+        "",
+        "Appunti dal mondo tech.",
         "Approfondimenti su .NET, architetture software, AI, DevOps e sviluppo di prodotti digitali, con esempi pratici ed esperienze reali.",
-        "#2563eb", "#8b5cf6", "#eef1ff", "premium-tech");
+        "#2563eb",
+        "#8b5cf6",
+        "#eef1ff",
+        "premium-tech");
 
     public static IEndpointRouteBuilder MapBlogSettingsEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -61,14 +67,14 @@ public static partial class BlogSettingsEndpoints
             if (errors.Count > 0) return Results.ValidationProblem(errors);
 
             var clean = request with
-            {
-                SiteName = request.SiteName.Trim(),
-                AuthorName = request.AuthorName.Trim(),
-                Tagline = request.Tagline.Trim(),
-                LogoUrl = request.LogoUrl?.Trim() ?? "",
-                HeroTitle = request.HeroTitle.Trim(),
-                HeroDescription = request.HeroDescription.Trim()
-            };
+                {
+                    SiteName = request.SiteName.Trim(),
+                    AuthorName = request.AuthorName.Trim(),
+                    Tagline = request.Tagline.Trim(),
+                    LogoUrl = request.LogoUrl?.Trim() ?? "",
+                    HeroTitle = request.HeroTitle.Trim(),
+                    HeroDescription = request.HeroDescription.Trim()
+                };
             var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == AssetKind, ct);
             if (asset is null)
             {
