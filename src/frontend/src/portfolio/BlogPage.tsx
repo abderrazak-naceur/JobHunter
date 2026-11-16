@@ -40,3 +40,10 @@ export function BlogArticlePage({ slug }: { slug: string }) {
     <div className="mt-16 border-t border-slate-200 pt-8"><a href="/blog" className="inline-flex items-center gap-2 font-semibold text-blue-600"><ArrowLeft size={16}/> Torna agli articoli</a></div>
   </main></div>;
 }
+
+/** Route entry for the lazy-loaded public blog bundle. */
+export default function BlogRoute() {
+  const path = window.location.pathname;
+  if (path === '/blog' || path === '/blog/') return <BlogIndexPage />;
+  return <BlogArticlePage slug={decodeURIComponent(path.slice('/blog/'.length))} />;
+}
