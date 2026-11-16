@@ -12,6 +12,8 @@ function parseLinks(value: string): BlogLink[] { try { const parsed = JSON.parse
 const focusRing = 'focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-cyan-300';
 const categoriesFallback = ['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps', 'Tutorial'];
 
+function safeCss(value: string) { return value.replace(/<\\/style/gi, '<\\\\/style'); }
+
 function formatDate(value?: string | null) {
   if (!value) return '';
   const date = new Date(value);
@@ -100,11 +102,11 @@ function BlogHero({ search, onSearch, categories, selected, onSelect, settings }
   );
 }
 
-function PostMeta({ post, minutes }: { post: BlogPost; minutes?: number }) {
-  return <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400"><span className="inline-flex items-center gap-1.5"><CalendarDays size={14} />{formatDate(post.publishedAt)}</span><span className="inline-flex items-center gap-1.5"><Clock3 size={14} />{minutes ?? 5} min di lettura</span></div>;
+function PostMeta({ post, minutes, showReadingTime = true }: { post: BlogPost; minutes?: number; showReadingTime?: boolean }) {
+  return <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400"><span className="inline-flex items-center gap-1.5"><CalendarDays size={14} />{formatDate(post.publishedAt)}</span>{showReadingTime && <span className="inline-flex items-center gap-1.5"><Clock3 size={14} />{minutes ?? 5} min di lettura</span>}</div>;
 }
 
-function ArticleCard({ post }: { post: BlogPost }) {
+function ArticleCard({ post, settings }: { post: BlogPost; settings: BlogSettings }) {
   return (
     <article data-blog-region="card" className="group overflow-hidden rounded-[1.4rem] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,.07)] transition duration-300 hover:-translate-y-1.5 hover:border-blue-300 hover:shadow-[0_18px_40px_rgba(37,99,235,.16)]">
       <a href={`/blog/${post.slug}`} className={`block ${focusRing}`}>
@@ -114,7 +116,7 @@ function ArticleCard({ post }: { post: BlogPost }) {
           <h3 className="mt-3 line-clamp-2 text-lg font-extrabold leading-snug tracking-tight text-[#101b46] transition group-hover:text-blue-700">{post.title}</h3>
           <p className="mt-2 line-clamp-3 min-h-[4.5rem] text-sm leading-6 text-slate-600">{post.excerpt}</p>
           <div className="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
-            <PostMeta post={post} />
+            <PostMeta post={post} showReadingTime={settings.showReadingTime} />
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-violet-200 bg-violet-50 text-violet-700 transition group-hover:border-violet-500 group-hover:bg-gradient-to-br group-hover:from-blue-600 group-hover:to-violet-600 group-hover:text-white"><ArrowRight size={17} /></span>
           </div>
         </div>
@@ -157,6 +159,7 @@ export function BlogIndexPage() {
 
   return (
     <div data-blog-template={settings.template} data-card-style={settings.cardStyle} data-button-style={settings.buttonStyle} data-radius={settings.borderRadius} data-shadow={settings.shadowStyle} data-article-layout={settings.articleLayout} className="min-h-screen font-sans text-slate-800 antialiased selection:text-white" style={{ backgroundColor: settings.backgroundColor, fontFamily: settings.fontFamily === 'system' ? 'system-ui' : settings.fontFamily, fontSize: settings.baseFontSize, "--blog-heading-font": settings.headingFontFamily === 'inherit' ? 'inherit' : settings.headingFontFamily, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor, "--blog-content-width": settings.contentWidth === 'narrow' ? '58rem' : settings.contentWidth === 'standard' ? '72rem' : settings.contentWidth === 'full' ? '100%' : '112rem', "--blog-grid-columns": settings.gridColumns } as React.CSSProperties}>
+      <style>{safeCss(settings.customCss)}</style>
       {settings.showHeader && <BlogHeader settings={settings} />}
       {settings.showHero && <BlogHero settings={settings} search={search} onSearch={setSearch} categories={categories.length ? categories : categoriesFallback} selected={selectedCategory} onSelect={setSelectedCategory} />}
       <main className={`${wrap} py-8 sm:py-12`}>
@@ -168,10 +171,10 @@ export function BlogIndexPage() {
             <div>
               {settings.showFeaturedArticle && <a href={`/blog/${featured.slug}`} className={`group grid overflow-hidden rounded-[1.8rem] border border-violet-200 bg-white shadow-[0_14px_38px_rgba(30,41,91,.12)] transition hover:-translate-y-1 hover:shadow-[0_22px_50px_rgba(79,70,229,.18)] md:grid-cols-[.95fr_1.05fr] ${focusRing}`}>
                 <div className="relative min-h-64 overflow-hidden bg-[#071633]">{featured.coverImageUrl ? <img src={featured.coverImageUrl} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <div className="absolute inset-0"><TechVisual label=".NET 10" /></div>}<span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-violet-200/70 bg-white/95 px-4 py-2 text-xs font-extrabold text-violet-700 shadow-lg"><Sparkles size={14} /> In evidenza</span></div>
-                <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10"><span className="w-fit rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-blue-700">{featured.category}</span><h2 className="mt-4 text-2xl font-black leading-tight tracking-tight text-[#101b46] sm:text-3xl">{featured.title}</h2><p className="mt-4 line-clamp-3 text-sm leading-7 text-slate-600 sm:text-base">{featured.excerpt}</p><div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-5"><PostMeta post={featured} minutes={readingTime(featured.contentMarkdown || '')} /><span className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(79,70,229,.25)]">Leggi <ArrowRight size={16} /></span></div></div>
+                <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10"><span className="w-fit rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-blue-700">{featured.category}</span><h2 className="mt-4 text-2xl font-black leading-tight tracking-tight text-[#101b46] sm:text-3xl">{featured.title}</h2><p className="mt-4 line-clamp-3 text-sm leading-7 text-slate-600 sm:text-base">{featured.excerpt}</p><div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-5"><PostMeta post={featured} minutes={readingTime(featured.contentMarkdown || '')} showReadingTime={settings.showReadingTime} /><span className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(79,70,229,.25)]">Leggi <ArrowRight size={16} /></span></div></div>
               </a>}
               <div className="mb-5 mt-10 flex items-end justify-between gap-3"><div><p className="text-xs font-extrabold uppercase tracking-[.2em] text-violet-700">Dal blog</p><h2 className="mt-2 text-2xl font-black tracking-tight text-[#101b46] sm:text-3xl">Ultimi articoli</h2></div><span className="rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-bold text-blue-800">{filteredPosts.length} {filteredPosts.length === 1 ? 'articolo' : 'articoli'}</span></div>
-              {otherPosts.length > 0 && <div className="blog-post-grid grid gap-5">{otherPosts.map(post => <ArticleCard key={post.id} post={post} />)}</div>}
+              {otherPosts.length > 0 && <div className="blog-post-grid grid gap-5">{otherPosts.map(post => <ArticleCard key={post.id} post={post} settings={settings} />)}</div>}
             </div>
             {settings.showSidebar && <aside className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
               {settings.showAuthorCard && <section className="rounded-[1.6rem] border border-violet-200 bg-white p-6 shadow-[0_10px_30px_rgba(30,41,91,.09)]"><div className="flex items-center gap-4"><div className="grid h-16 w-16 place-items-center rounded-full border-2 border-cyan-300 bg-gradient-to-br from-[#071633] to-violet-900 text-lg font-black text-white shadow-[0_0_20px_rgba(34,211,238,.3)]">ZAK</div><div><h2 className="font-extrabold text-[#101b46]">Zak Naceur</h2><p className="mt-1 text-xs font-semibold text-blue-700">Software Developer</p><p className="text-xs text-slate-500">.NET · AI · Architecture</p></div></div><p className="mt-5 text-sm leading-6 text-slate-600">Condivido idee, esperienze e soluzioni dal mondo dello sviluppo software e dei prodotti digitali.</p><a href="/#chi-sono" className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-blue-700 hover:text-violet-700">Scopri il mio profilo <ArrowRight size={15} /></a></section>}
@@ -273,6 +276,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
 
   return (
     <div data-blog-template={settings.template} data-card-style={settings.cardStyle} data-button-style={settings.buttonStyle} data-radius={settings.borderRadius} data-shadow={settings.shadowStyle} data-article-layout={settings.articleLayout} className="min-h-screen font-sans text-slate-800 antialiased" style={{ backgroundColor: settings.backgroundColor, fontFamily: settings.fontFamily === 'system' ? 'system-ui' : settings.fontFamily, fontSize: settings.baseFontSize, "--blog-heading-font": settings.headingFontFamily === 'inherit' ? 'inherit' : settings.headingFontFamily, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor, "--blog-content-width": settings.contentWidth === 'narrow' ? '58rem' : settings.contentWidth === 'standard' ? '72rem' : settings.contentWidth === 'full' ? '100%' : '112rem' } as React.CSSProperties}>
+      <style>{safeCss(settings.customCss)}</style>
       {settings.showHeader && <BlogHeader settings={settings} />}
       <main>
         {error ? <section className={`${wrap} py-20`}><div className="rounded-3xl border border-red-200 bg-white p-10 text-center"><h1 className="text-3xl font-black text-[#101b46]">Articolo non disponibile</h1><a className="mt-6 inline-flex items-center gap-2 font-bold text-blue-700" href="/blog"><ArrowLeft size={17} /> Torna al blog</a></div></section>
@@ -280,7 +284,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
         : <>
           <div className="border-b border-cyan-300/15 bg-[#050d22] text-white"><div className={`${wrap} py-4 text-xs text-slate-400`}><a href="/blog" className="hover:text-cyan-300">Blog</a><span className="mx-2">/</span><span>{post.category}</span><span className="mx-2">/</span><span className="text-slate-200">{post.title}</span></div></div>
           {settings.showArticleCover && <section className="bg-[#050d22] pb-10 text-white"><div className={wrap}><div className="overflow-hidden rounded-[1.8rem] border border-cyan-300/30 shadow-[0_0_45px_rgba(37,99,235,.2)]">{post.coverImageUrl ? <img src={post.coverImageUrl} alt="" className="max-h-[24rem] w-full object-cover" /> : <TechVisual label={post.category || 'TECH'} />}</div></div></section>}
-          <div className={`${wrap} grid items-start gap-7 pb-16 lg:grid-cols-[minmax(0,1fr)_20rem]`}>
+          <div className={`${wrap} grid items-start gap-7 pb-16 ${settings.showSidebar ? "lg:grid-cols-[minmax(0,1fr)_20rem]" : ""}`}>
             <article data-blog-region="article" className="-mt-14 relative z-10 rounded-[1.8rem] border border-violet-200 bg-white p-6 shadow-[0_18px_50px_rgba(30,41,91,.14)] sm:p-9 lg:p-12">
               <a href="/blog" className={`mb-7 inline-flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-violet-700 ${focusRing}`}><ArrowLeft size={16} /> Tutti gli articoli</a>
               <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-blue-700">{post.category}</span>
