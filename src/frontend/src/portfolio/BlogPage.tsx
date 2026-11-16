@@ -137,8 +137,6 @@ export function BlogIndexPage() {
   useEffect(() => { blogApi.settings().then(value => setSettings(value)).catch(() => undefined); }, []);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tutti');
-  const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
-  useEffect(() => { blogApi.settings().then(setSettings).catch(() => undefined); }, []);
 
   useEffect(() => {
     let active = true;
