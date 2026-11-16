@@ -176,11 +176,11 @@ export function BlogIndexPage() {
             {settings.showSidebar && <aside className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
               {settings.showAuthorCard && <section className="rounded-[1.6rem] border border-violet-200 bg-white p-6 shadow-[0_10px_30px_rgba(30,41,91,.09)]"><div className="flex items-center gap-4"><div className="grid h-16 w-16 place-items-center rounded-full border-2 border-cyan-300 bg-gradient-to-br from-[#071633] to-violet-900 text-lg font-black text-white shadow-[0_0_20px_rgba(34,211,238,.3)]">ZAK</div><div><h2 className="font-extrabold text-[#101b46]">Zak Naceur</h2><p className="mt-1 text-xs font-semibold text-blue-700">Software Developer</p><p className="text-xs text-slate-500">.NET · AI · Architecture</p></div></div><p className="mt-5 text-sm leading-6 text-slate-600">Condivido idee, esperienze e soluzioni dal mondo dello sviluppo software e dei prodotti digitali.</p><a href="/#chi-sono" className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-blue-700 hover:text-violet-700">Scopri il mio profilo <ArrowRight size={15} /></a></section>}
               <section className="overflow-hidden rounded-[1.6rem] border border-violet-500/30 bg-gradient-to-br from-[#10134b] via-[#151d66] to-[#34105c] p-6 text-white shadow-[0_12px_35px_rgba(49,46,129,.22)]"><div className="flex items-center gap-2 text-cyan-200"><FolderOpen size={18} /><span className="text-xs font-extrabold uppercase tracking-[.18em]">Esplora</span></div><h2 className="mt-3 text-xl font-extrabold">Categorie</h2><div className="mt-4 flex flex-wrap gap-2">{(categories.length ? categories : categoriesFallback).map(category => <button key={category} type="button" onClick={() => { setSelectedCategory(category); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:border-cyan-200 hover:bg-cyan-300/15">{category}</button>)}</div></section>
-            </aside>
+            </aside>}
           </div>
         )}
       </main>
-      {settings.showFooter && {settings.showFooter && <BlogFooter settings={settings} />}}
+      {settings.showFooter && <BlogFooter settings={settings} />}
     </div>
   );
 }
@@ -273,7 +273,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
 
   return (
     <div data-blog-template={settings.template} data-card-style={settings.cardStyle} data-button-style={settings.buttonStyle} data-radius={settings.borderRadius} data-shadow={settings.shadowStyle} className="min-h-screen font-sans text-slate-800 antialiased" style={{ backgroundColor: settings.backgroundColor, fontFamily: settings.fontFamily === 'system' ? 'system-ui' : settings.fontFamily, fontSize: settings.baseFontSize, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor, "--blog-content-width": settings.contentWidth === 'narrow' ? '58rem' : settings.contentWidth === 'standard' ? '72rem' : settings.contentWidth === 'full' ? '100%' : '112rem' } as React.CSSProperties}>
-      <BlogHeader settings={settings} />
+      {settings.showHeader && <BlogHeader settings={settings} />}
       <main>
         {error ? <section className={`${wrap} py-20`}><div className="rounded-3xl border border-red-200 bg-white p-10 text-center"><h1 className="text-3xl font-black text-[#101b46]">Articolo non disponibile</h1><a className="mt-6 inline-flex items-center gap-2 font-bold text-blue-700" href="/blog"><ArrowLeft size={17} /> Torna al blog</a></div></section>
         : !post ? <section className={`${wrap} py-20`}><div role="status" className="rounded-3xl border border-blue-100 bg-white p-10 text-center font-semibold text-blue-800">Caricamento articolo…</div></section>
@@ -294,7 +294,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
           </div>
         </>}
       </main>
-      <BlogFooter settings={settings} />
+      {settings.showFooter && <BlogFooter settings={settings} />}
     </div>
   );
 }
