@@ -114,3 +114,22 @@ export async function deleteCv(): Promise<void> {
   await adminFetch('/api/v1/portfolio/cv', { method: 'DELETE' });
   invalidatePortfolioCache();
 }
+export type AiWriterRequest = {
+  channel: 'linkedin' | 'portfolio' | 'bio';
+  tone: 'professional' | 'confident' | 'friendly' | 'technical';
+  language: 'Italiano' | 'English' | 'Français';
+  topic: string;
+  callToAction?: string;
+};
+
+export type AiWriterResult = { draft: string; model: string };
+
+/** Admin only: generates a draft from the saved portfolio profile. */
+export async function generateAiDraft(request: AiWriterRequest, portfolio: PortfolioContent): Promise<AiWriterResult> {
+  const response = await adminFetch('/api/v1/ai/writer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...request, portfolio })
+  });
+  return response.json() as Promise<AiWriterResult>;
+}
