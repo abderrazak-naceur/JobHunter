@@ -15,8 +15,8 @@ public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
         _admin = factory.CreateAuthenticatedClient();
     }
 
-    private static BlogPostRequest Valid(string status = "Draft", string slug = "dotnet-clean-architecture") =>
-        new("Clean Architecture con .NET", slug, "Una guida pratica.", "# Clean Architecture\n\nContenuto tecnico.", " .NET ",
+    private static BlogPostRequest Valid(string status = "Draft", string? slug = null) =>
+        new("Clean Architecture con .NET", slug ?? $"dotnet-clean-architecture-{Guid.NewGuid():N}", "Una guida pratica.", "# Clean Architecture\n\nContenuto tecnico.", " .NET ",
             ["dotnet", "architecture"], null, "Clean Architecture .NET", "Guida pratica a Clean Architecture.", status);
 
     [Fact]
@@ -40,10 +40,13 @@ public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
     [Fact]
     public async Task PublishedArticle_IsPubliclyReadableBySlug()
     {
-        var create = await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid("Published", "clean-architecture-dotnet"));
+        var input = Valid("Published");
+        var create = await _admin.PostAsJsonAsync("/api/v1/admin/blog", input);
         Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        var created = await create.Content.ReadFromJsonAsync<BlogPostResponse>();
+        Assert.NotNull(created);
 
-        var article = await _anonymous.GetFromJsonAsync<BlogPostResponse>("/api/v1/blog/clean-architecture-dotnet");
+        var article = await _anonymous.GetFromJsonAsync<BlogPostResponse>($"/api/v1/blog/{created.Slug}");
         Assert.NotNull(article);
         Assert.Equal("Published", article.Status);
         Assert.Equal("Clean Architecture con .NET", article.Title);
@@ -53,8 +56,8 @@ public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
     [Fact]
     public async Task DuplicateSlug_ReturnsConflict()
     {
-        await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid());
-        var response = await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid(slug: "dotnet-clean-architecture"));
+        await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid(slug: "shared-slug"));
+        var response = await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid(slug: "shared-slug"));
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
