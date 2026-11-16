@@ -73,6 +73,28 @@ namespace JobHunter.Api.Migrations
                     b.ToTable("ApplicationEvents", (string)null);
                 });
 
+            modelBuilder.Entity("JobHunter.Api.Domain.BlogPost", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<string>("Category").IsRequired().HasMaxLength(80).HasColumnType("character varying(80)");
+                    b.Property<string>("ContentMarkdown").IsRequired().HasColumnType("text");
+                    b.Property<string>("CoverImageUrl").HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("Excerpt").IsRequired().HasMaxLength(500).HasColumnType("character varying(500)");
+                    b.Property<DateTimeOffset?>("PublishedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("SeoDescription").HasMaxLength(320).HasColumnType("character varying(320)");
+                    b.Property<string>("SeoTitle").HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<string>("Slug").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<string>("Status").IsRequired().HasMaxLength(20).HasColumnType("character varying(20)");
+                    b.Property<string>("TagsJson").IsRequired().HasColumnType("text");
+                    b.Property<string>("Title").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<DateTimeOffset>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("Slug").IsUnique();
+                    b.HasIndex("Status", "PublishedAt");
+                    b.ToTable("BlogPosts", (string)null);
+                });
+
             modelBuilder.Entity("JobHunter.Api.Domain.Company", b =>
                 {
                     b.Property<Guid>("Id")

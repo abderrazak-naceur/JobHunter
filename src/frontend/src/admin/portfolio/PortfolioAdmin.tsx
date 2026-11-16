@@ -17,6 +17,7 @@ import {
   statsConfig
 } from './lists';
 import ProfileForm from './ProfileForm';
+import AiWriterPage from './AiWriterPage';
 
 /** Manage everything shown on the public site: profile, numbers, skills, experience, education, certifications, languages, projects and links. */
 export default function PortfolioAdmin() {
@@ -59,6 +60,7 @@ export default function PortfolioAdmin() {
       <Tabs defaultValue="profilo">
         <TabsList className="flex h-auto flex-wrap justify-start">
           <TabsTrigger value="profilo">Profilo</TabsTrigger>
+          <TabsTrigger value="ai-writer">AI Writer</TabsTrigger>
           <TabsTrigger value="numeri">Numeri</TabsTrigger>
           <TabsTrigger value="competenze">Competenze</TabsTrigger>
           <TabsTrigger value="esperienza">Esperienza</TabsTrigger>
@@ -69,6 +71,7 @@ export default function PortfolioAdmin() {
           <TabsTrigger value="link">Link</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="ai-writer"><AiWriterPage portfolio={content} /></TabsContent>
         <TabsContent value="profilo">
           <ProfileForm
             content={content}
