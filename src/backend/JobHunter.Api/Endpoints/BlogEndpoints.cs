@@ -102,7 +102,8 @@ public static partial class BlogEndpoints
     private static Dictionary<string, string[]> Validate(BlogPostRequest request)
     {
         var errors = new Dictionary<string, string[]>();
-        void Required(string key, string? value, int max) {
+        void Required(string key, string? value, int max)
+        {
             if (string.IsNullOrWhiteSpace(value)) errors[key] = ["Campo obbligatorio."];
             else if (value.Trim().Length > max) errors[key] = [$"Massimo {max} caratteri."];
         }
