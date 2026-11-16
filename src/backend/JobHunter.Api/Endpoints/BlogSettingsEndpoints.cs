@@ -79,7 +79,15 @@ public static partial class BlogSettingsEndpoints
         "#ffffff",
         "#050d22",
         "#dbeafe",
-        "#ffffff");
+        "#ffffff",
+        "BLOG · TECNOLOGIA · SVILUPPO",
+        "",
+        "Sviluppo software, architetture, AI e prodotti digitali. Idee, esperienze e soluzioni dal mondo tech.",
+        "Tutti i diritti riservati.",
+        "[{\\"label\\":\\"Home\\",\\"url\\":\\"/\\"},{\\"label\\":\\"Chi sono\\",\\"url\\":\\"/#chi-sono\\"},{\\"label\\":\\"Progetti\\",\\"url\\":\\"/#progetti\\"},{\\"label\\":\\"Blog\\",\\"url\\":\\"/blog\\"},{\\"label\\":\\"Contatti\\",\\"url\\":\\"/#contatti\\"}]",
+        "[{\\"label\\":\\"LinkedIn\\",\\"url\\":\\"https://www.linkedin.com/\\"}]",
+        "Inter", "inherit", 16, "wide", "3", "rounded", "pill", "sticky", "split", "sidebar", "large", "soft",
+        true, true, true, true, true, true, true, true, true, true, "");
 
     public static IEndpointRouteBuilder MapBlogSettingsEndpoints(this IEndpointRouteBuilder endpoints)
     {
