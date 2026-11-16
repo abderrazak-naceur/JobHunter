@@ -12,7 +12,7 @@ function parseLinks(value: string): BlogLink[] { try { const parsed = JSON.parse
 const focusRing = 'focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-cyan-300';
 const categoriesFallback = ['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps', 'Tutorial'];
 
-function safeCss(value: string) { return value.replace(/<\\/style/gi, '<\\\\/style'); }
+function safeCss(value: string) { return value.replace(/<\/style/gi, '<\\/style'); }
 
 function formatDate(value?: string | null) {
   if (!value) return '';
