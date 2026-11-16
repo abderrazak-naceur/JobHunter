@@ -193,3 +193,19 @@ See `AGENT_TASKS.md` for the task list and current progress.
 Never commit real CVs, personal documents, database passwords, API keys or `.env.local` files. Use environment variables or a secrets manager for credentials. The admin area and the API are protected by a single-user login (JWT bearer, PBKDF2-hashed password, login rate limiting, endpoints protected by default). The token is kept in `sessionStorage`, so the usual XSS precautions apply: do not add untrusted HTML to the app.
 
 Known limits: one admin account only, no password reset flow, no refresh tokens (sign in again after the token expires), and no security headers/HTTPS redirect configuration yet (see the deployment task).
+
+## AI Writer (optional)
+
+The private Admin area includes **Portfolio → AI Writer** for drafting LinkedIn posts, portfolio copy and short professional bios. Drafts are editable and can be copied; generation never publishes content automatically.
+
+The backend uses an OpenAI-compatible Chat Completions endpoint. Configure these values in the API service environment (or .NET user-secrets locally):
+
+| Setting | Purpose |
+| --- | --- |
+| `AI:ApiKey` (`AI__ApiKey`) | Provider API key; backend only |
+| `AI:Model` (`AI__Model`) | Model identifier; defaults to `gpt-4.1-mini` |
+| `AI:Endpoint` (`AI__Endpoint`) | Optional HTTPS Chat Completions URL; defaults to OpenAI |
+
+For example, use `dotnet user-secrets set "AI:ApiKey" "YOUR_KEY"` from `src/backend/JobHunter.Api`. For Render, add `AI__ApiKey`, `AI__Model` and optionally `AI__Endpoint` to the API service environment. Never put provider keys in Vite variables or commit them. The feature is hidden behind admin authentication and limited to five generations per minute per client. Without a key, the endpoint returns a clear configuration message and the rest of the app continues to work.
+
+The generated text uses the saved public portfolio as context and instructs the model not to invent career facts. Always review factual details before publishing.
