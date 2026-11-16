@@ -29,7 +29,7 @@ function BrandMark({ settings }: { settings: BlogSettings }) {
 function BlogHeader({ settings }: { settings: BlogSettings }) {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 border-b border-cyan-300/15 bg-[#050d22]/95 text-white shadow-[0_8px_30px_rgba(2,8,23,.25)] backdrop-blur-xl">
+    <header data-blog-region="header" className="sticky top-0 z-50 border-b border-cyan-300/15 bg-[#050d22]/95 text-white shadow-[0_8px_30px_rgba(2,8,23,.25)] backdrop-blur-xl">
       <div className={`${wrap} flex min-h-[4.6rem] items-center justify-between gap-4 py-3`}>
         <a href="/" aria-label={`${settings.siteName}, homepage`} className={`flex items-center gap-3 ${focusRing}`}>
           <BrandMark settings={settings} />
@@ -72,7 +72,7 @@ function BlogHero({ search, onSearch, categories, selected, onSelect, settings }
   search: string; onSearch: (value: string) => void; categories: string[]; selected: string; onSelect: (value: string) => void; settings: BlogSettings;
 }) {
   return (
-    <section className="relative isolate overflow-hidden border-b border-cyan-300/15 bg-[#050d22] text-white">
+    <section data-blog-region="hero" className="relative isolate overflow-hidden border-b border-cyan-300/15 bg-[#050d22] text-white">
       <div aria-hidden="true" className="pointer-events-none absolute -left-36 top-8 h-80 w-80 rounded-full bg-blue-600/30 blur-[100px]" />
       <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-20 h-96 w-96 rounded-full bg-violet-600/30 blur-[110px]" />
       <div className={`${wrap} relative grid items-center gap-8 py-12 sm:py-16 lg:grid-cols-[1.1fr_.9fr] lg:py-20`}>
@@ -108,7 +108,7 @@ function PostMeta({ post, minutes }: { post: BlogPost; minutes?: number }) {
 
 function ArticleCard({ post }: { post: BlogPost }) {
   return (
-    <article className="group overflow-hidden rounded-[1.4rem] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,.07)] transition duration-300 hover:-translate-y-1.5 hover:border-blue-300 hover:shadow-[0_18px_40px_rgba(37,99,235,.16)]">
+    <article data-blog-region="card" className="group overflow-hidden rounded-[1.4rem] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,.07)] transition duration-300 hover:-translate-y-1.5 hover:border-blue-300 hover:shadow-[0_18px_40px_rgba(37,99,235,.16)]">
       <a href={`/blog/${post.slug}`} className={`block ${focusRing}`}>
         <div className="relative h-44 overflow-hidden">{post.coverImageUrl ? <img src={post.coverImageUrl} alt="" loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <TechVisual label={post.category || 'TECH'} />}</div>
         <div className="p-5">
@@ -126,7 +126,7 @@ function ArticleCard({ post }: { post: BlogPost }) {
 }
 
 function BlogFooter({ settings }: { settings: BlogSettings }) {
-  return <footer className="border-t border-cyan-300/15 bg-[#050d22] text-white"><div className={`${wrap} grid gap-9 py-10 sm:grid-cols-2 lg:grid-cols-4`}><div className="sm:col-span-2 lg:col-span-1"><div className="flex items-center gap-3"><BrandMark settings={settings} /><div><p className="font-extrabold tracking-wide">{settings.siteName}</p><p className="text-xs text-slate-400">{settings.tagline}</p></div></div><p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">Sviluppo software, architetture, AI e prodotti digitali. Idee, esperienze e soluzioni dal mondo tech.</p></div><div><h2 className="text-sm font-extrabold">Navigazione</h2><ul className="mt-4 space-y-2 text-sm text-slate-400"><li><a className="hover:text-cyan-300" href="/">Home</a></li><li><a className="hover:text-cyan-300" href="/#progetti">Progetti</a></li><li><a className="text-cyan-300" href="/blog">Blog</a></li><li><a className="hover:text-cyan-300" href="/#contatti">Contatti</a></li></ul></div><div><h2 className="text-sm font-extrabold">Argomenti</h2><ul className="mt-4 space-y-2 text-sm text-slate-400">{['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps'].map(item => <li key={item}>{item}</li>)}</ul></div><div><h2 className="text-sm font-extrabold">Seguimi</h2><p className="mt-4 text-sm leading-6 text-slate-400">Per collaborazioni, progetti e confronti tecnici, visita la homepage e usa la sezione contatti.</p><a href="/#contatti" className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 px-4 py-2 text-sm font-bold text-cyan-200 transition hover:bg-cyan-300/10">Contattami <ArrowRight size={15} /></a></div></div><div className="border-t border-white/10"><div className={`${wrap} flex flex-col gap-2 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between`}><span>© {new Date().getFullYear()} {settings.authorName}. Tutti i diritti riservati.</span><a href="/" className="hover:text-cyan-300">Portfolio personale</a></div></div></footer>;
+  return <footer data-blog-region="footer" className="border-t border-cyan-300/15 bg-[#050d22] text-white"><div className={`${wrap} grid gap-9 py-10 sm:grid-cols-2 lg:grid-cols-4`}><div className="sm:col-span-2 lg:col-span-1"><div className="flex items-center gap-3"><BrandMark settings={settings} /><div><p className="font-extrabold tracking-wide">{settings.siteName}</p><p className="text-xs text-slate-400">{settings.tagline}</p></div></div><p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">Sviluppo software, architetture, AI e prodotti digitali. Idee, esperienze e soluzioni dal mondo tech.</p></div><div><h2 className="text-sm font-extrabold">Navigazione</h2><ul className="mt-4 space-y-2 text-sm text-slate-400"><li><a className="hover:text-cyan-300" href="/">Home</a></li><li><a className="hover:text-cyan-300" href="/#progetti">Progetti</a></li><li><a className="text-cyan-300" href="/blog">Blog</a></li><li><a className="hover:text-cyan-300" href="/#contatti">Contatti</a></li></ul></div><div><h2 className="text-sm font-extrabold">Argomenti</h2><ul className="mt-4 space-y-2 text-sm text-slate-400">{['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps'].map(item => <li key={item}>{item}</li>)}</ul></div><div><h2 className="text-sm font-extrabold">Seguimi</h2><p className="mt-4 text-sm leading-6 text-slate-400">Per collaborazioni, progetti e confronti tecnici, visita la homepage e usa la sezione contatti.</p><a href="/#contatti" className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 px-4 py-2 text-sm font-bold text-cyan-200 transition hover:bg-cyan-300/10">Contattami <ArrowRight size={15} /></a></div></div><div className="border-t border-white/10"><div className={`${wrap} flex flex-col gap-2 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between`}><span>© {new Date().getFullYear()} {settings.authorName}. Tutti i diritti riservati.</span><a href="/" className="hover:text-cyan-300">Portfolio personale</a></div></div></footer>;
 }
 
 export function BlogIndexPage() {
@@ -158,7 +158,7 @@ export function BlogIndexPage() {
   const otherPosts = filteredPosts.slice(1);
 
   return (
-    <div data-blog-template={settings.template} className="min-h-screen font-sans text-slate-800 antialiased selection:text-white" style={{ backgroundColor: settings.backgroundColor, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor } as React.CSSProperties}>
+    <div data-blog-template={settings.template} className="min-h-screen font-sans text-slate-800 antialiased selection:text-white" style={{ backgroundColor: settings.backgroundColor, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor } as React.CSSProperties}>
       <BlogHeader settings={settings} />
       <BlogHero settings={settings} search={search} onSearch={setSearch} categories={categories.length ? categories : categoriesFallback} selected={selectedCategory} onSelect={setSelectedCategory} />
       <main className={`${wrap} py-8 sm:py-12`}>
@@ -274,7 +274,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
   }, [post]);
 
   return (
-    <div data-blog-template={settings.template} className="min-h-screen font-sans text-slate-800 antialiased" style={{ backgroundColor: settings.backgroundColor, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor } as React.CSSProperties}>
+    <div data-blog-template={settings.template} className="min-h-screen font-sans text-slate-800 antialiased" style={{ backgroundColor: settings.backgroundColor, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor } as React.CSSProperties}>
       <BlogHeader settings={settings} />
       <main>
         {error ? <section className={`${wrap} py-20`}><div className="rounded-3xl border border-red-200 bg-white p-10 text-center"><h1 className="text-3xl font-black text-[#101b46]">Articolo non disponibile</h1><a className="mt-6 inline-flex items-center gap-2 font-bold text-blue-700" href="/blog"><ArrowLeft size={17} /> Torna al blog</a></div></section>
@@ -283,7 +283,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
           <div className="border-b border-cyan-300/15 bg-[#050d22] text-white"><div className={`${wrap} py-4 text-xs text-slate-400`}><a href="/blog" className="hover:text-cyan-300">Blog</a><span className="mx-2">/</span><span>{post.category}</span><span className="mx-2">/</span><span className="text-slate-200">{post.title}</span></div></div>
           <section className="bg-[#050d22] pb-10 text-white"><div className={wrap}><div className="overflow-hidden rounded-[1.8rem] border border-cyan-300/30 shadow-[0_0_45px_rgba(37,99,235,.2)]">{post.coverImageUrl ? <img src={post.coverImageUrl} alt="" className="max-h-[24rem] w-full object-cover" /> : <TechVisual label={post.category || 'TECH'} />}</div></div></section>
           <div className={`${wrap} grid items-start gap-7 pb-16 lg:grid-cols-[minmax(0,1fr)_20rem]`}>
-            <article className="-mt-14 relative z-10 rounded-[1.8rem] border border-violet-200 bg-white p-6 shadow-[0_18px_50px_rgba(30,41,91,.14)] sm:p-9 lg:p-12">
+            <article data-blog-region="article" className="-mt-14 relative z-10 rounded-[1.8rem] border border-violet-200 bg-white p-6 shadow-[0_18px_50px_rgba(30,41,91,.14)] sm:p-9 lg:p-12">
               <a href="/blog" className={`mb-7 inline-flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-violet-700 ${focusRing}`}><ArrowLeft size={16} /> Tutti gli articoli</a>
               <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-blue-700">{post.category}</span>
               <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight text-[#101b46] sm:text-4xl lg:text-5xl">{post.title}</h1>
