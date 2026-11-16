@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, CalendarDays, Tag } from 'lucide-react';
 import { blogApi, type BlogPost } from '../services/blogApi';
 
@@ -24,11 +24,58 @@ export function BlogIndexPage() {
   </main></div>;
 }
 
+function MarkdownBody({ markdown }: { markdown: string }) {
+  const lines = markdown.split(/\r?\n/);
+  const blocks: ReactNode[] = [];
+  let codeLines: string[] = [];
+  let inCode = false;
+  lines.forEach((line, index) => {
+    if (line.trim().startsWith('```')) {
+      if (inCode) {
+        blocks.push(<pre key={'code-' + index} className="my-5 overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm leading-6 text-slate-100"><code>{codeLines.join('\n')}</code></pre>);
+        codeLines = [];
+      }
+      inCode = !inCode;
+      return;
+    }
+    if (inCode) { codeLines.push(line); return; }
+    if (!line.trim()) return;
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      const level = heading[1].length;
+      const className = level === 1 ? 'mt-10 text-3xl font-bold tracking-tight' : level === 2 ? 'mt-8 text-2xl font-bold tracking-tight' : 'mt-6 text-xl font-bold';
+      blocks.push(level === 3
+        ? <h3 key={index} className={className}>{heading[2]}</h3>
+        : <h2 key={index} className={className}>{heading[2]}</h2>);
+    } else if (/^[-*]\s+/.test(line)) {
+      blocks.push(<ul key={index} className="my-2 list-disc pl-6"><li>{line.replace(/^[-*]\s+/, '')}</li></ul>);
+    } else if (/^>\s?/.test(line)) {
+      blocks.push(<blockquote key={index} className="my-5 border-l-4 border-blue-500 pl-5 italic text-slate-600">{line.replace(/^>\s?/, '')}</blockquote>);
+    } else {
+      blocks.push(<p key={index} className="my-4 leading-8 text-slate-700">{line}</p>);
+    }
+  });
+  if (inCode && codeLines.length) blocks.push(<pre key="code-final" className="my-5 overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm leading-6 text-slate-100"><code>{codeLines.join('\n')}</code></pre>);
+  return <div className="mt-12">{blocks}</div>;
+}
+
 export function BlogArticlePage({ slug }: { slug: string }) {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [error, setError] = useState('');
   useEffect(() => { blogApi.get(slug).then(setPost).catch(e => setError(e instanceof Error ? e.message : 'Articolo non trovato.')); }, [slug]);
-  useEffect(() => { if (post) document.title = `${post.seoTitle || post.title} — Zak Naceur`; }, [post]);
+  useEffect(() => {
+    if (!post) return;
+    document.title = post.seoTitle || post.title + ' — Zak Naceur';
+    const description = post.seoDescription || post.excerpt;
+    let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
+    meta.content = description;
+    for (const [property, value] of [['og:title', post.seoTitle || post.title], ['og:description', description], ['og:type', 'article'], ['og:url', window.location.href]] as const) {
+      let tag = document.querySelector('meta[property="' + property + '"]') as HTMLMetaElement | null;
+      if (!tag) { tag = document.createElement('meta'); tag.setAttribute('property', property); document.head.appendChild(tag); }
+      tag.content = value;
+    }
+  }, [post]);
   if (error) return <div className="min-h-screen bg-slate-50"><BlogHeader /><main className="mx-auto max-w-3xl px-5 py-20"><h1 className="text-3xl font-bold">Articolo non disponibile</h1><a className="mt-6 inline-flex items-center gap-2 text-blue-600" href="/blog"><ArrowLeft size={16}/> Torna al blog</a></main></div>;
   if (!post) return <div className="min-h-screen bg-slate-50"><BlogHeader /><main className="mx-auto max-w-3xl px-5 py-20 text-slate-500">Caricamento articolo…</main></div>;
   return <div className="min-h-screen bg-white text-slate-900"><BlogHeader /><main className="mx-auto max-w-3xl px-5 py-14">
@@ -36,7 +83,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
     <p className="mt-10 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">{post.category}</p><h1 className="mt-4 text-4xl font-black leading-tight tracking-tight sm:text-5xl">{post.title}</h1><p className="mt-6 text-xl leading-8 text-slate-600">{post.excerpt}</p>
     <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-500"><span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('it-IT') : ''}</span>{post.tags.length > 0 && <span className="inline-flex items-center gap-2"><Tag size={14}/>{post.tags.join(' · ')}</span>}</div>
     {post.coverImageUrl && <img src={post.coverImageUrl} alt="" className="mt-10 max-h-[420px] w-full rounded-2xl object-cover" />}
-    <article className="prose prose-slate mt-12 max-w-none whitespace-pre-wrap leading-8">{post.contentMarkdown}</article>
+    <article><MarkdownBody markdown={post.contentMarkdown} /></article>
     <div className="mt-16 border-t border-slate-200 pt-8"><a href="/blog" className="inline-flex items-center gap-2 font-semibold text-blue-600"><ArrowLeft size={16}/> Torna agli articoli</a></div>
   </main></div>;
 }
