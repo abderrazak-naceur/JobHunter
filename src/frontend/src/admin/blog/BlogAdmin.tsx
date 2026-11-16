@@ -137,7 +137,8 @@ export default function BlogAdmin() {
           </CardContent>
         </Card>
       </> : <Card><CardHeader><CardTitle>Identità e aspetto</CardTitle><CardDescription>Modifica nome, autore, testi, logo, colori e template. Le modifiche vengono salvate nel database.</CardDescription></CardHeader><CardContent>
-        {settingsLoading ? <p role="status">Caricamento impostazioni…</p> : <form onSubmit={saveSettings} className="grid gap-5 md:grid-cols-2">\n          <BlogVisualBuilder settings={settings} onChange={setSettings} />
+        {settingsLoading ? <p role="status">Caricamento impostazioni…</p> : <form onSubmit={saveSettings} className="grid gap-5 md:grid-cols-2">
+          <BlogVisualBuilder settings={settings} onChange={setSettings} />
           <label className={field}>Nome del blog<Input required maxLength={120} value={settings.siteName} onChange={e => setSettings(s => ({ ...s, siteName: e.target.value }))} /></label>
           <label className={field}>Nome autore<Input required maxLength={120} value={settings.authorName} onChange={e => setSettings(s => ({ ...s, authorName: e.target.value }))} /></label>
           <label className={field}>Sottotitolo / ruolo<Input required maxLength={180} value={settings.tagline} onChange={e => setSettings(s => ({ ...s, tagline: e.target.value }))} /></label>
