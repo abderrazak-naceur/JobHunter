@@ -18,6 +18,7 @@ public sealed record AiWriterResponse(string Draft, string Model);
 
 public static class AiWriterEndpoints
 {
+    public const string RateLimitPolicy = "ai-writer";
     private const int MaxTopicLength = 1200;
     private const int MaxCallToActionLength = 300;
 
@@ -142,6 +143,7 @@ public static class AiWriterEndpoints
             }
         })
         .RequireAuthorization()
+        .RequireRateLimiting(RateLimitPolicy)
         .WithTags("AI Writer");
 
         return endpoints;
