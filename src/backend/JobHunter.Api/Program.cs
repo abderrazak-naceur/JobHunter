@@ -153,6 +153,7 @@ app.MapHealthEndpoints(); // /health (process is up) and /health/ready (database
 app.MapAuthEndpoints();
 app.MapPortfolioEndpoints(); // GET is public, PUT requires the admin token
 app.MapBlogEndpoints(); // public published articles and protected admin CRUD
+app.MapBlogSettingsEndpoints(); // public appearance settings and protected admin customization
 app.MapAiWriterEndpoints(); // admin-only AI-assisted content drafting
 
 // Everything below requires the admin token.
