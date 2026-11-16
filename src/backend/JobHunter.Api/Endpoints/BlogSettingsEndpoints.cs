@@ -38,35 +38,63 @@ public static partial class BlogSettingsEndpoints
     {
         endpoints.MapGet("/api/v1/blog/settings", async (JobHunterDbContext db, CancellationToken ct) =>
         {
-            var asset = await db.PortfolioAssets.AsNoTracking().FirstOrDefaultAsync(x => x.Kind == AssetKind, ct);
+            var asset = await db.PortfolioAssets.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Kind == AssetKind, ct);
             if (asset is null) return Results.Ok(Defaults);
-            try { return Results.Ok(JsonSerializer.Deserialize<BlogSettingsDto>(asset.Data, JsonOptions) ?? Defaults); }
-            catch (JsonException) { return Results.Ok(Defaults); }
+
+            try
+            {
+                return Results.Ok(JsonSerializer.Deserialize<BlogSettingsDto>(asset.Data, JsonOptions) ?? Defaults);
+            }
+            catch (JsonException)
+            {
+                return Results.Ok(Defaults);
+            }
         }).AllowAnonymous().WithTags("Blog");
 
-        endpoints.MapPut("/api/v1/admin/blog/settings", async (BlogSettingsDto request, JobHunterDbContext db, CancellationToken ct) =>
+        endpoints.MapPut("/api/v1/admin/blog/settings", async (
+            BlogSettingsDto request,
+            JobHunterDbContext db,
+            CancellationToken ct) =>
         {
             var errors = new Dictionary<string, string[]>();
+
             void Required(string key, string value, int max)
             {
                 if (string.IsNullOrWhiteSpace(value)) errors[key] = ["Campo obbligatorio."];
                 else if (value.Trim().Length > max) errors[key] = [$"Massimo {max} caratteri."];
             }
+
             Required(nameof(request.SiteName), request.SiteName, 120);
             Required(nameof(request.AuthorName), request.AuthorName, 120);
             Required(nameof(request.Tagline), request.Tagline, 180);
             Required(nameof(request.HeroTitle), request.HeroTitle, 180);
             Required(nameof(request.HeroDescription), request.HeroDescription, 600);
-            foreach (var (key, value) in new[] { (nameof(request.PrimaryColor), request.PrimaryColor), (nameof(request.AccentColor), request.AccentColor), (nameof(request.BackgroundColor), request.BackgroundColor) })
-                if (!ColorRegex().IsMatch(value ?? "")) errors[key] = ["Inserisci un colore esadecimale nel formato #RRGGBB."];
-            if (request.Template is not ("premium-tech" or "editorial-light" or "developer-dark" or "personal-journal"))
-            errors[nameof(request.Template)] = ["Template non valido."];
-        if (!string.IsNullOrWhiteSpace(request.LogoUrl) &&
-            (!Uri.TryCreate(request.LogoUrl, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")))
-            errors[nameof(request.LogoUrl)] = ["Inserisci un URL HTTP o HTTPS valido."];
-        if (errors.Count > 0) return Results.ValidationProblem(errors);
 
-        var clean = request with
+            foreach (var (key, value) in new[]
+            {
+                (nameof(request.PrimaryColor), request.PrimaryColor),
+                (nameof(request.AccentColor), request.AccentColor),
+                (nameof(request.BackgroundColor), request.BackgroundColor)
+            })
+            {
+                if (!ColorRegex().IsMatch(value ?? ""))
+                    errors[key] = ["Inserisci un colore esadecimale nel formato #RRGGBB."];
+            }
+
+            if (request.Template is not ("premium-tech" or "editorial-light" or "developer-dark" or "personal-journal"))
+                errors[nameof(request.Template)] = ["Template non valido."];
+
+            if (!string.IsNullOrWhiteSpace(request.LogoUrl) &&
+                (!Uri.TryCreate(request.LogoUrl, UriKind.Absolute, out var uri) ||
+                 uri.Scheme is not ("https" or "http")))
+            {
+                errors[nameof(request.LogoUrl)] = ["Inserisci un URL HTTP o HTTPS valido."];
+            }
+
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+
+            var clean = request with
             {
                 SiteName = request.SiteName.Trim(),
                 AuthorName = request.AuthorName.Trim(),
@@ -75,22 +103,25 @@ public static partial class BlogSettingsEndpoints
                 HeroTitle = request.HeroTitle.Trim(),
                 HeroDescription = request.HeroDescription.Trim()
             };
-        var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == AssetKind, ct);
-        if (asset is null)
-        {
-            asset = new PortfolioAsset { Kind = AssetKind };
+
+            var asset = await db.PortfolioAssets.FirstOrDefaultAsync(x => x.Kind == AssetKind, ct);
+            if (asset is null)
+            {
+                asset = new PortfolioAsset { Kind = AssetKind };
                 db.PortfolioAssets.Add(asset);
             }
-                asset.ContentType = "application/json";
-                asset.Data = JsonSerializer.SerializeToUtf8Bytes(clean, JsonOptions);
-                asset.UpdatedAt = DateTimeOffset.UtcNow;
-                await db.SaveChangesAsync(ct);
-                return Results.Ok(clean);
-            }).RequireAuthorization().WithTags("Blog Admin");
-    
-            return endpoints;
-        }
-    
-        [GeneratedRegex("^#[0-9a-fA-F]{6}$")]
-        private static partial Regex ColorRegex();
+
+            asset.ContentType = "application/json";
+            asset.Data = JsonSerializer.SerializeToUtf8Bytes(clean, JsonOptions);
+            asset.UpdatedAt = DateTimeOffset.UtcNow;
+            await db.SaveChangesAsync(ct);
+
+            return Results.Ok(clean);
+        }).RequireAuthorization().WithTags("Blog Admin");
+
+        return endpoints;
     }
+
+    [GeneratedRegex("^#[0-9a-fA-F]{6}$")]
+    private static partial Regex ColorRegex();
+}
