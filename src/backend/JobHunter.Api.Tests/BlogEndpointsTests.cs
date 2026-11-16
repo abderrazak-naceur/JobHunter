@@ -1,0 +1,80 @@
+using System.Net;
+using System.Net.Http.Json;
+using JobHunter.Api.Endpoints;
+
+namespace JobHunter.Api.Tests;
+
+public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
+{
+    private readonly HttpClient _anonymous;
+    private readonly HttpClient _admin;
+
+    public BlogEndpointsTests(JobHunterApiFactory factory)
+    {
+        _anonymous = factory.CreateClient();
+        _admin = factory.CreateAuthenticatedClient();
+    }
+
+    private static BlogPostRequest Valid(string status = "Draft", string slug = "dotnet-clean-architecture") =>
+        new("Clean Architecture con .NET", slug, "Una guida pratica.", "# Clean Architecture\n\nContenuto tecnico.", " .NET ",
+            ["dotnet", "architecture"], null, "Clean Architecture .NET", "Guida pratica a Clean Architecture.", status);
+
+    [Fact]
+    public async Task AdminList_RequiresAuthentication()
+    {
+        var response = await _anonymous.GetAsync("/api/v1/admin/blog");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Draft_IsNotVisibleToAnonymousVisitors()
+    {
+        var create = await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid());
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+
+        var list = await _anonymous.GetFromJsonAsync<BlogPageResponse>("/api/v1/blog");
+        Assert.NotNull(list);
+        Assert.Empty(list.Items);
+    }
+
+    [Fact]
+    public async Task PublishedArticle_IsPubliclyReadableBySlug()
+    {
+        var create = await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid("Published", "clean-architecture-dotnet"));
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+
+        var article = await _anonymous.GetFromJsonAsync<BlogPostResponse>("/api/v1/blog/clean-architecture-dotnet");
+        Assert.NotNull(article);
+        Assert.Equal("Published", article.Status);
+        Assert.Equal("Clean Architecture con .NET", article.Title);
+        Assert.Contains("dotnet", article.Tags);
+    }
+
+    [Fact]
+    public async Task DuplicateSlug_ReturnsConflict()
+    {
+        await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid());
+        var response = await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid(slug: "dotnet-clean-architecture"));
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task InvalidStatus_IsRejected()
+    {
+        var response = await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid() with { Status = "Live" });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AdminCanDeleteArticle()
+    {
+        var create = await _admin.PostAsJsonAsync("/api/v1/admin/blog", Valid());
+        var created = await create.Content.ReadFromJsonAsync<BlogPostResponse>();
+        Assert.NotNull(created);
+
+        var delete = await _admin.DeleteAsync($"/api/v1/admin/blog/{created.Id}");
+        Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
+    }
+
+    private sealed record BlogPageResponse(IReadOnlyList<BlogPostResponse> Items, int Page, int PageSize, int Total);
+}
