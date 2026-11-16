@@ -65,7 +65,7 @@ export default function BlogVisualBuilder({ settings, onChange }: Props) {
     <Card><CardHeader><CardTitle>Footer e social</CardTitle><CardDescription>Gestisci i testi finali, copyright e i tuoi collegamenti social.</CardDescription></CardHeader><CardContent className="grid gap-4 md:grid-cols-2">
       <Field title="Descrizione footer"><Textarea rows={3} value={settings.footerDescription} onChange={e => set('footerDescription', e.target.value)} /></Field>
       <Field title="Testo copyright"><Input value={settings.copyrightText} onChange={e => set('copyrightText', e.target.value)} /></Field>
-      <div className="md:col-span-2"><Field title="Social links (JSON: [{\"label\":\"LinkedIn\",\"url\":\"https://...\"}])"><Textarea rows={3} value={settings.socialLinksJson} onChange={e => set('socialLinksJson', e.target.value)} className="font-mono text-xs" /></Field></div>
+      <div className="md:col-span-2"><Field title="Social links (JSON con label e url)"><Textarea rows={3} value={settings.socialLinksJson} onChange={e => set('socialLinksJson', e.target.value)} className="font-mono text-xs" /></Field></div>
     </CardContent></Card>
     <Card><CardHeader><CardTitle>Avanzate</CardTitle><CardDescription>CSS personalizzato per rifinire dettagli non coperti dalle opzioni grafiche.</CardDescription></CardHeader><CardContent><Field title="CSS personalizzato (solo CSS, senza tag style)"><Textarea rows={8} value={settings.customCss} onChange={e => set('customCss', e.target.value)} className="font-mono text-xs" /></Field></CardContent></Card>
   </div>;
