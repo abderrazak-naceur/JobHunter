@@ -115,7 +115,7 @@ export async function deleteCv(): Promise<void> {
   invalidatePortfolioCache();
 }
 export type AiWriterRequest = {
-  channel: 'linkedin' | 'portfolio' | 'bio';
+  channel: 'linkedin' | 'portfolio' | 'bio' | 'blog';
   tone: 'professional' | 'confident' | 'friendly' | 'technical';
   language: 'Italiano' | 'English' | 'Français';
   topic: string;
