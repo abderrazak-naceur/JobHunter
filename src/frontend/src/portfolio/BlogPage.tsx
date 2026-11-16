@@ -6,7 +6,9 @@ import {
 import { blogApi, defaultBlogSettings, type BlogPost, type BlogSettings } from '../services/blogApi';
 import './portfolio.css';
 
-const wrap = 'mx-auto w-full max-w-[112rem] px-5 sm:px-8 lg:px-12 2xl:px-16';
+const wrap = 'blog-content-wrap mx-auto w-full max-w-[112rem] px-5 sm:px-8 lg:px-12 2xl:px-16';
+type BlogLink = { label: string; url: string };
+function parseLinks(value: string): BlogLink[] { try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed.filter((item): item is BlogLink => typeof item?.label === 'string' && typeof item?.url === 'string') : []; } catch { return []; } }
 const focusRing = 'focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-cyan-300';
 const categoriesFallback = ['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps', 'Tutorial'];
 
@@ -29,18 +31,14 @@ function BrandMark({ settings }: { settings: BlogSettings }) {
 function BlogHeader({ settings }: { settings: BlogSettings }) {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <header data-blog-region="header" className="sticky top-0 z-50 border-b border-cyan-300/15 bg-[#050d22]/95 text-white shadow-[0_8px_30px_rgba(2,8,23,.25)] backdrop-blur-xl">
+    <header data-blog-region="header" data-header-style={settings.headerStyle} className="sticky top-0 z-50 border-b border-cyan-300/15 bg-[#050d22]/95 text-white shadow-[0_8px_30px_rgba(2,8,23,.25)] backdrop-blur-xl">
       <div className={`${wrap} flex min-h-[4.6rem] items-center justify-between gap-4 py-3`}>
         <a href="/" aria-label={`${settings.siteName}, homepage`} className={`flex items-center gap-3 ${focusRing}`}>
           <BrandMark settings={settings} />
           <span className="leading-tight"><span className="block text-sm font-extrabold tracking-wide sm:text-base">{settings.siteName}</span><span className="mt-0.5 block text-[11px] text-slate-300 sm:text-xs">{settings.tagline}</span></span>
         </a>
         <nav aria-label="Navigazione principale" className="hidden items-center gap-1 lg:flex">
-          <a href="/" className={`rounded-full px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white ${focusRing}`}>Home</a>
-          <a href="/#chi-sono" className={`rounded-full px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white ${focusRing}`}>Chi sono</a>
-          <a href="/#progetti" className={`rounded-full px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white ${focusRing}`}>Progetti</a>
-          <a href="/blog" aria-current="page" className={`rounded-full border border-cyan-300/70 bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-2 text-sm font-extrabold text-white shadow-[0_0_18px_rgba(59,130,246,.45)] ${focusRing}`}>Blog</a>
-          <a href="/#contatti" className={`rounded-full px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white ${focusRing}`}>Contatti</a>
+          {parseLinks(settings.navigationJson).map((link, index) => <a key={link.url + index} href={link.url} aria-current={link.url === '/blog' ? 'page' : undefined} className={`rounded-full px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white ${focusRing}`}>{link.label}</a>)}
         </nav>
         <div className="flex items-center gap-2">
           <a href="/#contatti" className={`hidden rounded-full border border-cyan-300/40 bg-white/5 px-4 py-2 text-xs font-bold text-white transition hover:border-cyan-200 hover:bg-cyan-300/10 sm:inline-flex ${focusRing}`}>Contattami <ArrowRight size={14} /></a>
@@ -49,7 +47,7 @@ function BlogHeader({ settings }: { settings: BlogSettings }) {
           </button>
         </div>
       </div>
-      {menuOpen && <nav id="blog-mobile-menu" aria-label="Navigazione mobile" className="border-t border-white/10 bg-[#07142e] px-5 py-3 lg:hidden"><div className="mx-auto grid max-w-6xl gap-1"><a href="/" className="rounded-xl px-4 py-3 font-semibold text-white hover:bg-white/10">Home portfolio</a><a href="/#chi-sono" className="rounded-xl px-4 py-3 font-semibold text-white hover:bg-white/10">Chi sono</a><a href="/#progetti" className="rounded-xl px-4 py-3 font-semibold text-white hover:bg-white/10">Progetti</a><a href="/blog" className="rounded-xl bg-blue-600/20 px-4 py-3 font-bold text-cyan-200">Blog</a><a href="/#contatti" className="rounded-xl px-4 py-3 font-semibold text-white hover:bg-white/10">Contatti</a></div></nav>}
+      {menuOpen && <nav id="blog-mobile-menu" aria-label="Navigazione mobile" className="border-t border-white/10 bg-[#07142e] px-5 py-3 lg:hidden"><div className="mx-auto grid max-w-6xl gap-1">{parseLinks(settings.navigationJson).map((link, index) => <a key={link.url + index} href={link.url} className="rounded-xl px-4 py-3 font-semibold text-white hover:bg-white/10">{link.label}</a>)}</div></nav>}
     </header>
   );
 }
@@ -72,31 +70,31 @@ function BlogHero({ search, onSearch, categories, selected, onSelect, settings }
   search: string; onSearch: (value: string) => void; categories: string[]; selected: string; onSelect: (value: string) => void; settings: BlogSettings;
 }) {
   return (
-    <section data-blog-region="hero" className="relative isolate overflow-hidden border-b border-cyan-300/15 bg-[#050d22] text-white">
+    <section data-blog-region="hero" data-hero-style={settings.heroStyle} className="relative isolate overflow-hidden border-b border-cyan-300/15 bg-[#050d22] text-white" style={settings.heroImageUrl ? { backgroundImage: `linear-gradient(90deg,rgba(3,10,30,.88),rgba(3,10,30,.45)),url(${settings.heroImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
       <div aria-hidden="true" className="pointer-events-none absolute -left-36 top-8 h-80 w-80 rounded-full bg-blue-600/30 blur-[100px]" />
       <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-20 h-96 w-96 rounded-full bg-violet-600/30 blur-[110px]" />
       <div className={`${wrap} relative grid items-center gap-8 py-12 sm:py-16 lg:grid-cols-[1.1fr_.9fr] lg:py-20`}>
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-violet-300/40 bg-violet-400/10 px-4 py-2 text-xs font-bold tracking-wide text-cyan-100"><BookOpen size={14} /> BLOG · TECNOLOGIA · SVILUPPO</span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-violet-300/40 bg-violet-400/10 px-4 py-2 text-xs font-bold tracking-wide text-cyan-100"><BookOpen size={14} /> {settings.heroEyebrow}</span>
           <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.04] tracking-tight text-white sm:text-5xl lg:text-6xl">{settings.heroTitle}</h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">{settings.heroDescription}</p>
-          <label className="mt-7 flex max-w-2xl items-center gap-3 rounded-2xl border border-blue-300/40 bg-white/[0.07] p-2 pl-4 shadow-[0_0_28px_rgba(37,99,235,.16)] backdrop-blur-xl">
+          {settings.showSearch && <label className="mt-7 flex max-w-2xl items-center gap-3 rounded-2xl border border-blue-300/40 bg-white/[0.07] p-2 pl-4 shadow-[0_0_28px_rgba(37,99,235,.16)] backdrop-blur-xl">
             <Search size={19} className="shrink-0 text-cyan-300" />
             <input value={search} onChange={event => onSearch(event.target.value)} placeholder="Cerca un articolo, tecnologia o argomento..." className="min-w-0 flex-1 bg-transparent py-2 text-sm text-white outline-none placeholder:text-slate-400" aria-label="Cerca articoli" />
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-cyan-400 to-violet-600 text-white shadow-[0_0_18px_rgba(59,130,246,.45)]"><Search size={18} /></span>
-          </label>
-          <div className="mt-5 flex flex-wrap gap-2" aria-label="Filtra per categoria">
+          </label>}
+          {settings.showCategoryFilters && <div className="mt-5 flex flex-wrap gap-2" aria-label="Filtra per categoria">
             {['Tutti', ...categories].map(category => <button key={category} type="button" aria-pressed={selected === category} onClick={() => onSelect(category)} className={`rounded-full border px-4 py-2 text-xs font-bold transition ${selected === category ? 'border-cyan-300 bg-gradient-to-r from-blue-600 to-violet-600 text-white shadow-[0_0_16px_rgba(59,130,246,.35)]' : 'border-white/15 bg-white/[0.04] text-slate-300 hover:border-cyan-300/50 hover:text-white'}`}>{category}</button>)}
-          </div>
+          </div>}
         </div>
-        <div className="relative hidden lg:block">
+        {settings.heroStyle !== "text-only" && <div className="relative hidden lg:block">
           <div className="absolute inset-8 rounded-full bg-gradient-to-br from-blue-500/25 to-violet-600/30 blur-3xl" />
           <div className="relative rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-white/10 to-white/[0.02] p-3 shadow-[0_25px_80px_rgba(2,8,23,.5)] backdrop-blur-xl">
-            <div className="overflow-hidden rounded-[1.5rem] border border-white/10"><TechVisual label=".NET · AI" /></div>
+            <div className="overflow-hidden rounded-[1.5rem] border border-white/10">{settings.heroImageUrl ? <img src={settings.heroImageUrl} alt="" className="h-full min-h-64 w-full object-cover" /> : <TechVisual label=".NET · AI" />}</div>
             <div className="absolute -left-5 top-10 rounded-xl border border-cyan-300/30 bg-[#071633]/90 px-4 py-3 text-sm font-extrabold text-cyan-200 shadow-[0_0_24px_rgba(34,211,238,.18)]">.NET 10</div>
             <div className="absolute -right-4 bottom-10 rounded-xl border border-violet-300/30 bg-[#101039]/90 px-4 py-3 text-sm font-extrabold text-violet-200 shadow-[0_0_24px_rgba(139,92,246,.2)]">AI · Cloud</div>
           </div>
-        </div>
+        </div>}
       </div>
     </section>
   );
@@ -126,7 +124,7 @@ function ArticleCard({ post }: { post: BlogPost }) {
 }
 
 function BlogFooter({ settings }: { settings: BlogSettings }) {
-  return <footer data-blog-region="footer" className="border-t border-cyan-300/15 bg-[#050d22] text-white"><div className={`${wrap} grid gap-9 py-10 sm:grid-cols-2 lg:grid-cols-4`}><div className="sm:col-span-2 lg:col-span-1"><div className="flex items-center gap-3"><BrandMark settings={settings} /><div><p className="font-extrabold tracking-wide">{settings.siteName}</p><p className="text-xs text-slate-400">{settings.tagline}</p></div></div><p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">Sviluppo software, architetture, AI e prodotti digitali. Idee, esperienze e soluzioni dal mondo tech.</p></div><div><h2 className="text-sm font-extrabold">Navigazione</h2><ul className="mt-4 space-y-2 text-sm text-slate-400"><li><a className="hover:text-cyan-300" href="/">Home</a></li><li><a className="hover:text-cyan-300" href="/#progetti">Progetti</a></li><li><a className="text-cyan-300" href="/blog">Blog</a></li><li><a className="hover:text-cyan-300" href="/#contatti">Contatti</a></li></ul></div><div><h2 className="text-sm font-extrabold">Argomenti</h2><ul className="mt-4 space-y-2 text-sm text-slate-400">{['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps'].map(item => <li key={item}>{item}</li>)}</ul></div><div><h2 className="text-sm font-extrabold">Seguimi</h2><p className="mt-4 text-sm leading-6 text-slate-400">Per collaborazioni, progetti e confronti tecnici, visita la homepage e usa la sezione contatti.</p><a href="/#contatti" className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 px-4 py-2 text-sm font-bold text-cyan-200 transition hover:bg-cyan-300/10">Contattami <ArrowRight size={15} /></a></div></div><div className="border-t border-white/10"><div className={`${wrap} flex flex-col gap-2 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between`}><span>© {new Date().getFullYear()} {settings.authorName}. Tutti i diritti riservati.</span><a href="/" className="hover:text-cyan-300">Portfolio personale</a></div></div></footer>;
+  return <footer data-blog-region="footer" className="border-t border-cyan-300/15 bg-[#050d22] text-white"><div className={`${wrap} grid gap-9 py-10 sm:grid-cols-2 lg:grid-cols-4`}><div className="sm:col-span-2 lg:col-span-1"><div className="flex items-center gap-3"><BrandMark settings={settings} /><div><p className="font-extrabold tracking-wide">{settings.siteName}</p><p className="text-xs text-slate-400">{settings.tagline}</p></div></div><p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">{settings.footerDescription}</p></div><div><h2 className="text-sm font-extrabold">Navigazione</h2><ul className="mt-4 space-y-2 text-sm text-slate-400"><li><a className="hover:text-cyan-300" href="/">Home</a></li><li><a className="hover:text-cyan-300" href="/#progetti">Progetti</a></li><li><a className="text-cyan-300" href="/blog">Blog</a></li><li><a className="hover:text-cyan-300" href="/#contatti">Contatti</a></li></ul></div><div><h2 className="text-sm font-extrabold">Argomenti</h2><ul className="mt-4 space-y-2 text-sm text-slate-400">{['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps'].map(item => <li key={item}>{item}</li>)}</ul></div><div><h2 className="text-sm font-extrabold">Seguimi</h2><p className="mt-4 text-sm leading-6 text-slate-400">Per collaborazioni, progetti e confronti tecnici, visita la homepage e usa la sezione contatti.</p><a href="/#contatti" className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 px-4 py-2 text-sm font-bold text-cyan-200 transition hover:bg-cyan-300/10">Contattami <ArrowRight size={15} /></a></div></div><div className="border-t border-white/10"><div className={`${wrap} flex flex-col gap-2 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between`}><span>© {new Date().getFullYear()} {settings.authorName}. {settings.copyrightText}</span><a href="/" className="hover:text-cyan-300">Portfolio personale</a></div></div></footer>;
 }
 
 export function BlogIndexPage() {
@@ -158,14 +156,14 @@ export function BlogIndexPage() {
   const otherPosts = filteredPosts.slice(1);
 
   return (
-    <div data-blog-template={settings.template} className="min-h-screen font-sans text-slate-800 antialiased selection:text-white" style={{ backgroundColor: settings.backgroundColor, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor } as React.CSSProperties}>
-      <BlogHeader settings={settings} />
-      <BlogHero settings={settings} search={search} onSearch={setSearch} categories={categories.length ? categories : categoriesFallback} selected={selectedCategory} onSelect={setSelectedCategory} />
+    <div data-blog-template={settings.template} data-card-style={settings.cardStyle} data-button-style={settings.buttonStyle} data-radius={settings.borderRadius} data-shadow={settings.shadowStyle} className="min-h-screen font-sans text-slate-800 antialiased selection:text-white" style={{ backgroundColor: settings.backgroundColor, fontFamily: settings.fontFamily === 'system' ? 'system-ui' : settings.fontFamily, fontSize: settings.baseFontSize, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor, "--blog-content-width": settings.contentWidth === 'narrow' ? '58rem' : settings.contentWidth === 'standard' ? '72rem' : settings.contentWidth === 'full' ? '100%' : '112rem', "--blog-grid-columns": settings.gridColumns } as React.CSSProperties}>
+      {settings.showHeader && {settings.showHeader && <BlogHeader settings={settings} />}}
+      {settings.showHero && <BlogHero settings={settings} search={search} onSearch={setSearch} categories={categories.length ? categories : categoriesFallback} selected={selectedCategory} onSelect={setSelectedCategory} />}
       <main className={`${wrap} py-8 sm:py-12`}>
         {loading && <div role="status" className="rounded-3xl border border-blue-100 bg-white p-10 text-center font-semibold text-blue-800 shadow-sm">Caricamento degli articoli…</div>}
         {error && <div role="alert" className="rounded-3xl border border-red-200 bg-white p-8 text-center text-red-700 shadow-sm">{error}</div>}
         {!loading && !error && filteredPosts.length === 0 && <div className="rounded-3xl border border-dashed border-blue-200 bg-white p-12 text-center shadow-sm"><Sparkles className="mx-auto text-violet-500" size={28} /><h2 className="mt-4 text-2xl font-extrabold text-[#101b46]">{posts.length ? 'Nessun articolo trovato' : 'I primi articoli stanno arrivando'}</h2><p className="mt-2 text-sm text-slate-600">{posts.length ? 'Prova a cambiare la ricerca o la categoria selezionata.' : 'Qui troverai approfondimenti su sviluppo software, architetture e tecnologia.'}</p>{(search || selectedCategory !== 'Tutti') && <button type="button" onClick={() => { setSearch(''); setSelectedCategory('Tutti'); }} className="mt-5 rounded-full bg-blue-700 px-5 py-2 text-sm font-bold text-white">Azzera filtri</button>}</div>}
-        {!loading && !error && featured && (
+        {!loading && !error && featured && settings.showFeaturedArticle && (
           <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
             <div>
               <a href={`/blog/${featured.slug}`} className={`group grid overflow-hidden rounded-[1.8rem] border border-violet-200 bg-white shadow-[0_14px_38px_rgba(30,41,91,.12)] transition hover:-translate-y-1 hover:shadow-[0_22px_50px_rgba(79,70,229,.18)] md:grid-cols-[.95fr_1.05fr] ${focusRing}`}>
@@ -173,16 +171,16 @@ export function BlogIndexPage() {
                 <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10"><span className="w-fit rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-blue-700">{featured.category}</span><h2 className="mt-4 text-2xl font-black leading-tight tracking-tight text-[#101b46] sm:text-3xl">{featured.title}</h2><p className="mt-4 line-clamp-3 text-sm leading-7 text-slate-600 sm:text-base">{featured.excerpt}</p><div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-5"><PostMeta post={featured} minutes={readingTime(featured.contentMarkdown || '')} /><span className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(79,70,229,.25)]">Leggi <ArrowRight size={16} /></span></div></div>
               </a>
               <div className="mb-5 mt-10 flex items-end justify-between gap-3"><div><p className="text-xs font-extrabold uppercase tracking-[.2em] text-violet-700">Dal blog</p><h2 className="mt-2 text-2xl font-black tracking-tight text-[#101b46] sm:text-3xl">Ultimi articoli</h2></div><span className="rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-bold text-blue-800">{filteredPosts.length} {filteredPosts.length === 1 ? 'articolo' : 'articoli'}</span></div>
-              {otherPosts.length > 0 && <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">{otherPosts.map(post => <ArticleCard key={post.id} post={post} />)}</div>}
+              {otherPosts.length > 0 && <div className="blog-post-grid grid gap-5">{otherPosts.map(post => <ArticleCard key={post.id} post={post} />)}</div>}
             </div>
-            <aside className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
-              <section className="rounded-[1.6rem] border border-violet-200 bg-white p-6 shadow-[0_10px_30px_rgba(30,41,91,.09)]"><div className="flex items-center gap-4"><div className="grid h-16 w-16 place-items-center rounded-full border-2 border-cyan-300 bg-gradient-to-br from-[#071633] to-violet-900 text-lg font-black text-white shadow-[0_0_20px_rgba(34,211,238,.3)]">ZAK</div><div><h2 className="font-extrabold text-[#101b46]">Zak Naceur</h2><p className="mt-1 text-xs font-semibold text-blue-700">Software Developer</p><p className="text-xs text-slate-500">.NET · AI · Architecture</p></div></div><p className="mt-5 text-sm leading-6 text-slate-600">Condivido idee, esperienze e soluzioni dal mondo dello sviluppo software e dei prodotti digitali.</p><a href="/#chi-sono" className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-blue-700 hover:text-violet-700">Scopri il mio profilo <ArrowRight size={15} /></a></section>
+            {settings.showSidebar && <aside className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
+              {settings.showAuthorCard && <section className="rounded-[1.6rem] border border-violet-200 bg-white p-6 shadow-[0_10px_30px_rgba(30,41,91,.09)]"><div className="flex items-center gap-4"><div className="grid h-16 w-16 place-items-center rounded-full border-2 border-cyan-300 bg-gradient-to-br from-[#071633] to-violet-900 text-lg font-black text-white shadow-[0_0_20px_rgba(34,211,238,.3)]">ZAK</div><div><h2 className="font-extrabold text-[#101b46]">Zak Naceur</h2><p className="mt-1 text-xs font-semibold text-blue-700">Software Developer</p><p className="text-xs text-slate-500">.NET · AI · Architecture</p></div></div><p className="mt-5 text-sm leading-6 text-slate-600">Condivido idee, esperienze e soluzioni dal mondo dello sviluppo software e dei prodotti digitali.</p><a href="/#chi-sono" className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-blue-700 hover:text-violet-700">Scopri il mio profilo <ArrowRight size={15} /></a></section>}
               <section className="overflow-hidden rounded-[1.6rem] border border-violet-500/30 bg-gradient-to-br from-[#10134b] via-[#151d66] to-[#34105c] p-6 text-white shadow-[0_12px_35px_rgba(49,46,129,.22)]"><div className="flex items-center gap-2 text-cyan-200"><FolderOpen size={18} /><span className="text-xs font-extrabold uppercase tracking-[.18em]">Esplora</span></div><h2 className="mt-3 text-xl font-extrabold">Categorie</h2><div className="mt-4 flex flex-wrap gap-2">{(categories.length ? categories : categoriesFallback).map(category => <button key={category} type="button" onClick={() => { setSelectedCategory(category); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:border-cyan-200 hover:bg-cyan-300/15">{category}</button>)}</div></section>
             </aside>
           </div>
         )}
       </main>
-      <BlogFooter settings={settings} />
+      {settings.showFooter && {settings.showFooter && <BlogFooter settings={settings} />}}
     </div>
   );
 }
@@ -274,14 +272,14 @@ export function BlogArticlePage({ slug }: { slug: string }) {
   }, [post]);
 
   return (
-    <div data-blog-template={settings.template} className="min-h-screen font-sans text-slate-800 antialiased" style={{ backgroundColor: settings.backgroundColor, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor } as React.CSSProperties}>
+    <div data-blog-template={settings.template} data-card-style={settings.cardStyle} data-button-style={settings.buttonStyle} data-radius={settings.borderRadius} data-shadow={settings.shadowStyle} className="min-h-screen font-sans text-slate-800 antialiased" style={{ backgroundColor: settings.backgroundColor, fontFamily: settings.fontFamily === 'system' ? 'system-ui' : settings.fontFamily, fontSize: settings.baseFontSize, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor, "--blog-content-width": settings.contentWidth === 'narrow' ? '58rem' : settings.contentWidth === 'standard' ? '72rem' : settings.contentWidth === 'full' ? '100%' : '112rem' } as React.CSSProperties}>
       <BlogHeader settings={settings} />
       <main>
         {error ? <section className={`${wrap} py-20`}><div className="rounded-3xl border border-red-200 bg-white p-10 text-center"><h1 className="text-3xl font-black text-[#101b46]">Articolo non disponibile</h1><a className="mt-6 inline-flex items-center gap-2 font-bold text-blue-700" href="/blog"><ArrowLeft size={17} /> Torna al blog</a></div></section>
         : !post ? <section className={`${wrap} py-20`}><div role="status" className="rounded-3xl border border-blue-100 bg-white p-10 text-center font-semibold text-blue-800">Caricamento articolo…</div></section>
         : <>
           <div className="border-b border-cyan-300/15 bg-[#050d22] text-white"><div className={`${wrap} py-4 text-xs text-slate-400`}><a href="/blog" className="hover:text-cyan-300">Blog</a><span className="mx-2">/</span><span>{post.category}</span><span className="mx-2">/</span><span className="text-slate-200">{post.title}</span></div></div>
-          <section className="bg-[#050d22] pb-10 text-white"><div className={wrap}><div className="overflow-hidden rounded-[1.8rem] border border-cyan-300/30 shadow-[0_0_45px_rgba(37,99,235,.2)]">{post.coverImageUrl ? <img src={post.coverImageUrl} alt="" className="max-h-[24rem] w-full object-cover" /> : <TechVisual label={post.category || 'TECH'} />}</div></div></section>
+          {settings.showArticleCover && <section className="bg-[#050d22] pb-10 text-white"><div className={wrap}><div className="overflow-hidden rounded-[1.8rem] border border-cyan-300/30 shadow-[0_0_45px_rgba(37,99,235,.2)]">{post.coverImageUrl ? <img src={post.coverImageUrl} alt="" className="max-h-[24rem] w-full object-cover" /> : <TechVisual label={post.category || 'TECH'} />}</div></div></section>}
           <div className={`${wrap} grid items-start gap-7 pb-16 lg:grid-cols-[minmax(0,1fr)_20rem]`}>
             <article data-blog-region="article" className="-mt-14 relative z-10 rounded-[1.8rem] border border-violet-200 bg-white p-6 shadow-[0_18px_50px_rgba(30,41,91,.14)] sm:p-9 lg:p-12">
               <a href="/blog" className={`mb-7 inline-flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-violet-700 ${focusRing}`}><ArrowLeft size={16} /> Tutti gli articoli</a>
@@ -292,7 +290,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
               <MarkdownBody markdown={post.contentMarkdown} />
               <div className="mt-12 border-t border-slate-100 pt-7"><p className="text-sm font-bold text-slate-500">Hai trovato utile questo articolo?</p><a href="/#contatti" className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg">Parliamone <ArrowRight size={16} /></a></div>
             </article>
-            <aside className="grid gap-5 lg:sticky lg:top-24"><ArticleContents markdown={post.contentMarkdown} /><section className="rounded-2xl border border-violet-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-3"><BrandMark settings={settings} /><div><h2 className="font-extrabold text-[#101b46]">{settings.authorName}</h2><p className="text-xs text-slate-500">{settings.tagline}</p></div></div><p className="mt-4 text-sm leading-6 text-slate-600">.NET, architetture software, AI e prodotti digitali.</p><a href="/#chi-sono" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-blue-700">Profilo completo <ArrowRight size={14} /></a></section></aside>
+            {settings.showSidebar && <aside className="grid gap-5 lg:sticky lg:top-24"><ArticleContents markdown={post.contentMarkdown} />{settings.showAuthorCard && <section className="rounded-2xl border border-violet-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-3"><BrandMark settings={settings} /><div><h2 className="font-extrabold text-[#101b46]">{settings.authorName}</h2><p className="text-xs text-slate-500">{settings.tagline}</p></div></div><p className="mt-4 text-sm leading-6 text-slate-600">.NET, architetture software, AI e prodotti digitali.</p><a href="/#chi-sono" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-blue-700">Profilo completo <ArrowRight size={14} /></a></section></aside>}
           </div>
         </>}
       </main>
