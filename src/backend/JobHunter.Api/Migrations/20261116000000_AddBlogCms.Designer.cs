@@ -11,6 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JobHunter.Api.Migrations
 {
     [DbContext(typeof(JobHunterDbContext))]
+    [Migration("20261116000000_AddBlogCms")]
     partial class AddBlogCms
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
