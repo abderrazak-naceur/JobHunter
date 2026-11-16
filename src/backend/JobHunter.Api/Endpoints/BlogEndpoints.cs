@@ -35,7 +35,7 @@ public static partial class BlogEndpoints
         {
             var currentPage = Math.Max(1, page ?? 1);
             var size = Math.Clamp(pageSize ?? 9, 1, 30);
-            var query = db.BlogPosts.AsNoTracking().Where(x => x.Status == "Published" && x.PublishedAt <= DateTimeOffset.UtcNow);
+            var query = db.BlogPosts.AsNoTracking().Where(x => x.Status == "Published");
             if (!string.IsNullOrWhiteSpace(category))
                 query = query.Where(x => x.Category == category.Trim());
             var total = await query.CountAsync(ct);
@@ -47,7 +47,7 @@ public static partial class BlogEndpoints
         endpoints.MapGet("/api/v1/blog/{slug}", async (string slug, JobHunterDbContext db, CancellationToken ct) =>
         {
             var post = await db.BlogPosts.AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Slug == slug && x.Status == "Published" && x.PublishedAt <= DateTimeOffset.UtcNow, ct);
+                .FirstOrDefaultAsync(x => x.Slug == slug && x.Status == "Published", ct);
             return post is null ? Results.NotFound() : Results.Ok(ToResponse(post));
         }).AllowAnonymous().WithTags("Blog");
 
