@@ -15,9 +15,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     {view === 'admin'
       ? <Suspense fallback={<LoadingScreen variant="admin" />}><AdminRoot /></Suspense>
        : view === 'blog'
-        ? <Suspense fallback={<LoadingScreen variant="portfolio" />}><BlogPages.BlogIndexPage /></Suspense>
+        ? <Suspense fallback={<LoadingScreen variant="portfolio" />}><BlogPages /></Suspense>
         : view === 'blog-post'
-          ? <Suspense fallback={<LoadingScreen variant="portfolio" />}><BlogPages.BlogArticlePage slug={decodeURIComponent(window.location.pathname.slice('/blog/'.length))} /></Suspense>
+          ? <Suspense fallback={<LoadingScreen variant="portfolio" />}><BlogPages /></Suspense>
           : <Suspense fallback={<LoadingScreen variant="portfolio" />}><PortfolioRoute /></Suspense>}
   </React.StrictMode>
 );
