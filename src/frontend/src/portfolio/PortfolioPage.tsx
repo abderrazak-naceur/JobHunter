@@ -139,6 +139,7 @@ export default function PortfolioPage({ content = defaultContent }: Props) {
           )}
 
           <div className="flex items-center gap-2">
+            <a href="/blog" className={`rounded-full border border-lav-300 px-4 py-2 text-sm font-bold text-brand-700 transition hover:bg-lav-100 ${focusRing}`}>Blog</a>
             {email && (
               <a href={`mailto:${email}`} className={`hidden rounded-full bg-rose-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-rose-700 sm:inline-block ${focusRing}`}>
                 Contattami
