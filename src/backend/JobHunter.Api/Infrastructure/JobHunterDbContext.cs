@@ -6,6 +6,7 @@ namespace JobHunter.Api.Infrastructure;
 public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> options) : DbContext(options)
 {
     public DbSet<Company> Companies => Set<Company>();
+    public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
     public DbSet<PortfolioProfile> PortfolioProfiles => Set<PortfolioProfile>();
     public DbSet<PortfolioAsset> PortfolioAssets => Set<PortfolioAsset>();
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
@@ -19,6 +20,22 @@ public sealed class JobHunterDbContext(DbContextOptions<JobHunterDbContext> opti
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var blogPost = modelBuilder.Entity<BlogPost>();
+        blogPost.ToTable("BlogPosts");
+        blogPost.HasKey(x => x.Id);
+        blogPost.Property(x => x.Title).HasMaxLength(180).IsRequired();
+        blogPost.Property(x => x.Slug).HasMaxLength(180).IsRequired();
+        blogPost.Property(x => x.Excerpt).HasMaxLength(500).IsRequired();
+        blogPost.Property(x => x.ContentMarkdown).IsRequired();
+        blogPost.Property(x => x.Category).HasMaxLength(80).IsRequired();
+        blogPost.Property(x => x.TagsJson).IsRequired();
+        blogPost.Property(x => x.CoverImageUrl).HasMaxLength(1000);
+        blogPost.Property(x => x.SeoTitle).HasMaxLength(180);
+        blogPost.Property(x => x.SeoDescription).HasMaxLength(320);
+        blogPost.Property(x => x.Status).HasMaxLength(20).IsRequired();
+        blogPost.HasIndex(x => x.Slug).IsUnique();
+        blogPost.HasIndex(x => new { x.Status, x.PublishedAt });
+
         var company = modelBuilder.Entity<Company>();
         company.ToTable("Companies");
         company.HasKey(x => x.Id);
