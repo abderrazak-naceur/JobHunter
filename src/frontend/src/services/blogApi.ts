@@ -30,7 +30,10 @@ export const defaultBlogSettings: BlogSettings = {
   siteName: 'ZAK NACEUR', authorName: 'Zak Naceur', tagline: 'Developer · Tech Blog',
   logoUrl: '', heroTitle: 'Appunti dal mondo tech.',
   heroDescription: 'Approfondimenti su .NET, architetture software, AI, DevOps e sviluppo di prodotti digitali, con esempi pratici ed esperienze reali.',
-  primaryColor: '#2563eb', accentColor: '#8b5cf6', backgroundColor: '#eef1ff', template: 'premium-tech'
+  primaryColor: '#2563eb', accentColor: '#8b5cf6', backgroundColor: '#eef1ff',
+  textColor: '#172554', mutedTextColor: '#64748b', surfaceColor: '#ffffff',
+  headerBackgroundColor: '#050d22', heroBackgroundColor: '#050d22', cardBackgroundColor: '#ffffff',
+  footerBackgroundColor: '#050d22', borderColor: '#dbeafe', buttonTextColor: '#ffffff', template: 'premium-tech'
 };
 
 async function request<T>(path: string, init: RequestInit = {}, admin = false): Promise<T> {
