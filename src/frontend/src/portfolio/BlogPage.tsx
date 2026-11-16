@@ -272,7 +272,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
       if (!tag) { tag = document.createElement('meta'); tag.setAttribute('property', property); document.head.appendChild(tag); }
       tag.content = value;
     }
-  }, [post]);
+  }, [post, settings.siteName]);
 
   return (
     <div data-blog-template={settings.template} data-card-style={settings.cardStyle} data-button-style={settings.buttonStyle} data-radius={settings.borderRadius} data-shadow={settings.shadowStyle} data-article-layout={settings.articleLayout} className="min-h-screen font-sans text-slate-800 antialiased" style={{ backgroundColor: settings.backgroundColor, fontFamily: settings.fontFamily === 'system' ? 'system-ui' : settings.fontFamily, fontSize: settings.baseFontSize, "--blog-heading-font": settings.headingFontFamily === 'inherit' ? 'inherit' : settings.headingFontFamily, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor, "--blog-text": settings.textColor, "--blog-muted": settings.mutedTextColor, "--blog-surface": settings.surfaceColor, "--blog-header": settings.headerBackgroundColor, "--blog-hero": settings.heroBackgroundColor, "--blog-card": settings.cardBackgroundColor, "--blog-footer": settings.footerBackgroundColor, "--blog-border": settings.borderColor, "--blog-button-text": settings.buttonTextColor, "--blog-content-width": settings.contentWidth === 'narrow' ? '58rem' : settings.contentWidth === 'standard' ? '72rem' : settings.contentWidth === 'full' ? '100%' : '112rem' } as React.CSSProperties}>
