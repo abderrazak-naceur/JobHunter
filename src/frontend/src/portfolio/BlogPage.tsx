@@ -8,7 +8,7 @@ import './portfolio.css';
 
 const wrap = 'blog-content-wrap mx-auto w-full max-w-[112rem] px-5 sm:px-8 lg:px-12 2xl:px-16';
 type BlogLink = { label: string; url: string };
-function parseLinks(value: string): BlogLink[] { try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed.filter((item): item is BlogLink => typeof item?.label === 'string' && typeof item?.url === 'string' && /^(https?:\\/\\/|mailto:|tel:|\\/|#)/i.test(item.url) && !item.url.startsWith('//')) : []; } catch { return []; } }
+function parseLinks(value: string): BlogLink[] { try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed.filter((item): item is BlogLink => { if (typeof item?.label !== 'string' || typeof item?.url !== 'string') return false; const url = item.url.trim().toLowerCase(); return (url.startsWith('https://') || url.startsWith('http://') || url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('/') && !url.startsWith('//') || url.startsWith('#')); }) : []; } catch { return []; } }
 const focusRing = 'focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-cyan-300';
 const categoriesFallback = ['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps', 'Tutorial'];
 
