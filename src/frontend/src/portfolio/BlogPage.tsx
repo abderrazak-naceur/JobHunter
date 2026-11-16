@@ -134,7 +134,7 @@ export function BlogIndexPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
-  useEffect(() => { blogApi.settings().then(setSettings).catch(() => undefined); }, []);
+  useEffect(() => { blogApi.settings().then(value => setSettings(value)).catch(() => undefined); }, []);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tutti');
   const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
@@ -194,7 +194,7 @@ function slugifyHeading(value: string) {
 }
 
 function renderInline(value: string): ReactNode[] {
-  const pattern = /(!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\))|(\[([^\]]+)\]\((https?:\/\/[^)\s]+)\))|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(\`([^\`]+)\`)/g;
+  const pattern = /(!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\))|(\[([^\]]+)\]\((https?:\/\/[^)\s]+)\))|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)/g;
   const nodes: ReactNode[] = [];
   let cursor = 0;
   for (const match of value.matchAll(pattern)) {
@@ -271,7 +271,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
       if (!tag) { tag = document.createElement('meta'); tag.setAttribute('property', property); document.head.appendChild(tag); }
       tag.content = value;
     }
-  }, [post, settings.siteName]);
+  }, [post]);
 
   return (
     <div data-blog-template={settings.template} className="min-h-screen font-sans text-slate-800 antialiased" style={{ backgroundColor: settings.backgroundColor, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor } as React.CSSProperties}>
