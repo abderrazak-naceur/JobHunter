@@ -3,7 +3,7 @@ import {
   ArrowLeft, ArrowRight, CalendarDays, Clock3, Code2, FolderOpen,
   Menu, Search, Tag, X, BookOpen, Sparkles
 } from 'lucide-react';
-import { blogApi, type BlogPost } from '../services/blogApi';
+import { blogApi, defaultBlogSettings, type BlogPost, type BlogSettings } from '../services/blogApi';
 import './portfolio.css';
 
 const wrap = 'mx-auto w-full max-w-[112rem] px-5 sm:px-8 lg:px-12 2xl:px-16';
@@ -20,18 +20,20 @@ function readingTime(markdown: string) {
   return Math.max(1, Math.ceil(markdown.trim().split(/\s+/).length / 200));
 }
 
-function BrandMark() {
-  return <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cyan-300/80 bg-[#071633] text-xs font-black tracking-tight text-white shadow-[0_0_16px_rgba(34,211,238,.45),inset_0_0_14px_rgba(99,102,241,.25)]">ZAK</span>;
+function BrandMark({ settings }: { settings: BlogSettings }) {
+  if (settings.logoUrl) return <img src={settings.logoUrl} alt="" className="h-11 w-11 shrink-0 rounded-full border border-white/30 object-cover" />;
+  const initials = settings.siteName.split(/\\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'BLOG';
+  return <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/40 text-xs font-black tracking-tight text-white shadow-lg" style={{ background: `linear-gradient(135deg,${settings.primaryColor},${settings.accentColor})` }}>{initials}</span>;
 }
 
-function BlogHeader() {
+function BlogHeader({ settings }: { settings: BlogSettings }) {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="sticky top-0 z-50 border-b border-cyan-300/15 bg-[#050d22]/95 text-white shadow-[0_8px_30px_rgba(2,8,23,.25)] backdrop-blur-xl">
       <div className={`${wrap} flex min-h-[4.6rem] items-center justify-between gap-4 py-3`}>
-        <a href="/" aria-label="Zak Naceur, homepage" className={`flex items-center gap-3 ${focusRing}`}>
-          <BrandMark />
-          <span className="leading-tight"><span className="block text-sm font-extrabold tracking-wide sm:text-base">ZAK NACEUR</span><span className="mt-0.5 block text-[11px] text-slate-300 sm:text-xs">Developer · Tech Blog</span></span>
+        <a href="/" aria-label="{settings.siteName}, homepage" className={`flex items-center gap-3 ${focusRing}`}>
+          <BrandMark settings={settings} />
+          <span className="leading-tight"><span className="block text-sm font-extrabold tracking-wide sm:text-base">{settings.siteName}</span><span className="mt-0.5 block text-[11px] text-slate-300 sm:text-xs">{settings.tagline}</span></span>
         </a>
         <nav aria-label="Navigazione principale" className="hidden items-center gap-1 lg:flex">
           <a href="/" className={`rounded-full px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white ${focusRing}`}>Home</a>
@@ -66,8 +68,8 @@ function TechVisual({ label = 'TECH' }: { label?: string }) {
   );
 }
 
-function BlogHero({ search, onSearch, categories, selected, onSelect }: {
-  search: string; onSearch: (value: string) => void; categories: string[]; selected: string; onSelect: (value: string) => void;
+function BlogHero({ search, onSearch, categories, selected, onSelect, settings }: {
+  search: string; onSearch: (value: string) => void; categories: string[]; selected: string; onSelect: (value: string) => void; settings: BlogSettings;
 }) {
   return (
     <section className="relative isolate overflow-hidden border-b border-cyan-300/15 bg-[#050d22] text-white">
@@ -76,8 +78,8 @@ function BlogHero({ search, onSearch, categories, selected, onSelect }: {
       <div className={`${wrap} relative grid items-center gap-8 py-12 sm:py-16 lg:grid-cols-[1.1fr_.9fr] lg:py-20`}>
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-violet-300/40 bg-violet-400/10 px-4 py-2 text-xs font-bold tracking-wide text-cyan-100"><BookOpen size={14} /> BLOG · TECNOLOGIA · SVILUPPO</span>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.04] tracking-tight text-white sm:text-5xl lg:text-6xl">Appunti dal mondo <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">tech.</span></h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">Approfondimenti su .NET, architetture software, AI, DevOps e sviluppo di prodotti digitali, con esempi pratici ed esperienze reali.</p>
+          <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.04] tracking-tight text-white sm:text-5xl lg:text-6xl">{settings.heroTitle}</h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">{settings.heroDescription}</p>
           <label className="mt-7 flex max-w-2xl items-center gap-3 rounded-2xl border border-blue-300/40 bg-white/[0.07] p-2 pl-4 shadow-[0_0_28px_rgba(37,99,235,.16)] backdrop-blur-xl">
             <Search size={19} className="shrink-0 text-cyan-300" />
             <input value={search} onChange={event => onSearch(event.target.value)} placeholder="Cerca un articolo, tecnologia o argomento..." className="min-w-0 flex-1 bg-transparent py-2 text-sm text-white outline-none placeholder:text-slate-400" aria-label="Cerca articoli" />
@@ -123,16 +125,20 @@ function ArticleCard({ post }: { post: BlogPost }) {
   );
 }
 
-function BlogFooter() {
-  return <footer className="border-t border-cyan-300/15 bg-[#050d22] text-white"><div className={`${wrap} grid gap-9 py-10 sm:grid-cols-2 lg:grid-cols-4`}><div className="sm:col-span-2 lg:col-span-1"><div className="flex items-center gap-3"><BrandMark /><div><p className="font-extrabold tracking-wide">ZAK NACEUR</p><p className="text-xs text-slate-400">Developer · Tech Blog</p></div></div><p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">Sviluppo software, architetture, AI e prodotti digitali. Idee, esperienze e soluzioni dal mondo tech.</p></div><div><h2 className="text-sm font-extrabold">Navigazione</h2><ul className="mt-4 space-y-2 text-sm text-slate-400"><li><a className="hover:text-cyan-300" href="/">Home</a></li><li><a className="hover:text-cyan-300" href="/#progetti">Progetti</a></li><li><a className="text-cyan-300" href="/blog">Blog</a></li><li><a className="hover:text-cyan-300" href="/#contatti">Contatti</a></li></ul></div><div><h2 className="text-sm font-extrabold">Argomenti</h2><ul className="mt-4 space-y-2 text-sm text-slate-400">{['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps'].map(item => <li key={item}>{item}</li>)}</ul></div><div><h2 className="text-sm font-extrabold">Seguimi</h2><p className="mt-4 text-sm leading-6 text-slate-400">Per collaborazioni, progetti e confronti tecnici, visita la homepage e usa la sezione contatti.</p><a href="/#contatti" className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 px-4 py-2 text-sm font-bold text-cyan-200 transition hover:bg-cyan-300/10">Contattami <ArrowRight size={15} /></a></div></div><div className="border-t border-white/10"><div className={`${wrap} flex flex-col gap-2 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between`}><span>© {new Date().getFullYear()} Zak Naceur. Tutti i diritti riservati.</span><a href="/" className="hover:text-cyan-300">Portfolio personale</a></div></div></footer>;
+function BlogFooter({ settings }: { settings: BlogSettings }) {
+  return <footer className="border-t border-cyan-300/15 bg-[#050d22] text-white"><div className={`${wrap} grid gap-9 py-10 sm:grid-cols-2 lg:grid-cols-4`}><div className="sm:col-span-2 lg:col-span-1"><div className="flex items-center gap-3"><BrandMark /><div><p className="font-extrabold tracking-wide">{settings.siteName}</p><p className="text-xs text-slate-400">{settings.tagline}</p></div></div><p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">Sviluppo software, architetture, AI e prodotti digitali. Idee, esperienze e soluzioni dal mondo tech.</p></div><div><h2 className="text-sm font-extrabold">Navigazione</h2><ul className="mt-4 space-y-2 text-sm text-slate-400"><li><a className="hover:text-cyan-300" href="/">Home</a></li><li><a className="hover:text-cyan-300" href="/#progetti">Progetti</a></li><li><a className="text-cyan-300" href="/blog">Blog</a></li><li><a className="hover:text-cyan-300" href="/#contatti">Contatti</a></li></ul></div><div><h2 className="text-sm font-extrabold">Argomenti</h2><ul className="mt-4 space-y-2 text-sm text-slate-400">{['.NET', 'Architettura', 'AI', 'Frontend', 'DevOps'].map(item => <li key={item}>{item}</li>)}</ul></div><div><h2 className="text-sm font-extrabold">Seguimi</h2><p className="mt-4 text-sm leading-6 text-slate-400">Per collaborazioni, progetti e confronti tecnici, visita la homepage e usa la sezione contatti.</p><a href="/#contatti" className="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 px-4 py-2 text-sm font-bold text-cyan-200 transition hover:bg-cyan-300/10">Contattami <ArrowRight size={15} /></a></div></div><div className="border-t border-white/10"><div className={`${wrap} flex flex-col gap-2 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between`}><span>© {new Date().getFullYear()} {settings.authorName}. Tutti i diritti riservati.</span><a href="/" className="hover:text-cyan-300">Portfolio personale</a></div></div></footer>;
 }
 
 export function BlogIndexPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
+  useEffect(() => { blogApi.settings().then(setSettings).catch(() => undefined); }, []);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tutti');
+  const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
+  useEffect(() => { blogApi.settings().then(setSettings).catch(() => undefined); }, []);
 
   useEffect(() => {
     let active = true;
@@ -141,7 +147,7 @@ export function BlogIndexPage() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
-  useEffect(() => { document.title = 'Blog tech — Zak Naceur'; }, []);
+  useEffect(() => { document.title = `Blog — ${settings.siteName}`; }, [settings.siteName]);
 
   const categories = useMemo(() => [...new Set(posts.map(post => post.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'it')), [posts]);
   const filteredPosts = useMemo(() => posts.filter(post => {
@@ -154,9 +160,9 @@ export function BlogIndexPage() {
   const otherPosts = filteredPosts.slice(1);
 
   return (
-    <div className="min-h-screen bg-[#eef1ff] font-sans text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
-      <BlogHeader />
-      <BlogHero search={search} onSearch={setSearch} categories={categories.length ? categories : categoriesFallback} selected={selectedCategory} onSelect={setSelectedCategory} />
+    <div data-blog-template={settings.template} className="min-h-screen font-sans text-slate-800 antialiased selection:text-white" style={{ backgroundColor: settings.backgroundColor, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor } as React.CSSProperties}>
+      <BlogHeader settings={settings} />
+      <BlogHero settings={settings} search={search} onSearch={setSearch} categories={categories.length ? categories : categoriesFallback} selected={selectedCategory} onSelect={setSelectedCategory} />
       <main className={`${wrap} py-8 sm:py-12`}>
         {loading && <div role="status" className="rounded-3xl border border-blue-100 bg-white p-10 text-center font-semibold text-blue-800 shadow-sm">Caricamento degli articoli…</div>}
         {error && <div role="alert" className="rounded-3xl border border-red-200 bg-white p-8 text-center text-red-700 shadow-sm">{error}</div>}
@@ -178,7 +184,7 @@ export function BlogIndexPage() {
           </div>
         )}
       </main>
-      <BlogFooter />
+      <BlogFooter settings={settings} />
     </div>
   );
 }
@@ -237,7 +243,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
   }, [slug]);
   useEffect(() => {
     if (!post) return;
-    document.title = (post.seoTitle || post.title) + ' — Zak Naceur';
+    document.title = (post.seoTitle || post.title) + ' — ' + settings.siteName;
     const description = post.seoDescription || post.excerpt;
     let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
@@ -247,11 +253,11 @@ export function BlogArticlePage({ slug }: { slug: string }) {
       if (!tag) { tag = document.createElement('meta'); tag.setAttribute('property', property); document.head.appendChild(tag); }
       tag.content = value;
     }
-  }, [post]);
+  }, [post, settings.siteName]);
 
   return (
-    <div className="min-h-screen bg-[#eef1ff] font-sans text-slate-800 antialiased">
-      <BlogHeader />
+    <div data-blog-template={settings.template} className="min-h-screen font-sans text-slate-800 antialiased" style={{ backgroundColor: settings.backgroundColor, "--blog-primary": settings.primaryColor, "--blog-accent": settings.accentColor } as React.CSSProperties}>
+      <BlogHeader settings={settings} />
       <main>
         {error ? <section className={`${wrap} py-20`}><div className="rounded-3xl border border-red-200 bg-white p-10 text-center"><h1 className="text-3xl font-black text-[#101b46]">Articolo non disponibile</h1><a className="mt-6 inline-flex items-center gap-2 font-bold text-blue-700" href="/blog"><ArrowLeft size={17} /> Torna al blog</a></div></section>
         : !post ? <section className={`${wrap} py-20`}><div role="status" className="rounded-3xl border border-blue-100 bg-white p-10 text-center font-semibold text-blue-800">Caricamento articolo…</div></section>
@@ -268,7 +274,7 @@ export function BlogArticlePage({ slug }: { slug: string }) {
               <MarkdownBody markdown={post.contentMarkdown} />
               <div className="mt-12 border-t border-slate-100 pt-7"><p className="text-sm font-bold text-slate-500">Hai trovato utile questo articolo?</p><a href="/#contatti" className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg">Parliamone <ArrowRight size={16} /></a></div>
             </article>
-            <aside className="grid gap-5 lg:sticky lg:top-24"><ArticleContents markdown={post.contentMarkdown} /><section className="rounded-2xl border border-violet-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-3"><BrandMark /><div><h2 className="font-extrabold text-[#101b46]">Zak Naceur</h2><p className="text-xs text-slate-500">Software Developer</p></div></div><p className="mt-4 text-sm leading-6 text-slate-600">.NET, architetture software, AI e prodotti digitali.</p><a href="/#chi-sono" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-blue-700">Profilo completo <ArrowRight size={14} /></a></section></aside>
+            <aside className="grid gap-5 lg:sticky lg:top-24"><ArticleContents markdown={post.contentMarkdown} /><section className="rounded-2xl border border-violet-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-3"><BrandMark settings={settings} /><div><h2 className="font-extrabold text-[#101b46]">{settings.authorName}</h2><p className="text-xs text-slate-500">{settings.tagline}</p></div></div><p className="mt-4 text-sm leading-6 text-slate-600">.NET, architetture software, AI e prodotti digitali.</p><a href="/#chi-sono" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-blue-700">Profilo completo <ArrowRight size={14} /></a></section></aside>
           </div>
         </>}
       </main>
