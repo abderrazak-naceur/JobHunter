@@ -17,15 +17,15 @@ public sealed record BlogSettingsDto(
     string AccentColor,
     string BackgroundColor,
     string Template,
-    string TextColor,
-    string MutedTextColor,
-    string SurfaceColor,
-    string HeaderBackgroundColor,
-    string HeroBackgroundColor,
-    string CardBackgroundColor,
-    string FooterBackgroundColor,
-    string BorderColor,
-    string ButtonTextColor);
+    string TextColor = "#172554",
+    string MutedTextColor = "#64748b",
+    string SurfaceColor = "#ffffff",
+    string HeaderBackgroundColor = "#050d22",
+    string HeroBackgroundColor = "#050d22",
+    string CardBackgroundColor = "#ffffff",
+    string FooterBackgroundColor = "#050d22",
+    string BorderColor = "#dbeafe",
+    string ButtonTextColor = "#ffffff");
 
 public static partial class BlogSettingsEndpoints
 {
