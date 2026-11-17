@@ -214,21 +214,37 @@ function MarkdownBody({ markdown }: { markdown: string }) {
   const blocks: ReactNode[] = [];
   const lines = markdown.split(/\r?\n/);
   let codeLines: string[] = [];
+  let codeLanguage = '';
   let inCode = false;
   let listItems: string[] = [];
-  const flushList = (key: string) => {
-    if (listItems.length) { blocks.push(<ul key={key} className="my-5 list-disc space-y-2 pl-6 text-base leading-8 text-slate-700">{listItems.map((item, index) => <li key={index}>{renderInline(item)}</li>)}</ul>); listItems = []; }
+  let orderedItems: string[] = [];
+  const flushLists = (key: string) => {
+    if (listItems.length) { blocks.push(<ul key={'ul-' + key} className="my-5 list-disc space-y-2 pl-6 text-base leading-8 text-slate-700">{listItems.map((item, index) => <li key={index}>{renderInline(item)}</li>)}</ul>); listItems = []; }
+    if (orderedItems.length) { blocks.push(<ol key={'ol-' + key} className="my-5 list-decimal space-y-2 pl-6 text-base leading-8 text-slate-700">{orderedItems.map((item, index) => <li key={index}>{renderInline(item)}</li>)}</ol>); orderedItems = []; }
   };
+  const cells = (value: string) => value.trim().replace(/^\||\|$/g, '').split('|').map(cell => cell.trim());
   lines.forEach((line, index) => {
     if (line.trim().startsWith('```')) {
-      flushList('list-' + index);
-      if (inCode) blocks.push(<pre key={'code-' + index} className="my-8 overflow-x-auto rounded-2xl border border-cyan-300/20 bg-[#071329] p-5 text-sm leading-7 text-cyan-50 shadow-[0_14px_35px_rgba(2,8,23,.2)]"><code>{codeLines.join('\n')}</code></pre>);
+      flushLists(String(index));
+      if (inCode) blocks.push(<div key={'code-' + index} className="my-8 overflow-hidden rounded-2xl border border-cyan-300/20 bg-[#071329] text-cyan-50 shadow-[0_14px_35px_rgba(2,8,23,.2)]"><div className="border-b border-white/10 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-cyan-300">{codeLanguage || 'code'}</div><pre className="overflow-x-auto p-5 text-sm leading-7"><code>{codeLines.join('\n')}</code></pre></div>);
+      else codeLanguage = line.trim().slice(3).trim();
       codeLines = []; inCode = !inCode; return;
     }
     if (inCode) { codeLines.push(line); return; }
-    if (/^[-*]\s+/.test(line)) { listItems.push(line.replace(/^[-*]\s+/, '')); return; }
-    flushList('list-' + index);
-    if (!line.trim()) return;
+    if (!line.trim()) { flushLists(String(index)); return; }
+    if (/^\s*([-*_])\1\1+\s*$/.test(line)) { flushLists(String(index)); blocks.push(<hr key={'hr-' + index} className="my-10 border-slate-200" />); return; }
+    if (/^\s*\|/.test(line) && index + 1 < lines.length && /^\s*\|?\s*:?-{3,}/.test(lines[index + 1])) {
+      flushLists(String(index));
+      const rows = [cells(line)];
+      let cursor = index + 2;
+      while (cursor < lines.length && /^\s*\|/.test(lines[cursor])) rows.push(cells(lines[cursor++]));
+      blocks.push(<div key={'table-' + index} className="my-8 overflow-x-auto rounded-xl border border-slate-200"><table className="w-full border-collapse text-left text-sm"><tbody>{rows.map((row, rowIndex) => <tr key={rowIndex} className={rowIndex === 0 ? 'bg-slate-50 font-bold text-slate-900' : 'border-t border-slate-100'}>{row.map((cell, cellIndex) => rowIndex === 0 ? <th key={cellIndex} className="px-4 py-3">{renderInline(cell)}</th> : <td key={cellIndex} className="px-4 py-3 text-slate-700">{renderInline(cell)}</td>)}</tr>)}</tbody></table></div>);
+      for (let skip = index + 1; skip < cursor; skip++) lines[skip] = '';
+      return;
+    }
+    if (/^[-*+]\s+/.test(line)) { orderedItems = []; listItems.push(line.replace(/^[-*+]\s+/, '')); return; }
+    if (/^\d+[.)]\s+/.test(line)) { listItems = []; orderedItems.push(line.replace(/^\d+[.)]\s+/, '')); return; }
+    flushLists(String(index));
     const heading = line.match(/^(#{1,3})\s+(.+)$/);
     if (heading) {
       const level = heading[1].length;
@@ -238,8 +254,8 @@ function MarkdownBody({ markdown }: { markdown: string }) {
     } else if (/^>\s?/.test(line)) blocks.push(<blockquote key={index} className="my-7 rounded-r-2xl border-l-4 border-violet-500 bg-violet-50 px-6 py-4 text-lg italic leading-8 text-[#25235d]">{renderInline(line.replace(/^>\s?/, ''))}</blockquote>);
     else blocks.push(<p key={index} className="my-5 text-base leading-8 text-slate-700 sm:text-lg">{renderInline(line)}</p>);
   });
-  flushList('list-final');
-  if (inCode && codeLines.length) blocks.push(<pre key="code-final" className="my-8 overflow-x-auto rounded-2xl border border-cyan-300/20 bg-[#071329] p-5 text-sm leading-7 text-cyan-50"><code>{codeLines.join('\n')}</code></pre>);
+  flushLists('final');
+  if (inCode && codeLines.length) blocks.push(<pre key="code-final" className="my-8 overflow-x-auto rounded-2xl bg-[#071329] p-5 text-sm leading-7 text-cyan-50"><code>{codeLines.join('\n')}</code></pre>);
   return <div className="mt-8">{blocks}</div>;
 }
 
