@@ -27,6 +27,19 @@ public static class AiWriterEndpoints
 
     public static IEndpointRouteBuilder MapAiWriterEndpoints(this IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapGet("/api/v1/admin/ai/status", (IConfiguration configuration) =>
+        {
+            var endpoint = configuration["AI:Endpoint"] ?? "https://api.openai.com/v1/chat/completions";
+            var host = Uri.TryCreate(endpoint, UriKind.Absolute, out var parsed) ? parsed.Host : "endpoint non valido";
+            return Results.Ok(new
+            {
+                configured = !string.IsNullOrWhiteSpace(configuration["AI:ApiKey"]),
+                provider = configuration["AI:Provider"] ?? "OpenAI-compatible",
+                model = configuration["AI:Model"] ?? "gpt-4.1-mini",
+                endpointHost = host
+            });
+        }).RequireAuthorization().WithTags("AI Writer");
+
         endpoints.MapPost("/api/v1/ai/writer", async (
             AiWriterRequest request,
             IConfiguration configuration,
