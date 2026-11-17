@@ -25,7 +25,36 @@ public sealed record BlogSettingsDto(
     string CardBackgroundColor = "#ffffff",
     string FooterBackgroundColor = "#050d22",
     string BorderColor = "#dbeafe",
-    string ButtonTextColor = "#ffffff");
+    string ButtonTextColor = "#ffffff",
+    string HeroEyebrow = "BLOG · TECNOLOGIA · SVILUPPO",
+    string HeroImageUrl = "",
+    string FooterDescription = "Sviluppo software, architetture, AI e prodotti digitali.",
+    string CopyrightText = "Tutti i diritti riservati.",
+    string NavigationJson = "[]",
+    string SocialLinksJson = "[]",
+    string FontFamily = "Inter",
+    string HeadingFontFamily = "inherit",
+    int BaseFontSize = 16,
+    string ContentWidth = "wide",
+    string GridColumns = "3",
+    string CardStyle = "rounded",
+    string ButtonStyle = "pill",
+    string HeaderStyle = "sticky",
+    string HeroStyle = "split",
+    string ArticleLayout = "sidebar",
+    string BorderRadius = "large",
+    string ShadowStyle = "soft",
+    bool ShowHeader = true,
+    bool ShowHero = true,
+    bool ShowSearch = true,
+    bool ShowCategoryFilters = true,
+    bool ShowFeaturedArticle = true,
+    bool ShowSidebar = true,
+    bool ShowAuthorCard = true,
+    bool ShowFooter = true,
+    bool ShowReadingTime = true,
+    bool ShowArticleCover = true,
+    string CustomCss = "");
 
 public static partial class BlogSettingsEndpoints
 {
@@ -50,7 +79,15 @@ public static partial class BlogSettingsEndpoints
         "#ffffff",
         "#050d22",
         "#dbeafe",
-        "#ffffff");
+        "#ffffff",
+        "BLOG · TECNOLOGIA · SVILUPPO",
+        "",
+        "Sviluppo software, architetture, AI e prodotti digitali. Idee, esperienze e soluzioni dal mondo tech.",
+        "Tutti i diritti riservati.",
+        "[{\"label\":\"Home\",\"url\":\"/\"},{\"label\":\"Chi sono\",\"url\":\"/#chi-sono\"},{\"label\":\"Progetti\",\"url\":\"/#progetti\"},{\"label\":\"Blog\",\"url\":\"/blog\"},{\"label\":\"Contatti\",\"url\":\"/#contatti\"}]",
+        "[{\"label\":\"LinkedIn\",\"url\":\"https://www.linkedin.com/\"}]",
+        "Inter", "inherit", 16, "wide", "3", "rounded", "pill", "sticky", "split", "sidebar", "large", "soft",
+        true, true, true, true, true, true, true, true, true, true, "");
 
     public static IEndpointRouteBuilder MapBlogSettingsEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -109,14 +146,51 @@ public static partial class BlogSettingsEndpoints
                     errors[key] = ["Inserisci un colore esadecimale nel formato #RRGGBB."];
             }
 
-            if (request.Template is not ("premium-tech" or "editorial-light" or "developer-dark" or "personal-journal"))
+            if (request.Template is not ("premium-tech" or "editorial-light" or "developer-dark" or "personal-journal" or "minimal" or "magazine" or "terminal" or "creative"))
                 errors[nameof(request.Template)] = ["Template non valido."];
+
+            if (request.BaseFontSize is < 14 or > 22)
+                errors[nameof(request.BaseFontSize)] = ["La dimensione base deve essere compresa tra 14 e 22 px."];
+
+            if (request.CustomCss?.Length > 10000)
+                errors[nameof(request.CustomCss)] = ["Il CSS personalizzato non può superare 10.000 caratteri."];
+
+            if (request.NavigationJson?.Length > 12000 || request.SocialLinksJson?.Length > 8000)
+                errors["NavigationJson"] = ["La configurazione dei menu o dei social è troppo lunga."];
+
+            if (!IsOneOf(request.FontFamily, "Inter", "system", "Arial", "Georgia", "Roboto", "monospace") ||
+                !IsOneOf(request.HeadingFontFamily, "inherit", "Georgia", "Inter", "Arial", "monospace"))
+                errors["FontFamily"] = ["Seleziona un font supportato."];
+
+            if (!IsOneOf(request.ContentWidth, "narrow", "standard", "wide", "full") ||
+                !IsOneOf(request.GridColumns, "2", "3", "4") ||
+                !IsOneOf(request.CardStyle, "rounded", "square", "bordered", "flat", "glass") ||
+                !IsOneOf(request.ButtonStyle, "pill", "rounded", "square") ||
+                !IsOneOf(request.HeaderStyle, "sticky", "solid", "centered", "minimal") ||
+                !IsOneOf(request.HeroStyle, "split", "centered", "cover", "compact", "text-only") ||
+                !IsOneOf(request.ArticleLayout, "sidebar", "centered", "wide", "magazine") ||
+                !IsOneOf(request.BorderRadius, "none", "small", "medium", "large", "pill") ||
+                !IsOneOf(request.ShadowStyle, "none", "soft", "strong"))
+                errors["Layout"] = ["Una o più opzioni di layout non sono valide."];
+
+            foreach (var (key, json) in new[] { (nameof(request.NavigationJson), request.NavigationJson), (nameof(request.SocialLinksJson), request.SocialLinksJson) })
+            {
+                try { using var parsed = JsonDocument.Parse(json ?? "[]"); if (parsed.RootElement.ValueKind != JsonValueKind.Array) errors[key] = ["Il valore deve essere un array JSON."]; }
+                catch (JsonException) { errors[key] = ["Inserisci un JSON valido."]; }
+            }
 
             if (!string.IsNullOrWhiteSpace(request.LogoUrl) &&
                 (!Uri.TryCreate(request.LogoUrl, UriKind.Absolute, out var uri) ||
                  uri.Scheme is not ("https" or "http")))
             {
                 errors[nameof(request.LogoUrl)] = ["Inserisci un URL HTTP o HTTPS valido."];
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.HeroImageUrl) &&
+                (!Uri.TryCreate(request.HeroImageUrl, UriKind.Absolute, out var heroUri) ||
+                 heroUri.Scheme is not ("https" or "http")))
+            {
+                errors[nameof(request.HeroImageUrl)] = ["Inserisci un URL HTTP o HTTPS valido."];
             }
 
             if (errors.Count > 0) return Results.ValidationProblem(errors);
@@ -148,6 +222,8 @@ public static partial class BlogSettingsEndpoints
 
         return endpoints;
     }
+
+    private static bool IsOneOf(string value, params string[] allowed) => allowed.Contains(value, StringComparer.Ordinal);
 
     [GeneratedRegex("^#[0-9a-fA-F]{6}$")]
     private static partial Regex ColorRegex();

@@ -27,7 +27,21 @@ export type BlogSettings = {
   textColor: string; mutedTextColor: string; surfaceColor: string;
   headerBackgroundColor: string; heroBackgroundColor: string; cardBackgroundColor: string;
   footerBackgroundColor: string; borderColor: string; buttonTextColor: string;
-  template: 'premium-tech' | 'editorial-light' | 'developer-dark' | 'personal-journal';
+  template: 'premium-tech' | 'editorial-light' | 'developer-dark' | 'personal-journal' | 'minimal' | 'magazine' | 'terminal' | 'creative';
+  heroEyebrow: string; heroImageUrl: string; footerDescription: string; copyrightText: string;
+  navigationJson: string; socialLinksJson: string;
+  fontFamily: 'Inter' | 'system' | 'Arial' | 'Georgia' | 'Roboto' | 'monospace';
+  headingFontFamily: 'inherit' | 'Georgia' | 'Inter' | 'Arial' | 'monospace';
+  baseFontSize: number; contentWidth: 'narrow' | 'standard' | 'wide' | 'full';
+  gridColumns: '2' | '3' | '4'; cardStyle: 'rounded' | 'square' | 'bordered' | 'flat' | 'glass';
+  buttonStyle: 'pill' | 'rounded' | 'square'; headerStyle: 'sticky' | 'solid' | 'centered' | 'minimal';
+  heroStyle: 'split' | 'centered' | 'cover' | 'compact' | 'text-only';
+  articleLayout: 'sidebar' | 'centered' | 'wide' | 'magazine';
+  borderRadius: 'none' | 'small' | 'medium' | 'large' | 'pill';
+  shadowStyle: 'none' | 'soft' | 'strong';
+  showHeader: boolean; showHero: boolean; showSearch: boolean; showCategoryFilters: boolean;
+  showFeaturedArticle: boolean; showSidebar: boolean; showAuthorCard: boolean; showFooter: boolean;
+  showReadingTime: boolean; showArticleCover: boolean; customCss: string;
 };
 export const defaultBlogSettings: BlogSettings = {
   siteName: 'ZAK NACEUR', authorName: 'Zak Naceur', tagline: 'Developer · Tech Blog',
@@ -36,7 +50,18 @@ export const defaultBlogSettings: BlogSettings = {
   primaryColor: '#2563eb', accentColor: '#8b5cf6', backgroundColor: '#eef1ff',
   textColor: '#172554', mutedTextColor: '#64748b', surfaceColor: '#ffffff',
   headerBackgroundColor: '#050d22', heroBackgroundColor: '#050d22', cardBackgroundColor: '#ffffff',
-  footerBackgroundColor: '#050d22', borderColor: '#dbeafe', buttonTextColor: '#ffffff', template: 'premium-tech'
+  footerBackgroundColor: '#050d22', borderColor: '#dbeafe', buttonTextColor: '#ffffff', template: 'premium-tech',
+  heroEyebrow: 'BLOG · TECNOLOGIA · SVILUPPO', heroImageUrl: '',
+  footerDescription: 'Sviluppo software, architetture, AI e prodotti digitali. Idee, esperienze e soluzioni dal mondo tech.',
+  copyrightText: 'Tutti i diritti riservati.',
+  navigationJson: '[{"label":"Home","url":"/"},{"label":"Chi sono","url":"/#chi-sono"},{"label":"Progetti","url":"/#progetti"},{"label":"Blog","url":"/blog"},{"label":"Contatti","url":"/#contatti"}]',
+  socialLinksJson: '[{"label":"LinkedIn","url":"https://www.linkedin.com/"}]',
+  fontFamily: 'Inter', headingFontFamily: 'inherit', baseFontSize: 16, contentWidth: 'wide',
+  gridColumns: '3', cardStyle: 'rounded', buttonStyle: 'pill', headerStyle: 'sticky',
+  heroStyle: 'split', articleLayout: 'sidebar', borderRadius: 'large', shadowStyle: 'soft',
+  showHeader: true, showHero: true, showSearch: true, showCategoryFilters: true,
+  showFeaturedArticle: true, showSidebar: true, showAuthorCard: true, showFooter: true,
+  showReadingTime: true, showArticleCover: true, customCss: ''
 };
 
 async function request<T>(path: string, init: RequestInit = {}, admin = false): Promise<T> {
