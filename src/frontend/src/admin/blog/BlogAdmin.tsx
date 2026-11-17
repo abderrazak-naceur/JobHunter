@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { FilePlus2, Pencil, Sparkles, Trash2, ExternalLink, X, Bold, Italic, Heading2, List, Quote, Code2, ImagePlus, Link2, Palette, FileText } from 'lucide-react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { FilePlus2, Pencil, Sparkles, Trash2, ExternalLink, X, Palette, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { blogApi, defaultBlogSettings, type BlogPost, type BlogPostInput, type BlogStatus, type BlogSettings } from '@/services/blogApi';
 import { generateAiDraft } from '@/services/portfolioApi';
 import BlogVisualBuilder from './BlogVisualBuilder';
+import BlogMarkdownEditor from './BlogMarkdownEditor';
 
 const emptyPost: BlogPostInput = {
   title: '', slug: '', excerpt: '', contentMarkdown: '', category: 'Sviluppo software',
@@ -34,13 +35,13 @@ export default function BlogAdmin() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [aiOperation, setAiOperation] = useState<'generate' | 'rewrite' | 'proofread' | 'improve' | 'expand' | 'introduction' | 'conclusion'>('generate');
   const [tagsText, setTagsText] = useState('');
   const [editorOpen, setEditorOpen] = useState(false);
   const [tab, setTab] = useState<'articles' | 'design'>('articles');
   const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settingsSaving, setSettingsSaving] = useState(false);
-  const editorRef = useRef<HTMLTextAreaElement>(null);
 
   async function refresh() {
     setLoading(true);
@@ -72,15 +73,6 @@ export default function BlogAdmin() {
   function changeTitle(value: string) {
     setDraft(current => ({ ...current, title: value, slug: editingId ? current.slug : slugify(value) }));
   }
-  function insertMarkup(before: string, after = before, placeholder = 'testo') {
-    const area = editorRef.current;
-    const start = area?.selectionStart ?? draft.contentMarkdown.length;
-    const end = area?.selectionEnd ?? start;
-    const selected = draft.contentMarkdown.slice(start, end) || placeholder;
-    const next = draft.contentMarkdown.slice(0, start) + before + selected + after + draft.contentMarkdown.slice(end);
-    update('contentMarkdown', next);
-    requestAnimationFrame(() => { area?.focus(); area?.setSelectionRange(start + before.length, start + before.length + selected.length); });
-  }
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSaving(true);
     const payload = { ...draft, tags: tagsText.split(',').map(x => x.trim()).filter(Boolean) };
@@ -93,13 +85,26 @@ export default function BlogAdmin() {
   }
   async function generateArticle() {
     if (!draft.title.trim()) { toast.error('Inserisci prima il titolo o l’argomento.'); return; }
+    const hasContent = Boolean(draft.contentMarkdown.trim());
+    if (aiOperation === 'generate' && hasContent && !window.confirm('La generazione sostituirà il contenuto attuale. Vuoi continuare?')) return;
+    if (aiOperation !== 'generate' && !hasContent) { toast.error('Scrivi prima il contenuto da elaborare con AI.'); return; }
     setGenerating(true);
     try {
-      const result = await generateAiDraft({ channel: 'blog', tone: 'technical', language: 'Italiano',
-        topic: `Scrivi un articolo completo per il blog tecnico. Titolo/argomento: ${draft.title}. Categoria: ${draft.category}. Indicazioni: ${draft.excerpt}. Struttura con titolo, introduzione, sottotitoli, esempi pratici e conclusione. Formato Markdown.` },
-        { name: '', role: '', tagline: '', summary: '', location: '', workMode: '', links: [], skillGroups: [], experiences: [], projects: [] });
-      setDraft(current => ({ ...current, contentMarkdown: result.draft }));
-      toast.success(`Bozza generata con ${result.model}. Verificala prima di pubblicare.`);
+      const result = await generateAiDraft({
+        channel: 'blog', tone: 'technical', language: 'Italiano',
+        operation: aiOperation,
+        content: draft.contentMarkdown,
+        topic: `Titolo: ${draft.title}. Categoria: ${draft.category}. Indicazioni: ${draft.excerpt}. Produci un testo tecnico concreto, ben strutturato, con esempi verificabili e Markdown pulito.`
+      }, { name: '', role: '', tagline: '', summary: '', location: '', workMode: '', links: [], skillGroups: [], experiences: [], projects: [] });
+      setDraft(current => ({
+        ...current,
+        contentMarkdown: aiOperation === 'introduction'
+          ? (result.draft.trim() + '\n\n' + current.contentMarkdown).trim()
+          : aiOperation === 'conclusion'
+            ? (current.contentMarkdown.trim() + '\n\n' + result.draft.trim()).trim()
+            : result.draft
+      }));
+      toast.success(`Contenuto elaborato con ${result.model}. Controlla il risultato prima di pubblicare.`);
     } catch (error) { toast.error(error instanceof Error ? error.message : 'Generazione AI non riuscita.'); }
     finally { setGenerating(false); }
   }
@@ -165,19 +170,20 @@ export default function BlogAdmin() {
                 <Input required maxLength={180} value={draft.title} onChange={e => changeTitle(e.target.value)} placeholder="Titolo dell’articolo" className="h-14 border-0 px-0 text-2xl font-bold shadow-none focus-visible:ring-0" />
                 <Input required maxLength={180} value={draft.slug} onChange={e => update('slug', slugify(e.target.value))} placeholder="slug-url" />
                 <Textarea required rows={2} maxLength={500} value={draft.excerpt} onChange={e => update('excerpt', e.target.value)} placeholder="Scrivi un breve sommario…" />
-                <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-muted/30 p-2">
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('**')} aria-label="Grassetto"><Bold size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('*')} aria-label="Corsivo"><Italic size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('\n## ', '\n', 'Titolo sezione')} aria-label="Titolo"><Heading2 size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('\n- ', '', 'Elemento elenco')} aria-label="Elenco"><List size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('\n> ', '', 'Citazione')} aria-label="Citazione"><Quote size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('\n```csharp\n', '\n```', 'Console.WriteLine("Hello world");')} aria-label="Blocco codice"><Code2 size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => { const url = window.prompt('URL immagine'); if (url) insertMarkup(`\n![Descrizione](${url})\n`, '', ''); }} aria-label="Inserisci immagine"><ImagePlus size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => { const url = window.prompt('URL link'); if (url) insertMarkup('[', `](${url})`, 'testo link'); }} aria-label="Inserisci link"><Link2 size={16} /></Button>
-                  <span className="ml-auto text-xs text-muted-foreground">Markdown · anteprima disponibile sul blog</span>
+                <BlogMarkdownEditor value={draft.contentMarkdown} onChange={value => update('contentMarkdown', value)} />
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-muted/20 p-3">
+                  <label className="text-sm font-semibold" htmlFor="blog-ai-operation">Assistente AI</label>
+                  <select id="blog-ai-operation" className="h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm" value={aiOperation} onChange={e => setAiOperation(e.target.value as typeof aiOperation)}>
+                    <option value="generate">Genera articolo completo</option>
+                    <option value="rewrite">Riscrivi tutto l’articolo</option>
+                    <option value="proofread">Correggi grammatica e refusi</option>
+                    <option value="improve">Rendi più professionale</option>
+                    <option value="expand">Espandi con spiegazioni ed esempi</option>
+                    <option value="introduction">Genera introduzione</option>
+                    <option value="conclusion">Genera conclusione</option>
+                  </select>
+                  <Button type="button" disabled={generating} onClick={() => void generateArticle()}><Sparkles className="mr-2 size-4" />{generating ? 'Elaborazione…' : 'Esegui AI'}</Button>
                 </div>
-                <Textarea ref={editorRef} required rows={20} maxLength={100000} value={draft.contentMarkdown} onChange={e => update('contentMarkdown', e.target.value)} placeholder="Inizia a scrivere il tuo articolo…\n\n## Introduzione\n\nDescrivi l’argomento con esempi pratici." className="min-h-[420px] resize-y font-mono text-sm leading-7" />
-                <Button type="button" variant="outline" disabled={generating} onClick={() => void generateArticle()}><Sparkles className="mr-2 size-4" />{generating ? 'Generazione AI…' : 'Genera / riscrivi con AI'}</Button>
               </div>
               <aside className="space-y-4">
                 <div className="rounded-xl border p-4"><h3 className="mb-3 font-bold">Pubblicazione</h3><label className={field}>Stato<select className={inputClass} value={draft.status} onChange={e => update('status', e.target.value as BlogStatus)}><option value="Draft">Bozza privata</option><option value="Published">Pubblicato</option><option value="Archived">Archiviato</option></select></label><label className={`${field} mt-3`}>Categoria<Input required maxLength={80} value={draft.category} onChange={e => update('category', e.target.value)} /></label><label className={`${field} mt-3`}>Tag separati da virgola<Input value={tagsText} onChange={e => setTagsText(e.target.value)} placeholder=".NET, React, AI" /></label></div>
