@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import BlogMarkdownEditor from './BlogMarkdownEditor';
 
@@ -17,7 +18,7 @@ describe('BlogMarkdownEditor', () => {
     render(<BlogMarkdownEditor value="Contenuto di prova" onChange={() => undefined} />);
 
     expect(screen.getByRole('textbox')).toBeInTheDocument();
-    await (await import('@testing-library/user-event')).default.click(screen.getByRole('button', { name: /Anteprima/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Anteprima/ }));
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.getByText('Contenuto di prova')).toBeInTheDocument();
   });
