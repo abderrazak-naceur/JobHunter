@@ -120,6 +120,8 @@ export type AiWriterRequest = {
   language: 'Italiano' | 'English' | 'Français';
   topic: string;
   callToAction?: string;
+  operation?: 'generate' | 'rewrite' | 'proofread' | 'improve' | 'expand' | 'introduction' | 'conclusion';
+  content?: string;
 };
 
 export type AiWriterResult = { draft: string; model: string };
