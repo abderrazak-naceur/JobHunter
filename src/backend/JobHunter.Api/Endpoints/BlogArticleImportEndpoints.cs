@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -102,7 +103,7 @@ public static partial class BlogArticleImportEndpoints
                      b[0] >= 224);
         }
         return address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6 &&
-               address.IsIPv6Global && !address.IsIPv6UniqueLocal;
+               !address.IsIPv6UniqueLocal && !address.IsIPv6SiteLocal && !address.IsIPv6LinkLocal && !address.IsIPv6Multicast;
     }
 
     private static string? ExtractMeta(string html, string key)
