@@ -43,6 +43,8 @@ export default function BlogAdmin() {
   const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settingsSaving, setSettingsSaving] = useState(false);
+  const [articleUrl, setArticleUrl] = useState('');
+  const [importingArticle, setImportingArticle] = useState(false);
 
   async function refresh() {
     setLoading(true);
@@ -110,6 +112,27 @@ export default function BlogAdmin() {
     } catch (error) { toast.error(error instanceof Error ? error.message : 'Generazione AI non riuscita.'); }
     finally { setGenerating(false); }
   }
+  async function importArticleFromUrl() {
+    if (!articleUrl.trim()) { toast.error('Inserisci il link HTTPS dell’articolo.'); return; }
+    setImportingArticle(true);
+    try {
+      const source = await blogApi.importArticleUrl(articleUrl.trim());
+      let content = source.extractedMarkdown;
+      try {
+        const result = await generateAiDraft({
+          channel: 'blog', tone: 'technical', language: 'Italiano', operation: 'style-transfer',
+          topic: `Crea una bozza originale in italiano ispirata esclusivamente alla struttura editoriale dell'articolo di riferimento. Titolo: ${source.sourceTitle}. Descrizione: ${source.sourceDescription}. Dominio: ${source.sourceHost}. Mantieni una gerarchia simile di titoli, paragrafi, elenchi e blocchi di codice, ma non copiare il testo. Usa esempi originali e non inventare dettagli tecnici.`,
+          content: source.extractedMarkdown
+        }, { name: '', role: '', tagline: '', summary: '', location: '', workMode: '', links: [], skillGroups: [], experiences: [], projects: [] });
+        content = result.draft;
+        toast.success(`Bozza originale creata con ${result.model}. Verificala prima della pubblicazione.`);
+      } catch { toast.warning('Articolo estratto. La trasformazione AI non è disponibile: puoi modificare il contenuto importato manualmente.'); }
+      setEditingId(null);
+      setDraft({ ...emptyPost, title: source.sourceTitle.slice(0, 180), slug: slugify(source.sourceTitle).slice(0, 180), excerpt: (source.sourceDescription || `Bozza ispirata alla struttura editoriale di ${source.sourceHost}.`).slice(0, 500), contentMarkdown: content, category: 'Sviluppo software', seoTitle: source.sourceTitle.slice(0, 180), seoDescription: (source.sourceDescription || '').slice(0, 320) });
+      setTagsText(''); setEditorOpen(true); setArticleUrl('');
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Importazione articolo non riuscita.'); }
+    finally { setImportingArticle(false); }
+  }
   async function remove(post: BlogPost) {
     if (!window.confirm(`Eliminare definitivamente “${post.title}”?`)) return;
     try { await blogApi.remove(post.id); toast.success('Articolo eliminato.'); await refresh(); }
@@ -134,6 +157,10 @@ export default function BlogAdmin() {
         <Button variant={tab === 'ai' ? 'default' : 'outline'} onClick={() => setTab('ai')}><Sparkles className="mr-2 size-4" /> Configurazione AI</Button>
       </div>
       {tab === 'articles' ? <>
+        <Card><CardHeader><CardTitle>Importa stile da un articolo</CardTitle><CardDescription>Incolla un URL pubblico HTTPS. Il CMS estrae la struttura editoriale e, se l’AI è configurata, genera una bozza originale senza copiare il testo sorgente.</CardDescription></CardHeader><CardContent className="flex flex-col gap-3 sm:flex-row">
+          <Input type="url" value={articleUrl} onChange={event => setArticleUrl(event.target.value)} placeholder="https://esempio.com/articolo" aria-label="URL articolo di riferimento" />
+          <Button type="button" onClick={() => void importArticleFromUrl()} disabled={importingArticle || !articleUrl.trim()} className="shrink-0">{importingArticle ? 'Analisi in corso…' : 'Analizza e crea bozza'}</Button>
+        </CardContent></Card>
         <div className="grid gap-3 sm:grid-cols-3">
           <Card><CardHeader className="pb-2"><CardDescription>Articoli totali</CardDescription><CardTitle className="text-3xl">{counts.all}</CardTitle></CardHeader></Card>
           <Card><CardHeader className="pb-2"><CardDescription>Pubblicati</CardDescription><CardTitle className="text-3xl">{counts.published}</CardTitle></CardHeader></Card>
