@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   ArrowLeft, ArrowRight, CalendarDays, Clock3, Code2, FolderOpen,
-  Menu, Search, Tag, X, BookOpen, Sparkles
+  Menu, Search, Tag, X, BookOpen, Sparkles, Copy, Share2, MessageCircle, Send
 } from 'lucide-react';
 import { blogApi, defaultBlogSettings, type BlogPost, type BlogSettings } from '../services/blogApi';
 import './portfolio.css';
@@ -307,6 +307,13 @@ export function BlogArticlePage({ slug }: { slug: string }) {
               <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight text-[#101b46] sm:text-4xl lg:text-5xl">{post.title}</h1>
               <p className="mt-5 text-lg leading-8 text-slate-600">{post.excerpt}</p>
               <div className="mt-7 flex flex-wrap items-center gap-5 border-b border-slate-100 pb-6"><PostMeta post={post} minutes={readingTime(post.contentMarkdown || '')} showReadingTime={settings.showReadingTime} />{post.tags.length > 0 && <span className="inline-flex items-center gap-2 text-xs text-slate-500"><Tag size={14} />{post.tags.join(' · ')}</span>}</div>
+              <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 py-5" aria-label="Condividi articolo">
+                <span className="mr-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-600"><Share2 size={16} /> Condividi</span>
+                <a className="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold hover:border-blue-400 hover:text-blue-700" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noreferrer"><Share2 size={14} /> LinkedIn</a>
+                <a className="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold hover:border-sky-400 hover:text-sky-700" href={`https://wa.me/?text=${encodeURIComponent(post.title + ' ' + window.location.href)}`} target="_blank" rel="noreferrer"><MessageCircle size={14} /> WhatsApp</a>
+                <a className="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold hover:border-cyan-400 hover:text-cyan-700" href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}`} target="_blank" rel="noreferrer"><Send size={14} /> Telegram</a>
+                <button type="button" className="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold hover:border-violet-400 hover:text-violet-700" onClick={() => { void navigator.clipboard.writeText(window.location.href); }}><Copy size={14} /> Copia link</button>
+              </div>
               <MarkdownBody markdown={post.contentMarkdown} />
               <div className="mt-12 border-t border-slate-100 pt-7"><p className="text-sm font-bold text-slate-500">Hai trovato utile questo articolo?</p><a href="/#contatti" className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg">Parliamone <ArrowRight size={16} /></a></div>
             </article>
