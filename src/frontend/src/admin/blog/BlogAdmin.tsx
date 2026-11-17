@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { FilePlus2, Pencil, Sparkles, Trash2, ExternalLink, X, Bold, Italic, Heading2, List, Quote, Code2, ImagePlus, Link2, Palette, FileText } from 'lucide-react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { FilePlus2, Pencil, Sparkles, Trash2, ExternalLink, X, Palette, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { blogApi, defaultBlogSettings, type BlogPost, type BlogPostInput, type BlogStatus, type BlogSettings } from '@/services/blogApi';
-import { generateAiDraft } from '@/services/portfolioApi';
+import { generateAiDraft, getAiWriterStatus } from '@/services/portfolioApi';
 import BlogVisualBuilder from './BlogVisualBuilder';
+import BlogMarkdownEditor from './BlogMarkdownEditor';
 
 const emptyPost: BlogPostInput = {
   title: '', slug: '', excerpt: '', contentMarkdown: '', category: 'Sviluppo software',
@@ -34,13 +35,14 @@ export default function BlogAdmin() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [aiOperation, setAiOperation] = useState<'generate' | 'rewrite' | 'proofread' | 'improve' | 'expand' | 'introduction' | 'conclusion'>('generate');
   const [tagsText, setTagsText] = useState('');
   const [editorOpen, setEditorOpen] = useState(false);
-  const [tab, setTab] = useState<'articles' | 'design'>('articles');
+  const [tab, setTab] = useState<'articles' | 'design' | 'ai'>('articles');
+  const [aiStatus, setAiStatus] = useState<{ configured: boolean; provider: string; model: string; endpointHost: string } | null>(null);
   const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settingsSaving, setSettingsSaving] = useState(false);
-  const editorRef = useRef<HTMLTextAreaElement>(null);
 
   async function refresh() {
     setLoading(true);
@@ -51,6 +53,7 @@ export default function BlogAdmin() {
   useEffect(() => {
     void refresh();
     blogApi.settings().then(setSettings).catch(error => toast.error(error instanceof Error ? error.message : 'Impossibile caricare le impostazioni.')).finally(() => setSettingsLoading(false));
+    getAiWriterStatus().then(setAiStatus).catch(() => setAiStatus(null));
   }, []);
 
   const counts = useMemo(() => ({
@@ -72,15 +75,6 @@ export default function BlogAdmin() {
   function changeTitle(value: string) {
     setDraft(current => ({ ...current, title: value, slug: editingId ? current.slug : slugify(value) }));
   }
-  function insertMarkup(before: string, after = before, placeholder = 'testo') {
-    const area = editorRef.current;
-    const start = area?.selectionStart ?? draft.contentMarkdown.length;
-    const end = area?.selectionEnd ?? start;
-    const selected = draft.contentMarkdown.slice(start, end) || placeholder;
-    const next = draft.contentMarkdown.slice(0, start) + before + selected + after + draft.contentMarkdown.slice(end);
-    update('contentMarkdown', next);
-    requestAnimationFrame(() => { area?.focus(); area?.setSelectionRange(start + before.length, start + before.length + selected.length); });
-  }
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSaving(true);
     const payload = { ...draft, tags: tagsText.split(',').map(x => x.trim()).filter(Boolean) };
@@ -93,13 +87,26 @@ export default function BlogAdmin() {
   }
   async function generateArticle() {
     if (!draft.title.trim()) { toast.error('Inserisci prima il titolo o l’argomento.'); return; }
+    const hasContent = Boolean(draft.contentMarkdown.trim());
+    if (aiOperation === 'generate' && hasContent && !window.confirm('La generazione sostituirà il contenuto attuale. Vuoi continuare?')) return;
+    if (aiOperation !== 'generate' && !hasContent) { toast.error('Scrivi prima il contenuto da elaborare con AI.'); return; }
     setGenerating(true);
     try {
-      const result = await generateAiDraft({ channel: 'blog', tone: 'technical', language: 'Italiano',
-        topic: `Scrivi un articolo completo per il blog tecnico. Titolo/argomento: ${draft.title}. Categoria: ${draft.category}. Indicazioni: ${draft.excerpt}. Struttura con titolo, introduzione, sottotitoli, esempi pratici e conclusione. Formato Markdown.` },
-        { name: '', role: '', tagline: '', summary: '', location: '', workMode: '', links: [], skillGroups: [], experiences: [], projects: [] });
-      setDraft(current => ({ ...current, contentMarkdown: result.draft }));
-      toast.success(`Bozza generata con ${result.model}. Verificala prima di pubblicare.`);
+      const result = await generateAiDraft({
+        channel: 'blog', tone: 'technical', language: 'Italiano',
+        operation: aiOperation,
+        content: draft.contentMarkdown,
+        topic: `Titolo: ${draft.title}. Categoria: ${draft.category}. Indicazioni: ${draft.excerpt}. Produci un testo tecnico concreto, ben strutturato, con esempi verificabili e Markdown pulito.`
+      }, { name: '', role: '', tagline: '', summary: '', location: '', workMode: '', links: [], skillGroups: [], experiences: [], projects: [] });
+      setDraft(current => ({
+        ...current,
+        contentMarkdown: aiOperation === 'introduction'
+          ? (result.draft.trim() + '\n\n' + current.contentMarkdown).trim()
+          : aiOperation === 'conclusion'
+            ? (current.contentMarkdown.trim() + '\n\n' + result.draft.trim()).trim()
+            : result.draft
+      }));
+      toast.success(`Contenuto elaborato con ${result.model}. Controlla il risultato prima di pubblicare.`);
     } catch (error) { toast.error(error instanceof Error ? error.message : 'Generazione AI non riuscita.'); }
     finally { setGenerating(false); }
   }
@@ -124,6 +131,7 @@ export default function BlogAdmin() {
       <div className="flex flex-wrap gap-2 border-b pb-3">
         <Button variant={tab === 'articles' ? 'default' : 'outline'} onClick={() => setTab('articles')}><FileText className="mr-2 size-4" /> Articoli</Button>
         <Button variant={tab === 'design' ? 'default' : 'outline'} onClick={() => setTab('design')}><Palette className="mr-2 size-4" /> Personalizzazione</Button>
+        <Button variant={tab === 'ai' ? 'default' : 'outline'} onClick={() => setTab('ai')}><Sparkles className="mr-2 size-4" /> Configurazione AI</Button>
       </div>
       {tab === 'articles' ? <>
         <div className="grid gap-3 sm:grid-cols-3">
@@ -136,7 +144,7 @@ export default function BlogAdmin() {
             <div className="divide-y">{posts.map(post => <div key={post.id} className="flex items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="truncate font-semibold">{post.title}</p><p className="text-xs text-muted-foreground">{post.category} · {post.status} · {new Date(post.updatedAt).toLocaleDateString('it-IT')}</p></div><div className="flex shrink-0 gap-1"><Button size="icon" variant="ghost" aria-label={`Modifica ${post.title}`} onClick={() => edit(post)}><Pencil className="size-4" /></Button>{post.status === 'Published' && <Button size="icon" variant="ghost" aria-label={`Apri ${post.title}`} asChild><a href={`/blog/${post.slug}`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" /></a></Button>}<Button size="icon" variant="ghost" aria-label={`Elimina ${post.title}`} onClick={() => void remove(post)}><Trash2 className="size-4 text-destructive" /></Button></div></div>)}</div>}
           </CardContent>
         </Card>
-      </> : <Card><CardHeader><CardTitle>Identità e aspetto</CardTitle><CardDescription>Modifica nome, autore, testi, logo, colori e template. Le modifiche vengono salvate nel database.</CardDescription></CardHeader><CardContent>
+      </> : tab === 'design' ? <Card><CardHeader><CardTitle>Identità e aspetto</CardTitle><CardDescription>Modifica nome, autore, testi, logo, colori e template. Le modifiche vengono salvate nel database.</CardDescription></CardHeader><CardContent>
         {settingsLoading ? <p role="status">Caricamento impostazioni…</p> : <form onSubmit={saveSettings} className="grid gap-5 md:grid-cols-2">
           <BlogVisualBuilder settings={settings} onChange={setSettings} />
           <label className={field}>Nome del blog<Input required maxLength={120} value={settings.siteName} onChange={e => setSettings(s => ({ ...s, siteName: e.target.value }))} /></label>
@@ -154,6 +162,27 @@ export default function BlogAdmin() {
             <div className="flex flex-wrap items-center justify-between gap-3 p-4" style={{ background: settings.footerBackgroundColor, color: settings.buttonTextColor }}><div><p className="font-semibold">{settings.authorName}</p><p className="text-xs opacity-75">{settings.template}</p></div><Button type="submit" disabled={settingsSaving}>{settingsSaving ? 'Salvataggio…' : 'Salva personalizzazione'}</Button></div>
           </div>
         </form>}
+      </CardContent></Card> : <Card><CardHeader><CardTitle>Configurazione AI</CardTitle><CardDescription>Le chiavi API sono gestite esclusivamente dal backend tramite le variabili d'ambiente di Render. Non vengono salvate nel browser o nel database del blog.</CardDescription></CardHeader><CardContent className="space-y-5">
+        <div className="flex items-center gap-3 rounded-xl border p-4">
+          <div className={"grid size-11 place-items-center rounded-full " + (aiStatus?.configured ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600")}><Sparkles className="size-5" /></div>
+          <div className="min-w-0 flex-1"><p className="font-semibold">{aiStatus?.configured ? 'Chiave API configurata' : 'Configurazione API non verificata'}</p><p className="text-sm text-muted-foreground">{aiStatus ? aiStatus.provider + ' · ' + aiStatus.model + ' · ' + aiStatus.endpointHost : 'Impossibile leggere lo stato dal backend.'}</p></div>
+          <Button type="button" variant="outline" onClick={() => getAiWriterStatus().then(setAiStatus).catch(error => toast.error(error instanceof Error ? error.message : 'Verifica non riuscita.'))}>Aggiorna stato</Button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-xl border p-4"><p className="text-xs font-bold uppercase text-muted-foreground">API Key</p><p className="mt-2 font-mono text-sm">AI__ApiKey</p><p className="mt-1 text-xs text-muted-foreground">Chiave privata del provider</p></div>
+          <div className="rounded-xl border p-4"><p className="text-xs font-bold uppercase text-muted-foreground">Modello</p><p className="mt-2 font-mono text-sm">AI__Model</p><p className="mt-1 text-xs text-muted-foreground">Ad esempio gpt-4.1-mini</p></div>
+          <div className="rounded-xl border p-4"><p className="text-xs font-bold uppercase text-muted-foreground">Endpoint</p><p className="mt-2 font-mono text-sm">AI__Endpoint</p><p className="mt-1 text-xs text-muted-foreground">URL HTTPS del provider</p></div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 text-sm">
+          <p className="font-semibold">Dove inserire la chiave API</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-muted-foreground">
+            <li>Apri Render e seleziona il servizio backend API di JobHunter.</li>
+            <li>Vai in Environment e aggiungi AI__ApiKey con la tua chiave privata.</li>
+            <li>Aggiungi AI__Model e AI__Endpoint secondo il provider scelto.</li>
+            <li>Salva e riavvia il servizio API per applicare le modifiche.</li>
+          </ol>
+          <p className="mt-3 text-xs text-muted-foreground">Lo stato qui sopra conferma soltanto che una chiave è presente nella configurazione. Per verificare credito, modello e raggiungibilità serve una chiamata di test al provider.</p>
+        </div>
       </CardContent></Card>}
 
       {editorOpen && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-2 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true" aria-labelledby="blog-editor-title">
@@ -165,19 +194,20 @@ export default function BlogAdmin() {
                 <Input required maxLength={180} value={draft.title} onChange={e => changeTitle(e.target.value)} placeholder="Titolo dell’articolo" className="h-14 border-0 px-0 text-2xl font-bold shadow-none focus-visible:ring-0" />
                 <Input required maxLength={180} value={draft.slug} onChange={e => update('slug', slugify(e.target.value))} placeholder="slug-url" />
                 <Textarea required rows={2} maxLength={500} value={draft.excerpt} onChange={e => update('excerpt', e.target.value)} placeholder="Scrivi un breve sommario…" />
-                <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-muted/30 p-2">
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('**')} aria-label="Grassetto"><Bold size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('*')} aria-label="Corsivo"><Italic size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('\n## ', '\n', 'Titolo sezione')} aria-label="Titolo"><Heading2 size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('\n- ', '', 'Elemento elenco')} aria-label="Elenco"><List size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('\n> ', '', 'Citazione')} aria-label="Citazione"><Quote size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => insertMarkup('\n```csharp\n', '\n```', 'Console.WriteLine("Hello world");')} aria-label="Blocco codice"><Code2 size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => { const url = window.prompt('URL immagine'); if (url) insertMarkup(`\n![Descrizione](${url})\n`, '', ''); }} aria-label="Inserisci immagine"><ImagePlus size={16} /></Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => { const url = window.prompt('URL link'); if (url) insertMarkup('[', `](${url})`, 'testo link'); }} aria-label="Inserisci link"><Link2 size={16} /></Button>
-                  <span className="ml-auto text-xs text-muted-foreground">Markdown · anteprima disponibile sul blog</span>
+                <BlogMarkdownEditor value={draft.contentMarkdown} onChange={value => update('contentMarkdown', value)} />
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-muted/20 p-3">
+                  <label className="text-sm font-semibold" htmlFor="blog-ai-operation">Assistente AI</label>
+                  <select id="blog-ai-operation" className="h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm" value={aiOperation} onChange={e => setAiOperation(e.target.value as typeof aiOperation)}>
+                    <option value="generate">Genera articolo completo</option>
+                    <option value="rewrite">Riscrivi tutto l’articolo</option>
+                    <option value="proofread">Correggi grammatica e refusi</option>
+                    <option value="improve">Rendi più professionale</option>
+                    <option value="expand">Espandi con spiegazioni ed esempi</option>
+                    <option value="introduction">Genera introduzione</option>
+                    <option value="conclusion">Genera conclusione</option>
+                  </select>
+                  <Button type="button" disabled={generating} onClick={() => void generateArticle()}><Sparkles className="mr-2 size-4" />{generating ? 'Elaborazione…' : 'Esegui AI'}</Button>
                 </div>
-                <Textarea ref={editorRef} required rows={20} maxLength={100000} value={draft.contentMarkdown} onChange={e => update('contentMarkdown', e.target.value)} placeholder="Inizia a scrivere il tuo articolo…\n\n## Introduzione\n\nDescrivi l’argomento con esempi pratici." className="min-h-[420px] resize-y font-mono text-sm leading-7" />
-                <Button type="button" variant="outline" disabled={generating} onClick={() => void generateArticle()}><Sparkles className="mr-2 size-4" />{generating ? 'Generazione AI…' : 'Genera / riscrivi con AI'}</Button>
               </div>
               <aside className="space-y-4">
                 <div className="rounded-xl border p-4"><h3 className="mb-3 font-bold">Pubblicazione</h3><label className={field}>Stato<select className={inputClass} value={draft.status} onChange={e => update('status', e.target.value as BlogStatus)}><option value="Draft">Bozza privata</option><option value="Published">Pubblicato</option><option value="Archived">Archiviato</option></select></label><label className={`${field} mt-3`}>Categoria<Input required maxLength={80} value={draft.category} onChange={e => update('category', e.target.value)} /></label><label className={`${field} mt-3`}>Tag separati da virgola<Input value={tagsText} onChange={e => setTagsText(e.target.value)} placeholder=".NET, React, AI" /></label></div>

@@ -120,9 +120,18 @@ export type AiWriterRequest = {
   language: 'Italiano' | 'English' | 'Français';
   topic: string;
   callToAction?: string;
+  operation?: 'generate' | 'rewrite' | 'proofread' | 'improve' | 'expand' | 'introduction' | 'conclusion';
+  content?: string;
 };
 
 export type AiWriterResult = { draft: string; model: string };
+export type AiWriterStatus = { configured: boolean; provider: string; model: string; endpointHost: string };
+
+/** Admin only: exposes safe provider metadata, never the API key. */
+export async function getAiWriterStatus(): Promise<AiWriterStatus> {
+  const response = await adminFetch('/api/v1/admin/ai/status', { method: 'GET' });
+  return response.json() as Promise<AiWriterStatus>;
+}
 
 /** Admin only: generates a draft from the saved portfolio profile. */
 export async function generateAiDraft(request: AiWriterRequest, portfolio: PortfolioContent): Promise<AiWriterResult> {
