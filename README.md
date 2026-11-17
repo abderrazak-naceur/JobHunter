@@ -225,3 +225,23 @@ operations require the admin JWT.
 AI article drafting reuses the AI Writer provider configuration. Configure `AI__ApiKey`,
 `AI__Model` and optionally `AI__Endpoint` on the backend. AI output remains an editable
 draft and is never published automatically.
+
+
+## Blog CMS and AI Writer
+
+The admin Blog section includes a Markdown authoring workspace with write, live-preview and split modes. The editor supports headings, emphasis, ordered and unordered lists, quotations, code fences, tables, images, links and separators. The public article renderer supports the same main structural blocks.
+
+The AI Writer is configured on the **backend only**. Never place provider keys in frontend `VITE_*` variables or commit them to Git.
+
+| Environment variable | Purpose |
+| --- | --- |
+| `AI__Provider` | Provider label shown in the admin status panel |
+| `AI__ApiKey` | Private provider API key |
+| `AI__Model` | Model identifier |
+| `AI__Endpoint` | HTTPS OpenAI-compatible Chat Completions endpoint |
+
+For Render, open the JobHunter **API service** → **Environment**, add the variables above, then save and redeploy/restart the service. The admin Blog → Configurazione AI panel reports whether a key is present and displays safe provider metadata; it never returns the key itself.
+
+The current adapter expects the OpenAI Chat Completions request/response format. Providers with a compatible endpoint can be configured with their own HTTPS endpoint, model name and API key. Native Anthropic or Gemini APIs require a dedicated adapter and are not enabled by setting the provider label alone.
+
+The blog AI actions are: generate an article, rewrite the current article, proofread, improve the professional tone, expand the article, and generate an introduction or conclusion. Review all AI output and technical code examples before publishing.
