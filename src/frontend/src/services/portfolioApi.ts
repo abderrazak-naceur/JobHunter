@@ -120,7 +120,7 @@ export type AiWriterRequest = {
   language: 'Italiano' | 'English' | 'Français';
   topic: string;
   callToAction?: string;
-  operation?: 'generate' | 'rewrite' | 'proofread' | 'improve' | 'expand' | 'introduction' | 'conclusion';
+  operation?: 'generate' | 'rewrite' | 'proofread' | 'improve' | 'expand' | 'introduction' | 'conclusion' | 'style-transfer';
   content?: string;
 };
 
