@@ -66,7 +66,7 @@ public static class AiWriterEndpoints
             if ((request.CallToAction?.Length ?? 0) > MaxCallToActionLength)
                 errors["callToAction"] = [$"La call to action non può superare {MaxCallToActionLength} caratteri."];
             var operation = request.Operation ?? "generate";
-            if (request.Channel == "blog" && operation is not ("generate" or "rewrite" or "proofread" or "improve" or "expand" or "introduction" or "conclusion"))
+            if (request.Channel == "blog" && operation is not ("generate" or "rewrite" or "proofread" or "improve" or "expand" or "introduction" or "conclusion" or "style-transfer"))
                 errors["operation"] = ["Seleziona un'operazione AI valida."];
             if (request.Content?.Length > MaxArticleContentLength)
                 errors["content"] = [$"Il contenuto non può superare {MaxArticleContentLength} caratteri."];
@@ -107,6 +107,7 @@ public static class AiWriterEndpoints
                 "expand" => "Amplia l'articolo con spiegazioni approfondite, passaggi pratici ed esempi pertinenti. Non inventare API o comportamenti tecnici.",
                 "introduction" => "Scrivi soltanto un'introduzione coinvolgente e tecnica per questo articolo. Non ripetere l'intero contenuto.",
                 "conclusion" => "Scrivi soltanto una conclusione utile e concreta per questo articolo. Non ripetere l'intero contenuto.",
+                "style-transfer" => "Analizza gerarchia dei titoli, ritmo dei paragrafi, elenchi, citazioni e blocchi di codice del riferimento. Crea un nuovo articolo originale sullo stesso argomento con struttura editoriale comparabile, senza copiare frasi o paragrafi. Non inventare fatti tecnici e usa esempi originali.",
                 _ => "Crea un articolo tecnico completo, originale e ben strutturato, con introduzione, sezioni numerate, esempi pratici, blocchi di codice quando pertinenti e conclusione."
             };
             var userPrompt = request.Channel == "blog"
