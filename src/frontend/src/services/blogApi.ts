@@ -20,6 +20,7 @@ export type BlogPost = {
 };
 export type BlogPostInput = Omit<BlogPost, 'id' | 'createdAt' | 'updatedAt' | 'publishedAt'>;
 export type BlogPage = { items: BlogPost[]; page: number; pageSize: number; total: number };
+export type BlogArticleImport = { sourceUrl: string; sourceTitle: string; sourceDescription: string; sourceHost: string; extractedMarkdown: string };
 export type BlogSettings = {
   siteName: string; authorName: string; tagline: string; logoUrl: string;
   heroTitle: string; heroDescription: string; primaryColor: string;
@@ -98,5 +99,6 @@ export const blogApi = {
   adminList: () => request<BlogPost[]>('/api/v1/admin/blog', {}, true),
   create: (post: BlogPostInput) => request<BlogPost>('/api/v1/admin/blog', { method: 'POST', body: JSON.stringify(post) }, true),
   update: (id: string, post: BlogPostInput) => request<BlogPost>(`/api/v1/admin/blog/${id}`, { method: 'PUT', body: JSON.stringify(post) }, true),
-  remove: (id: string) => request<void>(`/api/v1/admin/blog/${id}`, { method: 'DELETE' }, true)
+  remove: (id: string) => request<void>(`/api/v1/admin/blog/${id}`, { method: 'DELETE' }, true),
+  importArticleUrl: (url: string) => request<BlogArticleImport>('/api/v1/admin/blog/import-url', { method: 'POST', body: JSON.stringify({ url }) }, true)
 };
