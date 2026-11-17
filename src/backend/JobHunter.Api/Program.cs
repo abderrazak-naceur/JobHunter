@@ -39,6 +39,11 @@ builder.Services.AddScoped<AdminAccountStore>();
 builder.Services.AddSingleton<IJobPageFetcher, JobPageFetcher>();
 builder.Services.AddHttpClient<IJobBoardClient, JobBoardClient>(client => client.Timeout = TimeSpan.FromSeconds(20));
 builder.Services.AddHttpClient("AiWriter", client => client.Timeout = TimeSpan.FromSeconds(120));
+builder.Services.AddHttpClient("BlogArticleImport", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("ZakNaceurBlogImporter/1.0");
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddScoped<JobDiscoveryService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
@@ -78,6 +83,15 @@ builder.Services.AddRateLimiter(options =>
             httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 });
     });
+    options.AddPolicy(BlogArticleImportEndpoints.RateLimitPolicy, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
     options.AddPolicy(AiWriterEndpoints.RateLimitPolicy, httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
@@ -153,7 +167,7 @@ app.MapHealthEndpoints(); // /health (process is up) and /health/ready (database
 app.MapAuthEndpoints();
 app.MapPortfolioEndpoints(); // GET is public, PUT requires the admin token
 app.MapBlogEndpoints(); // public published articles and protected admin CRUD
-app.MapBlogSettingsEndpoints(); // public appearance settings and protected admin customization
+app.MapBlogSettingsEndpoints(); // public appearance settings and protected admin customization\napp.MapBlogArticleImportEndpoints(); // protected URL-to-Markdown article extraction
 app.MapAiWriterEndpoints(); // admin-only AI-assisted content drafting
 
 // Everything below requires the admin token.
