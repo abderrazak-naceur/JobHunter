@@ -60,9 +60,9 @@ function Inline({ value }: { value: string }) {
     if (part.startsWith('*') && part.endsWith('*')) return <em key={index}>{part.slice(1, -1)}</em>;
     if (part.startsWith('`') && part.endsWith('`')) return <code key={index} className="rounded bg-muted px-1.5 py-0.5 font-mono text-[.9em] text-primary">{part.slice(1, -1)}</code>;
     const image = part.match(/^!\[([^\]]*)\]\((https?:\/\/[^)]+)\)$/);
-    if (image) return <span key={index} className="my-2 block text-xs text-muted-foreground">[Immagine: {image[1]}]</span>;
+    if (image) return <img key={index} src={image[2]} alt={image[1]} loading="lazy" className="my-5 max-h-[32rem] w-full rounded-xl object-contain" />;
     const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/);
-    if (link) return <a key={index} href={link[2]} className="text-primary underline underline-offset-2">{link[1]}</a>;
+    if (link) return <a key={index} href={link[2]} target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">{link[1]}</a>;
     return part;
   })}</>;
 }
