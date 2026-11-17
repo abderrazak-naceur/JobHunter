@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { blogApi, defaultBlogSettings, type BlogPost, type BlogPostInput, type BlogStatus, type BlogSettings } from '@/services/blogApi';
-import { generateAiDraft } from '@/services/portfolioApi';
+import { generateAiDraft, getAiWriterStatus } from '@/services/portfolioApi';
 import BlogVisualBuilder from './BlogVisualBuilder';
 import BlogMarkdownEditor from './BlogMarkdownEditor';
 
@@ -38,7 +38,8 @@ export default function BlogAdmin() {
   const [aiOperation, setAiOperation] = useState<'generate' | 'rewrite' | 'proofread' | 'improve' | 'expand' | 'introduction' | 'conclusion'>('generate');
   const [tagsText, setTagsText] = useState('');
   const [editorOpen, setEditorOpen] = useState(false);
-  const [tab, setTab] = useState<'articles' | 'design'>('articles');
+  const [tab, setTab] = useState<'articles' | 'design' | 'ai'>('articles');
+  const [aiStatus, setAiStatus] = useState<{ configured: boolean; provider: string; model: string; endpointHost: string } | null>(null);
   const [settings, setSettings] = useState<BlogSettings>(defaultBlogSettings);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [settingsSaving, setSettingsSaving] = useState(false);
@@ -52,6 +53,7 @@ export default function BlogAdmin() {
   useEffect(() => {
     void refresh();
     blogApi.settings().then(setSettings).catch(error => toast.error(error instanceof Error ? error.message : 'Impossibile caricare le impostazioni.')).finally(() => setSettingsLoading(false));
+    getAiWriterStatus().then(setAiStatus).catch(() => setAiStatus(null));
   }, []);
 
   const counts = useMemo(() => ({
@@ -129,6 +131,7 @@ export default function BlogAdmin() {
       <div className="flex flex-wrap gap-2 border-b pb-3">
         <Button variant={tab === 'articles' ? 'default' : 'outline'} onClick={() => setTab('articles')}><FileText className="mr-2 size-4" /> Articoli</Button>
         <Button variant={tab === 'design' ? 'default' : 'outline'} onClick={() => setTab('design')}><Palette className="mr-2 size-4" /> Personalizzazione</Button>
+        <Button variant={tab === 'ai' ? 'default' : 'outline'} onClick={() => setTab('ai')}><Sparkles className="mr-2 size-4" /> Configurazione AI</Button>
       </div>
       {tab === 'articles' ? <>
         <div className="grid gap-3 sm:grid-cols-3">
@@ -141,7 +144,7 @@ export default function BlogAdmin() {
             <div className="divide-y">{posts.map(post => <div key={post.id} className="flex items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="truncate font-semibold">{post.title}</p><p className="text-xs text-muted-foreground">{post.category} · {post.status} · {new Date(post.updatedAt).toLocaleDateString('it-IT')}</p></div><div className="flex shrink-0 gap-1"><Button size="icon" variant="ghost" aria-label={`Modifica ${post.title}`} onClick={() => edit(post)}><Pencil className="size-4" /></Button>{post.status === 'Published' && <Button size="icon" variant="ghost" aria-label={`Apri ${post.title}`} asChild><a href={`/blog/${post.slug}`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" /></a></Button>}<Button size="icon" variant="ghost" aria-label={`Elimina ${post.title}`} onClick={() => void remove(post)}><Trash2 className="size-4 text-destructive" /></Button></div></div>)}</div>}
           </CardContent>
         </Card>
-      </> : <Card><CardHeader><CardTitle>Identità e aspetto</CardTitle><CardDescription>Modifica nome, autore, testi, logo, colori e template. Le modifiche vengono salvate nel database.</CardDescription></CardHeader><CardContent>
+      </> : tab === 'design' ? <Card><CardHeader><CardTitle>Identità e aspetto</CardTitle><CardDescription>Modifica nome, autore, testi, logo, colori e template. Le modifiche vengono salvate nel database.</CardDescription></CardHeader><CardContent>
         {settingsLoading ? <p role="status">Caricamento impostazioni…</p> : <form onSubmit={saveSettings} className="grid gap-5 md:grid-cols-2">
           <BlogVisualBuilder settings={settings} onChange={setSettings} />
           <label className={field}>Nome del blog<Input required maxLength={120} value={settings.siteName} onChange={e => setSettings(s => ({ ...s, siteName: e.target.value }))} /></label>
@@ -159,6 +162,27 @@ export default function BlogAdmin() {
             <div className="flex flex-wrap items-center justify-between gap-3 p-4" style={{ background: settings.footerBackgroundColor, color: settings.buttonTextColor }}><div><p className="font-semibold">{settings.authorName}</p><p className="text-xs opacity-75">{settings.template}</p></div><Button type="submit" disabled={settingsSaving}>{settingsSaving ? 'Salvataggio…' : 'Salva personalizzazione'}</Button></div>
           </div>
         </form>}
+      </CardContent></Card> : <Card><CardHeader><CardTitle>Configurazione AI</CardTitle><CardDescription>Le chiavi API sono gestite esclusivamente dal backend tramite le variabili d'ambiente di Render. Non vengono salvate nel browser o nel database del blog.</CardDescription></CardHeader><CardContent className="space-y-5">
+        <div className="flex items-center gap-3 rounded-xl border p-4">
+          <div className={"grid size-11 place-items-center rounded-full " + (aiStatus?.configured ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600")}><Sparkles className="size-5" /></div>
+          <div className="min-w-0 flex-1"><p className="font-semibold">{aiStatus?.configured ? 'Chiave API configurata' : 'Configurazione API non verificata'}</p><p className="text-sm text-muted-foreground">{aiStatus ? aiStatus.provider + ' · ' + aiStatus.model + ' · ' + aiStatus.endpointHost : 'Impossibile leggere lo stato dal backend.'}</p></div>
+          <Button type="button" variant="outline" onClick={() => getAiWriterStatus().then(setAiStatus).catch(error => toast.error(error instanceof Error ? error.message : 'Verifica non riuscita.'))}>Aggiorna stato</Button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-xl border p-4"><p className="text-xs font-bold uppercase text-muted-foreground">API Key</p><p className="mt-2 font-mono text-sm">AI__ApiKey</p><p className="mt-1 text-xs text-muted-foreground">Chiave privata del provider</p></div>
+          <div className="rounded-xl border p-4"><p className="text-xs font-bold uppercase text-muted-foreground">Modello</p><p className="mt-2 font-mono text-sm">AI__Model</p><p className="mt-1 text-xs text-muted-foreground">Ad esempio gpt-4.1-mini</p></div>
+          <div className="rounded-xl border p-4"><p className="text-xs font-bold uppercase text-muted-foreground">Endpoint</p><p className="mt-2 font-mono text-sm">AI__Endpoint</p><p className="mt-1 text-xs text-muted-foreground">URL HTTPS del provider</p></div>
+        </div>
+        <div className="rounded-xl bg-muted/40 p-4 text-sm">
+          <p className="font-semibold">Dove inserire la chiave API</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-muted-foreground">
+            <li>Apri Render e seleziona il servizio backend API di JobHunter.</li>
+            <li>Vai in Environment e aggiungi AI__ApiKey con la tua chiave privata.</li>
+            <li>Aggiungi AI__Model e AI__Endpoint secondo il provider scelto.</li>
+            <li>Salva e riavvia il servizio API per applicare le modifiche.</li>
+          </ol>
+          <p className="mt-3 text-xs text-muted-foreground">Lo stato qui sopra conferma soltanto che una chiave è presente nella configurazione. Per verificare credito, modello e raggiungibilità serve una chiamata di test al provider.</p>
+        </div>
       </CardContent></Card>}
 
       {editorOpen && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-2 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true" aria-labelledby="blog-editor-title">
