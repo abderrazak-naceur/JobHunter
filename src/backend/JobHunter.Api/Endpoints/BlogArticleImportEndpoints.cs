@@ -120,21 +120,21 @@ public static partial class BlogArticleImportEndpoints
 
     private static string ToMarkdown(string html)
     {
-        var content = Regex.Replace(html, @"<(script|style|nav|footer|header|noscript|svg)[^>]*>.*?</\\1>", " ", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        var content = Regex.Replace(html, @"<(script|style|nav|footer|header|noscript|svg)[^>]*>.*?</\1>", " ", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         content = Regex.Replace(content, @"<!--.*?-->", " ", RegexOptions.Singleline);
-        content = Regex.Replace(content, @"<pre[^>]*>(.*?)</pre>", m => "\\n\\n```\\n" + StripTags(m.Groups[1].Value) + "\\n```\\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        content = Regex.Replace(content, @"<blockquote[^>]*>(.*?)</blockquote>", m => "\\n> " + StripTags(m.Groups[1].Value) + "\\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        content = Regex.Replace(content, @"<h1[^>]*>(.*?)</h1>", m => "\\n# " + StripTags(m.Groups[1].Value) + "\\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        content = Regex.Replace(content, @"<h2[^>]*>(.*?)</h2>", m => "\\n## " + StripTags(m.Groups[1].Value) + "\\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        content = Regex.Replace(content, @"<h3[^>]*>(.*?)</h3>", m => "\\n### " + StripTags(m.Groups[1].Value) + "\\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        content = Regex.Replace(content, @"<li[^>]*>(.*?)</li>", m => "\\n- " + StripTags(m.Groups[1].Value), RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        content = Regex.Replace(content, @"<br\\s*/?>", "\\n", RegexOptions.IgnoreCase);
-        content = Regex.Replace(content, @"</(p|div|section|article|ul|ol|main)[^>]*>", "\\n\\n", RegexOptions.IgnoreCase);
+        content = Regex.Replace(content, @"<pre[^>]*>(.*?)</pre>", m => "\n\n```\n" + StripTags(m.Groups[1].Value) + "\n```\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        content = Regex.Replace(content, @"<blockquote[^>]*>(.*?)</blockquote>", m => "\n> " + StripTags(m.Groups[1].Value) + "\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        content = Regex.Replace(content, @"<h1[^>]*>(.*?)</h1>", m => "\n# " + StripTags(m.Groups[1].Value) + "\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        content = Regex.Replace(content, @"<h2[^>]*>(.*?)</h2>", m => "\n## " + StripTags(m.Groups[1].Value) + "\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        content = Regex.Replace(content, @"<h3[^>]*>(.*?)</h3>", m => "\n### " + StripTags(m.Groups[1].Value) + "\n", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        content = Regex.Replace(content, @"<li[^>]*>(.*?)</li>", m => "\n- " + StripTags(m.Groups[1].Value), RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        content = Regex.Replace(content, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+        content = Regex.Replace(content, @"</(p|div|section|article|ul|ol|main)[^>]*>", "\n\n", RegexOptions.IgnoreCase);
         content = StripTags(content);
-        var decoded = WebUtility.HtmlDecode(content).Replace("\\r", "");
-        decoded = Regex.Replace(decoded, @"[ \\t]+\\n", "\\n");
-        decoded = Regex.Replace(decoded, @"\\n[ \\t]+", "\\n");
-        return Regex.Replace(decoded, @"\\n{3,}", "\\n\\n").Trim();
+        var decoded = WebUtility.HtmlDecode(content).Replace("\r", "");
+        decoded = Regex.Replace(decoded, @"[ \t]+\n", "\n");
+        decoded = Regex.Replace(decoded, @"\n[ \t]+", "\n");
+        return Regex.Replace(decoded, @"\n{3,}", "\n\n").Trim();
     }
 
     private static string StripTags(string value) => Regex.Replace(value, "<[^>]+>", " ");
