@@ -81,6 +81,16 @@ public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
     }
 
     [Fact]
+    public async Task BlogArticleImport_PostRouteIsRegisteredAndRequiresAuthentication()
+    {
+        var response = await _anonymous.PostAsJsonAsync(
+            "/api/v1/admin/blog/import-url",
+            new BlogArticleImportRequest("https://example.com/article"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task BlogArticleImport_PreflightAllowsProductionFrontendOrigin()
     {
         using var request = new HttpRequestMessage(HttpMethod.Options, "/api/v1/admin/blog/import-url");
