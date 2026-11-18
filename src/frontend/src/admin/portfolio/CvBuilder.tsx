@@ -15,8 +15,8 @@ type Props = {
 };
 
 export default function CvBuilder({ content, onSave }: Props) {
-  const [phone, setPhone] = useState(content.phone ?? '3924294504');
-  const [dateOfBirth, setDateOfBirth] = useState(content.dateOfBirth ?? '08/03/1987');
+  const [phone, setPhone] = useState(content.phone ?? '');
+  const [dateOfBirth, setDateOfBirth] = useState(content.dateOfBirth ?? '');
   const [email, setEmail] = useState(content.email ?? '');
   const [name, setName] = useState(content.name);
   const [role, setRole] = useState(content.role);
