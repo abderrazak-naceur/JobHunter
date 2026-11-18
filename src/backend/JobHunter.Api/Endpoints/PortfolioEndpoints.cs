@@ -303,6 +303,8 @@ public static class PortfolioEndpoints
         var summary = Required(request.Summary, nameof(request.Summary), "La presentazione", 2000);
         var location = Optional(request.Location, nameof(request.Location), "La località", 120);
         var workMode = Optional(request.WorkMode, nameof(request.WorkMode), "La modalità di lavoro", 120);
+        var phone = Optional(request.Phone, nameof(request.Phone), "Il telefono", 40);
+        var dateOfBirth = Optional(request.DateOfBirth, nameof(request.DateOfBirth), "La data di nascita", 30);
 
         string? email = request.Email?.Trim();
         if (string.IsNullOrEmpty(email)) email = null;
@@ -415,7 +417,8 @@ public static class PortfolioEndpoints
             languages.Add(new LanguageDto(languageName, level));
         }
         var content = new PortfolioContentDto(name, role, tagline, summary, location, workMode, email, cvUrl,
-            links, skillGroups, experiences, projects, stats, photoUrl, education, certifications, languages);
+            links, skillGroups, experiences, projects, stats, photoUrl, education, certifications, languages,
+            Phone: phone, DateOfBirth: dateOfBirth);
         return (content, errors);
     }
 

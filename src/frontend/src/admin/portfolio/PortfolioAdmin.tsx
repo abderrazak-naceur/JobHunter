@@ -18,6 +18,7 @@ import {
 } from './lists';
 import ProfileForm from './ProfileForm';
 import AiWriterPage from './AiWriterPage';
+import CvBuilder from './CvBuilder';
 
 /** Manage everything shown on the public site: profile, numbers, skills, experience, education, certifications, languages, projects and links. */
 export default function PortfolioAdmin() {
@@ -60,6 +61,7 @@ export default function PortfolioAdmin() {
       <Tabs defaultValue="profilo">
         <TabsList className="flex h-auto flex-wrap justify-start">
           <TabsTrigger value="profilo">Profilo</TabsTrigger>
+          <TabsTrigger value="cv-builder">CV Builder</TabsTrigger>
           <TabsTrigger value="ai-writer">AI Writer</TabsTrigger>
           <TabsTrigger value="numeri">Numeri</TabsTrigger>
           <TabsTrigger value="competenze">Competenze</TabsTrigger>
@@ -72,6 +74,7 @@ export default function PortfolioAdmin() {
         </TabsList>
 
         <TabsContent value="ai-writer"><AiWriterPage portfolio={content} /></TabsContent>
+        <TabsContent value="cv-builder"><CvBuilder content={content} onSave={persist} /></TabsContent>
         <TabsContent value="profilo">
           <ProfileForm
             content={content}

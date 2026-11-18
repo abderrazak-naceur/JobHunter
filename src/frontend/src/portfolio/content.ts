@@ -35,6 +35,8 @@ export type PortfolioContent = {
   location: string;
   workMode: string;
   email?: string | null;
+  phone?: string | null;
+  dateOfBirth?: string | null;
   cvUrl?: string | null;
   /** Server-derived download URL when an uploaded PDF is active. */
   cvDownloadUrl?: string | null;
