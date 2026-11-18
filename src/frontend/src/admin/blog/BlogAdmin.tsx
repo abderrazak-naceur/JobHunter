@@ -189,7 +189,13 @@ export default function BlogAdmin() {
             <div className="flex flex-wrap items-center justify-between gap-3 p-4" style={{ background: settings.footerBackgroundColor, color: settings.buttonTextColor }}><div><p className="font-semibold">{settings.authorName}</p><p className="text-xs opacity-75">{settings.template}</p></div><Button type="submit" disabled={settingsSaving}>{settingsSaving ? 'Salvataggio…' : 'Salva personalizzazione'}</Button></div>
           </div>
         </form>}
-      </CardContent></Card> : <Card><CardHeader><CardTitle>Configurazione AI</CardTitle><CardDescription>Le chiavi API sono gestite esclusivamente dal backend tramite le variabili d'ambiente di Render. Non vengono salvate nel browser o nel database del blog.</CardDescription></CardHeader><CardContent className="space-y-5">
+      </CardContent></Card> : <Card><CardHeader><CardTitle>Configurazione AI</CardTitle><CardDescription>Puoi usare il provider API configurato sul backend oppure, in futuro, un runtime locale autorizzato per il tuo piano ChatGPT. Il piano Go non è una API key e non può essere usato direttamente da Render.</CardDescription></CardHeader><CardContent className="space-y-5">
+        <div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-4">
+          <div className="flex items-center gap-2 font-semibold"><Sparkles className="size-4" /> ChatGPT Go — collegamento locale</div>
+          <p className="mt-2 text-sm text-muted-foreground">Il sito è ospitato su Render: non deve ricevere né conservare il token personale ChatGPT. L'integrazione prevista passa da un piccolo runtime sul tuo PC Windows, che manterrà localmente l'autorizzazione e invierà le richieste solo per tua iniziativa.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Stato: <strong>non ancora collegato</strong>. Prima di attivare le richieste serve un client OAuth autorizzato da OpenAI per l'uso del piano. Per le applicazioni private/ospitate l'accesso non è automatico: non basta avere ChatGPT Go.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Nessun token viene richiesto qui e nessuna chiamata viene inviata a ChatGPT Go da questa schermata. L'attuale provider API rimane disponibile come alternativa.</p>
+        </div>
         <div className="flex items-center gap-3 rounded-xl border p-4">
           <div className={"grid size-11 place-items-center rounded-full " + (aiStatus?.configured ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600")}><Sparkles className="size-5" /></div>
           <div className="min-w-0 flex-1"><p className="font-semibold">{aiStatus?.configured ? 'Chiave API configurata' : 'Configurazione API non verificata'}</p><p className="text-sm text-muted-foreground">{aiStatus ? aiStatus.provider + ' · ' + aiStatus.model + ' · ' + aiStatus.endpointHost : 'Impossibile leggere lo stato dal backend.'}</p></div>
