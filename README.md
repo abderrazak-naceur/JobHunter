@@ -211,6 +211,11 @@ For example, use `dotnet user-secrets set "AI:ApiKey" "YOUR_KEY"` from `src/back
 The generated text uses the saved public portfolio as context and instructs the model not to invent career facts. Always review factual details before publishing.
 
 
+## ChatGPT plan usage (planned)
+
+The Blog CMS documents a secure local-runtime architecture for eligible ChatGPT plan usage. JobHunter remains private and hosted on Render; personal ChatGPT credentials must never be sent to the hosted backend. The local integration is not active until OpenAI client eligibility/registration is confirmed and the Windows companion runtime is implemented. The existing API-key provider remains the working fallback. See [docs/CHATGPT-PLAN-USAGE.md](docs/CHATGPT-PLAN-USAGE.md).
+
+
 ## Blog CMS
 
 The public blog is available at `/blog` and published articles at `/blog/{slug}`.
