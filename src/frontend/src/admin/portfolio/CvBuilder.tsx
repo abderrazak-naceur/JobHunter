@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { PortfolioContent } from '@/portfolio/content';
+import { resolveAssetUrl } from '@/services/apiConfig';
 import './cv-builder.css';
 
 type Props = {
@@ -14,8 +15,8 @@ type Props = {
 };
 
 export default function CvBuilder({ content, onSave }: Props) {
-  const [phone, setPhone] = useState(content.phone ?? '');
-  const [dateOfBirth, setDateOfBirth] = useState(content.dateOfBirth ?? '');
+  const [phone, setPhone] = useState(content.phone ?? '3924294504');
+  const [dateOfBirth, setDateOfBirth] = useState(content.dateOfBirth ?? '08/03/1987');
   const [email, setEmail] = useState(content.email ?? '');
   const [name, setName] = useState(content.name);
   const [role, setRole] = useState(content.role);
@@ -60,11 +61,11 @@ export default function CvBuilder({ content, onSave }: Props) {
         <div className="mb-3 flex items-center justify-between gap-3 text-sm text-muted-foreground"><span>Anteprima A4 · modello classico blu</span><span>Le modifiche salvate vengono mostrate qui</span></div>
         <article className="cv-print-root mx-auto max-w-[794px] bg-white p-7 text-slate-900 shadow-xl sm:p-10">
           <header className="cv-header">
-            <div><h1>{content.name}</h1><h2>{content.role}</h2><p className="cv-tagline">{content.tagline || 'Professionista IT'}</p><p className="cv-contact">{[content.phone, content.email, content.location].filter(Boolean).join(' | ')}</p></div>
-            {content.photoUrl && <img className="cv-photo" src={content.photoUrl} alt="" />}
+            <div><h1>{name}</h1><h2>{role}</h2><p className="cv-tagline">{content.tagline || 'Professionista IT'}</p><p className="cv-contact">{[phone, email, content.location].filter(Boolean).join(' | ')}</p></div>
+            {content.photoUrl && <img className="cv-photo" src={resolveAssetUrl(content.photoUrl)} alt="" />}
           </header>
 
-          <section className="cv-section"><h3>Sommario</h3><div className="cv-summary"><p>{content.summary}</p>{content.dateOfBirth && <p>Data di nascita: {content.dateOfBirth}</p>}</div></section>
+          <section className="cv-section"><h3>Sommario</h3><div className="cv-summary"><p>{summary}</p>{dateOfBirth && <p>Data di nascita: {dateOfBirth}</p>}</div></section>
 
           <section className="cv-section"><h3>Istruzione - Formazione</h3><table><tbody>{(content.education ?? []).map((item, i) => <tr key={i}><th>{i === 0 ? 'ISTRUZIONE' : ''}</th><td><strong>{item.institution} – {item.degree}</strong><span className="cv-period">{item.period}</span>{item.description && <p>{item.description}</p>}</td></tr>)}
             {(content.certifications ?? []).length > 0 && <tr><th>CERTIFICATI UFFICIALI</th><td>{(content.certifications ?? []).map(x => <p key={x.name}><strong>{x.name}</strong>{x.issuer ? ` – ${x.issuer}` : ''}{x.year ? ` · ${x.year}` : ''}</p>)}</td></tr>}</tbody></table></section>
