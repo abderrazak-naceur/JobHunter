@@ -80,4 +80,19 @@ public sealed class BlogEndpointsTests : IClassFixture<JobHunterApiFactory>
         Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
     }
 
+    [Fact]
+    public async Task BlogArticleImport_PreflightAllowsProductionFrontendOrigin()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/api/v1/admin/blog/import-url");
+        request.Headers.Add("Origin", "https://zaknaceur.it");
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+        request.Headers.Add("Access-Control-Request-Headers", "authorization,content-type");
+
+        var response = await _anonymous.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal("https://zaknaceur.it", response.Headers.GetValues("Access-Control-Allow-Origin").Single());
+        Assert.Contains("POST", response.Headers.GetValues("Access-Control-Allow-Methods").Single());
+    }
+
 }
