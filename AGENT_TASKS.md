@@ -20,6 +20,8 @@
 
 ## 2026 Roadmap — Quality, reliability and growth
 
+- [ ] TASK-050 — ChatGPT plan usage via owner-controlled Windows companion runtime: architecture and security boundary documented; Blog CMS clearly reports that the local connection is not active. Remaining: obtain eligible OpenAI client registration for this private app, implement loopback-only OAuth/PKCE runtime, connect frontend, and validate that personal tokens never reach Render. See `docs/CHATGPT-PLAN-USAGE.md`.
+
 ### Portfolio launch track (priority — product is branded "Portfolio", deployed on Render)
 
 The product is split into a public single-page portfolio at `/` (no menu) used to apply for jobs, and a private admin area at `/admin` used to find jobs and track applications. TASK-036 (login) is done; before the first public deploy also rotate the local database password, which was committed in earlier history.
