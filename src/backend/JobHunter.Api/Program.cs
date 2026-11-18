@@ -113,9 +113,19 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // --- CORS: allowed browser origins come from configuration (Cors:AllowedOrigins:0, :1, ...) -----
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
-if (allowedOrigins.Length == 0 && builder.Environment.IsDevelopment())
-    allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173"];
+var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+var allowedOrigins = configuredOrigins
+    .Concat([
+        "https://zaknaceur.it",
+        "https://www.zaknaceur.it",
+        "https://portafoglio-web-blu5.onrender.com"
+    ])
+    .Concat(builder.Environment.IsDevelopment()
+        ? ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173"]
+        : [])
+    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
 
 builder.Services.AddCors(options =>
 {
