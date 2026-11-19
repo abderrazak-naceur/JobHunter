@@ -1,0 +1,52 @@
+name: Deploy to Render
+
+# Runs only after the CI workflow succeeded on a push to main.
+# Deploy hook URLs are secrets (RENDER_DEPLOY_HOOK_WEB / RENDER_DEPLOY_HOOK_API).
+# A job is skipped with a notice when its secret is not configured.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: render-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-web:
+    name: Deploy frontend (static site)
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_WEB }}
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          if [ -z "$HOOK_URL" ]; then
+            echo "::notice::RENDER_DEPLOY_HOOK_WEB is not set: skipping frontend deploy."
+            exit 0
+          fi
+          curl --fail --silent --show-error --max-time 30 -X POST "$HOOK_URL" > /dev/null
+          echo "Frontend deploy triggered for ${{ github.event.workflow_run.head_sha }}."
+
+  deploy-api:
+    name: Deploy backend (web service)
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_API }}
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          if [ -z "$HOOK_URL" ]; then
+            echo "::notice::RENDER_DEPLOY_HOOK_API is not set: skipping backend deploy."
+            exit 0
+          fi
+          curl --fail --silent --show-error --max-time 30 -X POST "$HOOK_URL" > /dev/null
+          echo "Backend deploy triggered for ${{ github.event.workflow_run.head_sha }}."
