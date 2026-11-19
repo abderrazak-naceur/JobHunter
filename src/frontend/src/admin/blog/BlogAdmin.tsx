@@ -117,16 +117,24 @@ export default function BlogAdmin() {
     setImportingArticle(true);
     try {
       const source = await blogApi.importArticleUrl(articleUrl.trim());
-      let content = source.extractedMarkdown;
+      // Never keep the source text in the draft: on AI failure only the heading outline (structure) is kept.
+      let content = source.extractedMarkdown.split('\n').filter(line => /^#{1,3}\s/.test(line)).join('\n\n');
       try {
+        // Title/description come from a third-party page: truncate so the backend's 1200-char topic limit is never exceeded.
+        const sourceTitle = source.sourceTitle.slice(0, 200);
+        const sourceDescription = source.sourceDescription.slice(0, 300);
         const result = await generateAiDraft({
           channel: 'blog', tone: 'technical', language: 'Italiano', operation: 'style-transfer',
-          topic: `Crea una bozza originale in italiano ispirata esclusivamente alla struttura editoriale dell'articolo di riferimento. Titolo: ${source.sourceTitle}. Descrizione: ${source.sourceDescription}. Dominio: ${source.sourceHost}. Mantieni una gerarchia simile di titoli, paragrafi, elenchi e blocchi di codice, ma non copiare il testo. Usa esempi originali e non inventare dettagli tecnici.`,
-          content: source.extractedMarkdown
+          topic: `Crea una bozza originale in italiano ispirata esclusivamente alla struttura editoriale dell'articolo di riferimento. Titolo: ${sourceTitle}. Descrizione: ${sourceDescription}. Dominio: ${source.sourceHost.slice(0, 100)}. Mantieni una gerarchia simile di titoli, paragrafi, elenchi e blocchi di codice, ma non copiare il testo. Usa esempi originali e non inventare dettagli tecnici.`,
+          // Limit input size to stay within free-tier provider token limits.
+          content: source.extractedMarkdown.slice(0, 12000)
         }, { name: '', role: '', tagline: '', summary: '', location: '', workMode: '', links: [], skillGroups: [], experiences: [], projects: [] });
         content = result.draft;
         toast.success(`Bozza originale creata con ${result.model}. Verificala prima della pubblicazione.`);
-      } catch { toast.warning('Articolo estratto. La trasformazione AI non è disponibile: puoi modificare il contenuto importato manualmente.'); }
+      } catch (error) {
+        const reason = error instanceof Error && error.message ? ` Motivo: ${error.message}` : '';
+        toast.warning(`Struttura dei titoli estratta, ma la bozza AI non è stata generata.${reason}`);
+      }
       setEditingId(null);
       setDraft({ ...emptyPost, title: source.sourceTitle.slice(0, 180), slug: slugify(source.sourceTitle).slice(0, 180), excerpt: (source.sourceDescription || `Bozza ispirata alla struttura editoriale di ${source.sourceHost}.`).slice(0, 500), contentMarkdown: content, category: 'Sviluppo software', seoTitle: source.sourceTitle.slice(0, 180), seoDescription: (source.sourceDescription || '').slice(0, 320) });
       setTagsText(''); setEditorOpen(true); setArticleUrl('');
